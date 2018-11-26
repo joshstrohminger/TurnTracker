@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.106
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TurnTracker", "TurnTracker\TurnTracker.csproj", "{CE8827C1-1848-4AB6-AC41-B19466FC414C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TurnTracker.Server", "Source\TurnTracker.Server\TurnTracker.Server.csproj", "{CE8827C1-1848-4AB6-AC41-B19466FC414C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TurnTracker.Data", "Source\TurnTracker.Data\TurnTracker.Data.csproj", "{45D1ABF2-4AD5-4952-8E0A-529D41F612B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TurnTracker.Domain", "Source\TurnTracker.Domain\TurnTracker.Domain.csproj", "{2E4A4592-9C6F-47E6-9E76-9B247F89858D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{CE8827C1-1848-4AB6-AC41-B19466FC414C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE8827C1-1848-4AB6-AC41-B19466FC414C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE8827C1-1848-4AB6-AC41-B19466FC414C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45D1ABF2-4AD5-4952-8E0A-529D41F612B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45D1ABF2-4AD5-4952-8E0A-529D41F612B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45D1ABF2-4AD5-4952-8E0A-529D41F612B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45D1ABF2-4AD5-4952-8E0A-529D41F612B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E4A4592-9C6F-47E6-9E76-9B247F89858D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E4A4592-9C6F-47E6-9E76-9B247F89858D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E4A4592-9C6F-47E6-9E76-9B247F89858D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E4A4592-9C6F-47E6-9E76-9B247F89858D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

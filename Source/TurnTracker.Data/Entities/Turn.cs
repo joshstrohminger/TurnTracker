@@ -1,0 +1,18 @@
+﻿using System;
+
+namespace TurnTracker.Data.Entities
+{
+    public class Turn : Entity
+    {
+        public int UserId { get; set; }
+        public User User { get; set; }
+
+        public DateTimeOffset Occurred { get; set; }
+
+        public int CreatorId { get; set; }
+        public User Creator { get; set; }
+
+        public int ActivityId { get; set; }
+        public Activity Activity { get; set; }
+    }
+}
