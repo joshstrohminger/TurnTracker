@@ -1,9 +1,13 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TurnTracker.Data.Entities
 {
     public class Turn : Entity
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+
         public int UserId { get; set; }
         public User User { get; set; }
 

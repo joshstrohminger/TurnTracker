@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using TurnTracker.Data.Entities;
 
 namespace TurnTracker.Data
@@ -18,7 +20,24 @@ namespace TurnTracker.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Setting>().HasData(
-                new {Key = "registration.open", Name = "Registration Open", Type = "bool", BoolValue = true});
+                new Setting {Key = "registration.open", Name = "Registration Open", Type = "bool", BoolValue = true,
+                    CreatedDate = DateTimeOffset.Now, ModifiedDate = DateTimeOffset.Now,
+                    IntValue =0});
+
+            modelBuilder.Entity<Participant>()
+                .HasOne(participant => participant.User)
+                .WithMany(user => user.Participants)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Turn>()
+                .HasOne(turn => turn.User)
+                .WithMany(user => user.TurnsTaken)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Turn>()
+                .HasOne(turn => turn.Creator)
+                .WithMany(user => user.TurnsCreated)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

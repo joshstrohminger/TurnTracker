@@ -1,10 +1,12 @@
-﻿using TurnTracker.Data.Entities;
+﻿using CSharpFunctionalExtensions;
+using TurnTracker.Data.Entities;
 
 namespace TurnTracker.Domain.Interfaces
 {
     public interface IUserService
     {
-        User Authenticate(string username, string password);
-        bool Logout(string username);
+        Result<(User user, string refreshToken)> AuthenticateUser(string username, string password);
+        Result<string> RefreshUser(string username, string refreshKey);
+        Result LogoutUser(string username);
     }
 }
