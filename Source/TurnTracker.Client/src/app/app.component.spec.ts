@@ -16,16 +16,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'TurnTracker-Client'`, () => {
+  it(`should have as title 'turntracker-client'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
-    expect(app.title).toEqual('TurnTracker-Client');
+    expect(app.title).toEqual('turntracker-client');
   });
 
   it('should render title in a h1 tag', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('h1').textContent).toContain('Welcome to TurnTracker-Client!');
+    expect(compiled.querySelector('h1').textContent).toContain('Welcome to turntracker-client!');
   });
 });

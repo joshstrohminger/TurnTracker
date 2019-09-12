@@ -3,11 +3,11 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "TurnTracker.Client": {
+    "turntracker-client": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
-      "prefix": "tt",
+      "prefix": "app",
       "schematics": {
         "@schematics/angular:component": {
           "styleext": "scss"
@@ -24,7 +24,8 @@
             "tsConfig": "src/tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/manifest.json"
             ],
             "styles": [
               "src/styles.scss"
@@ -47,26 +48,26 @@
               "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true
+              "buildOptimizer": true,
+              "serviceWorker": true
             }
           }
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "TurnTracker.Client:build",
-            "proxyConfig": "proxy.config.json"
+            "browserTarget": "turntracker-client:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "TurnTracker.Client:build:production"
+              "browserTarget": "turntracker-client:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "TurnTracker.Client:build"
+            "browserTarget": "turntracker-client:build"
           }
         },
         "test": {
@@ -82,7 +83,8 @@
             "scripts": [],
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/manifest.json"
             ]
           }
         },
@@ -100,7 +102,7 @@
         }
       }
     },
-    "TurnTracker.Client-e2e": {
+    "turntracker-client-e2e": {
       "root": "e2e/",
       "projectType": "application",
       "architect": {
@@ -108,11 +110,11 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "TurnTracker.Client:serve"
+            "devServerTarget": "turntracker-client:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "TurnTracker.Client:serve:production"
+              "devServerTarget": "turntracker-client:serve:production"
             }
           }
         },
@@ -128,5 +130,5 @@
       }
     }
   },
-  "defaultProject": "TurnTracker.Client"
+  "defaultProject": "turntracker-client"
 }
