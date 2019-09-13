@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="120mm"
+   height="120mm"
+   viewBox="0 0 120 120"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="C:\Users\jdst8\Documents\Projects\TurnTracker\Source\TurnTracker.Client\src\assets\icons\icon-72x72.png"
+   inkscape:export-xdpi="15.24"
+   inkscape:export-ydpi="15.24">
+  <defs
+     id="defs2">
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Lightness-Contrast"
+       id="filter4596">
+      <feColorMatrix
+         values="1 0 0 -1 -0 0 1 0 -1 -0 0 0 1 -1 -0 0 0 0 1 0"
+         id="feColorMatrix4594"
+         result="fbSourceGraphic" />
+      <feColorMatrix
+         result="fbSourceGraphicAlpha"
+         in="fbSourceGraphic"
+         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         id="feColorMatrix4598" />
+      <feColorMatrix
+         id="feColorMatrix4600"
+         values="1 0 0 -1 -0 0 1 0 -1 -0 0 0 1 -1 -0 0 0 0 1 0"
+         in="fbSourceGraphic" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Blur"
+       id="filter4934">
+      <feColorMatrix
+         values="1 0 0 -1 -0 0 1 0 -1 -0 0 0 1 -1 -0 0 0 0 1 0"
+         id="feColorMatrix4932"
+         result="fbSourceGraphic" />
+      <feColorMatrix
+         result="fbSourceGraphicAlpha"
+         in="fbSourceGraphic"
+         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         id="feColorMatrix4960" />
+      <feGaussianBlur
+         id="feGaussianBlur4962"
+         stdDeviation="0.7 0.7"
+         result="blur"
+         in="fbSourceGraphic" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="107.24025"
+     inkscape:cy="262.28207"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:showpageshadow="false"
+     showborder="true"
+     inkscape:pagecheckerboard="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1920"
+     inkscape:window-height="1013"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Letters"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-56.991403,-98.254756)">
+    <use
+       x="0"
+       y="0"
+       xlink:href="#g4925"
+       id="use4927"
+       width="100%"
+       height="100%"
+       style="filter:url(#filter4934)"
+       transform="translate(1.4157749,1.0583328)" />
+    <g
+       id="g4925"
+       transform="translate(-5.0346764e-7,-2.5360718)">
+      <path
+         id="rect4824-2"
+         d="m 87.024664,127.12945 v 11.67784 h 33.287366 v 68.81181 h 11.67784 v -68.81181 h 33.28789 v -11.67784 z"
+         style="fill:#616161;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.11223204;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         inkscape:connector-curvature="0" />
+      <path
+         id="rect4824"
+         transform="scale(0.26458333)"
+         d="m 248.9707,422.72461 v 44.13672 H 374.78125 V 726.9375 h 44.13672 V 466.86133 h 125.8125 v -44.13672 z"
+         style="fill:#9e9e9e;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.42418408;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+</svg>
