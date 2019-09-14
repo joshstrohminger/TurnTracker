@@ -1,0 +1,23 @@
+
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" fxLayout fxFill fxLayoutAlign="space-around center">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Login</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <div>
+          <mat-form-field>
+            <input matInput placeholder="Username" type="text" formControlName="username">
+          </mat-form-field>
+        </div>
+        <div>
+          <mat-form-field>
+            <input matInput placeholder="Password" type="password" formControlName="password">
+          </mat-form-field>
+        </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-flat-button type="submit" color="primary">Login</button>
+    </mat-card-actions>
+  </mat-card>
+</form>
