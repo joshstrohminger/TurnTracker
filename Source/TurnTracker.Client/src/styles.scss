@@ -13,3 +13,15 @@ html, body {
   margin: 0;
   height: 100%;
 }
+
+$primary: mat-color($dark-primary);
+$accent: mat-color($dark-accent);
+$warn: mat-color($dark-warn);
+
+.error-message {
+  color: $warn;
+}
+
+.dark-backdrop {
+  background-color: #00000060;
+}

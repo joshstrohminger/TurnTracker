@@ -1,8 +1,19 @@
+$navHeight: 48px;
+
 #navbar {
-  height: 48px;
+  height: $navHeight;
 }
 
 .logo {
   height: 32px;
   object-fit: contain;
+}
+
+#page {
+  height: 100vh;
+}
+
+#main {
+  height: calc(100vh - #{$navHeight});
+  //margin-top: $navHeight;
 }
