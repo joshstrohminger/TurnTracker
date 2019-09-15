@@ -1,3 +1,4 @@
+using System;
 using System.Security.Claims;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
@@ -25,9 +26,9 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public IActionResult Login([FromBody] Credentials credentials)
         {
-            var (_, isFailure, (user, refreshToken)) = _userService.AuthenticateUser(credentials.Username, credentials.Password);
+            var (_, isFailure, (user, accessToken, refreshToken)) = _userService.AuthenticateUser(credentials.Username, credentials.Password);
             if (isFailure) return Unauthorized();
-            return Ok(new AuthenticatedUser(user, refreshToken));
+            return Ok(new AuthenticatedUser(user, accessToken, refreshToken));
         }
         
         [HttpPost("[action]")]
@@ -35,10 +36,10 @@ namespace TurnTracker.Server.Controllers
         {
             if (_userService.LogoutUser(User.Identity.Name).IsSuccess)
             {
-                return Ok();
+                Console.WriteLine("Failed to logout");
             }
 
-            return NotFound();
+            return Ok();
         }
 
         [Authorize(Policy = nameof(PolicyType.Refresh))]

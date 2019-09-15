@@ -79,23 +79,24 @@ namespace TurnTracker.Domain.Services
             return Result.Ok();
         }
 
-        public Result<(User user, string refreshToken)> AuthenticateUser(string username, string password)
+        public Result<(User user, string accessToken, string refreshToken)> AuthenticateUser(string username, string password)
         {
             var user = _db.Users.SingleOrDefault(x => x.Name == username);
             if (user == null)
-                return Result.Fail<(User, string)>("Invalid username");
+                return Result.Fail<(User, string, string)>("Invalid username");
 
             if (!user.Hash.SequenceEqual(HashPassword(user.Salt, password)))
             {
-                return Result.Fail<(User, string)>("Invalid password");
+                return Result.Fail<(User, string, string)>("Invalid password");
             }
 
             // authentication successful so generate jwt refresh token
             var (refreshToken, refreshKey) = GenerateRefreshToken(user);
+            var accessToken = GenerateAccessToken(user);
             user.RefreshKey = refreshKey;
             _db.SaveChanges();
 
-            return Result.Ok((user, refreshToken));
+            return Result.Ok((user, accessToken, refreshToken));
         }
 
         public Result<string> RefreshUser(string username, string refreshKey)

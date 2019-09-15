@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { tap, delay, filter, map } from 'rxjs/operators';
+import { Observable, of, concat } from 'rxjs';
+import { map, first, defaultIfEmpty, catchError, filter, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { Profile } from './models/Profile';
-import { Role } from './models/Role';
 import { Credentials } from './login/Credentials';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { AuthenticatedUser } from './models/AuthenticatedUser';
+import { Profile } from './models/Profile';
 
 @Injectable({
   providedIn: 'root'
@@ -16,27 +17,29 @@ export class AuthService {
     return !!this._currentUser;
   }
 
-  private _currentUser: Profile = null;
+  private _currentUser: AuthenticatedUser = null;
   public get currentUser() {
     return this._currentUser;
   }
 
-  constructor(private router: Router, private route: ActivatedRoute) {
-    this.getSavedUser();
-  }
-
-  private saveUser() {
-    if (this._currentUser) {
-      localStorage.setItem('profile', JSON.stringify(this._currentUser));
-    } else {
-      localStorage.removeItem('profile');
+  constructor(private router: Router, private route: ActivatedRoute, private http: HttpClient) {
+    const saved = localStorage.getItem('user');
+    if (saved) {
+      this._currentUser = JSON.parse(saved);
     }
   }
 
-  private getSavedUser() {
-    const saved = localStorage.getItem('profile');
-    if (saved) {
-      this._currentUser = JSON.parse(saved);
+  private saveUser(user?: AuthenticatedUser) {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('access-token', user.accessToken);
+      localStorage.setItem('refresh-token', user.refreshToken);
+      this._currentUser = user;
+    } else {
+      localStorage.removeItem('user');
+      localStorage.removeItem('access-token');
+      localStorage.removeItem('refresh-token');
+      this._currentUser = null;
     }
   }
 
@@ -44,41 +47,43 @@ export class AuthService {
     const options = {
       queryParams: url ? { redirectUrl: url } : {}
     };
-    this.router.navigate(['login'], options);
+    this.router.navigateByUrl('/login', options);
   }
 
   login(credentials: Credentials): Observable<string> {
-    return of(credentials && credentials.username && credentials.password &&
-      credentials.username.toLowerCase() === 'josh' && credentials.password === 'password').pipe(
-      delay(1000),
-      map(success => {
-        if (success) {
-          this._currentUser = {
-            displayName: 'Joshua',
-            id: 1,
-            role: Role.Admin,
-            username: 'josh',
-            email: 'josh@mail.com',
-            emailVerified: false,
-            mobileNumber: '+1 (888) 123-4567',
-            mobileNumberVerified: true,
-            multiFactorEnabled: true
-          };
-          this.saveUser();
-          this.route.queryParams.pipe(filter(params => params.redirectUrl))
-            .subscribe(params => this.router.navigateByUrl(params.redirectUrl));
-          return null;
-        }
 
-        this._currentUser = null;
-        return 'Invalid Credentials';
-      })
-    );
+    return this.http.post<AuthenticatedUser>('auth/login', credentials).pipe(
+      map(profile => {
+        this.saveUser(profile);
+        this.route.queryParams.pipe(first()).subscribe(params => {
+          const url = params && params.redirectUrl || '/home';
+          this.router.navigateByUrl(url);
+        });
+        return null as string;
+      }), catchError((error: HttpErrorResponse) => {
+        switch (error.status) {
+          case 401:
+            return of('Invalid credentials');
+          default:
+            return of('Unknown error');
+        }
+      }));
   }
 
   logout(): void {
-    this._currentUser = null;
-    this.saveUser();
-    this.router.navigate(['login']);
+    this.http.post('auth/logout', null).subscribe(
+      () => console.log('logged out successfully'),
+      error => {
+        console.error('failed to logout', error);
+        this.saveUser();
+      },
+      () => {
+        this.router.navigateByUrl('/login');
+        this.saveUser();
+      });
+  }
+
+  getProfile(): Observable<Profile> {
+    return this.http.get<Profile>('auth/profile');
   }
 }

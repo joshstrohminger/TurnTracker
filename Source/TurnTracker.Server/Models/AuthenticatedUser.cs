@@ -9,14 +9,16 @@ namespace TurnTracker.Server.Models
         public string Username { get; }
         public string DisplayName { get; }
         public string RefreshToken { get; }
+        public string AccessToken { get; }
         public Role Role { get; }
 
-        public AuthenticatedUser(User user, string refreshToken)
+        public AuthenticatedUser(User user, string accessToken, string refreshToken)
         {
             Id = user.Id;
             Username = user.Name;
             DisplayName = user.DisplayName;
             RefreshToken = refreshToken;
+            AccessToken = accessToken;
             Role = user.Role;
         }
     }

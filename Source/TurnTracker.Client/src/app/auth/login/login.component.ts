@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Credentials } from './Credentials';
 import { AuthService } from '../auth.service';
 import { Overlay } from '@angular/cdk/overlay';

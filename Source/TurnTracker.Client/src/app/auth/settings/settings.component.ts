@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { Role } from '../models/Role';
+import { Profile } from '../models/Profile';
 
 @Component({
   selector: 'app-settings',
@@ -9,9 +10,7 @@ import { Role } from '../models/Role';
 })
 export class SettingsComponent implements OnInit {
 
-  public get user() {
-    return this.authService.currentUser;
-  }
+  user: Profile;
 
   public get roles() {
     return Role;
@@ -20,6 +19,8 @@ export class SettingsComponent implements OnInit {
   constructor(private authService: AuthService) { }
 
   ngOnInit() {
+    this.authService.getProfile().subscribe(
+      profile => this.user = profile,
+      error => console.error('failed to get profile', error));
   }
-
 }
