@@ -21,7 +21,24 @@ export class AuthService {
     return this._currentUser;
   }
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(private router: Router, private route: ActivatedRoute) {
+    this.getSavedUser();
+  }
+
+  private saveUser() {
+    if (this._currentUser) {
+      localStorage.setItem('profile', JSON.stringify(this._currentUser));
+    } else {
+      localStorage.removeItem('profile');
+    }
+  }
+
+  private getSavedUser() {
+    const saved = localStorage.getItem('profile');
+    if (saved) {
+      this._currentUser = JSON.parse(saved);
+    }
+  }
 
   loginRedirect(url?: string) {
     const options = {
@@ -40,8 +57,12 @@ export class AuthService {
             displayName: 'Joshua',
             id: 1,
             role: Role.Admin,
-            username: 'josh'
+            username: 'josh',
+            email: 'josh@mail.com',
+            mobileNumber: '+1 (888) 123-4567',
+            multiFactorEnabled: true
           };
+          this.saveUser();
           this.route.queryParams.pipe(filter(params => params.redirectUrl))
             .subscribe(params => this.router.navigateByUrl(params.redirectUrl));
           return null;

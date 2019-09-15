@@ -5,4 +5,7 @@ export class Profile {
   public username: string;
   public displayName: string;
   public role: Role;
+  public mobileNumber: string;
+  public email: string;
+  public multiFactorEnabled: boolean;
 }

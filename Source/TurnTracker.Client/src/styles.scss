@@ -12,6 +12,7 @@ $dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
 html, body {
   margin: 0;
   height: 100%;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
 $primary: mat-color($dark-primary);
@@ -20,6 +21,10 @@ $warn: mat-color($dark-warn);
 
 .error-message {
   color: $warn;
+}
+
+label {
+  color: $accent;
 }
 
 .dark-backdrop {

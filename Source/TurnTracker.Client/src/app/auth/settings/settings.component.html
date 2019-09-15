@@ -1,0 +1,31 @@
+<div id="properties">
+  <div class="row">
+    <label>UserName</label>
+    <span>{{user.username}}</span>
+  </div>
+
+  <div class="row">
+    <label>Display Name</label>
+    <span>{{user.displayName}}</span>
+  </div>
+
+  <div class="row">
+    <label>Role</label>
+    <span>{{user.role}}</span>
+  </div>
+
+  <div class="row">
+    <label>Email</label>
+    <span>{{user.email}}</span>
+  </div>
+
+  <div class="row">
+    <label>Mobile Number</label>
+    <span>{{user.mobileNumber}}</span>
+  </div>
+
+  <div class="row">
+    <label>Multi-Factor Authentication</label>
+    <span><mat-checkbox [ngModel]="user.multiFactorEnabled" [disabled]="true"></mat-checkbox></span>
+  </div>
+</div>

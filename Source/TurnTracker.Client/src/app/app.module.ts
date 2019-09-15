@@ -14,7 +14,8 @@ import {
   MatFormFieldModule,
   MatInputModule,
   MatCardModule,
-  MatProgressSpinnerModule} from '@angular/material';
+  MatProgressSpinnerModule,
+  MatGridListModule} from '@angular/material';
 import { Routes, RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';
@@ -22,7 +23,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { HomeComponent } from './components/home/home.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
-import { SettingsComponent } from './components/settings/settings.component';
+import { SettingsComponent } from './auth/settings/settings.component';
 import { AboutComponent } from './components/about/about.component';
 import { LoginComponent } from './auth/login/login.component';
 import { AuthGuard } from './auth/auth.guard';
@@ -58,11 +59,12 @@ const routes: Routes = [
     MatCardModule,
     MatCheckboxModule,
     MatFormFieldModule,
+    MatGridListModule,
     MatIconModule,
     MatInputModule,
     MatListModule,
-    MatSidenavModule,
     MatProgressSpinnerModule,
+    MatSidenavModule,
     MatToolbarModule,
     OverlayModule,
     ReactiveFormsModule,
