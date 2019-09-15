@@ -17,3 +17,7 @@ $navHeight: 48px;
   height: calc(100vh - #{$navHeight});
   //margin-top: $navHeight;
 }
+
+#sidenav .mat-drawer-inner-container {
+  justify-content: space-between center;
+}

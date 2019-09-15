@@ -76,5 +76,7 @@ export class AuthService {
 
   logout(): void {
     this._currentUser = null;
+    this.saveUser();
+    this.router.navigate(['login']);
   }
 }
