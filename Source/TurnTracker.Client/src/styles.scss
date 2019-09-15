@@ -19,7 +19,7 @@ $primary: mat-color($dark-primary);
 $accent: mat-color($dark-accent);
 $warn: mat-color($dark-warn);
 
-.error-message {
+.error-message, .unverified {
   color: $warn;
 }
 

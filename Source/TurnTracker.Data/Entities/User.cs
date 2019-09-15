@@ -22,6 +22,11 @@ namespace TurnTracker.Data.Entities
         public string Email { get; set; }
         public bool EmailVerified { get; set; }
 
+        public string MobileNumber { get; set; }
+        public bool MobileNumberVerified { get; set; }
+
+        public bool MultiFactorEnabled { get; set; }
+
         [Column(TypeName = "tinyint")]
         public Role Role { get; set; } 
 

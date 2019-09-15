@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using CSharpFunctionalExtensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using TurnTracker.Data;
@@ -17,61 +18,106 @@ namespace TurnTracker.Domain.Services
 {
     public class UserService : IUserService
     {
+        private readonly TurnContext _db;
         private readonly AppSettings _appSettings;
 
-        public UserService(IOptions<AppSettings> appSettings)
+        public UserService(IOptions<AppSettings> appSettings, TurnContext db)
         {
+            _db = db;
             _appSettings = appSettings.Value;
         }
 
-        private readonly List<User> _users = new List<User>
+        public Result EnsureSeedUsers()
         {
-            new User { Id = 1, Role = Role.User, Name = "test",
-                CreatedDate = DateTimeOffset.Now, ModifiedDate = DateTimeOffset.Now,
-                Email = "a@b.c", DisplayName = "Test User",
-                Salt = new byte[]{0x01, 0x02},
-                Hash = HashPassword(new byte[]{0x01, 0x02}, "letmein")
-            },
-            new User { Id = 2, Role = Role.Admin, Name = "admin",
-                CreatedDate = DateTimeOffset.Now, ModifiedDate = DateTimeOffset.Now,
-                Email = "b@b.c", DisplayName = "Admin User",
-                Salt = new byte[]{0x03, 0x04},
-                Hash = HashPassword(new byte[]{0x03, 0x04}, "letmein")
+            try
+            {
+                if (!_db.Users.Any())
+                {
+                    var salt = GetRandomBytes();
+                    var now = DateTimeOffset.UtcNow;
+                    _db.Users.Add(new User
+                    {
+                        DisplayName = "Joshua",
+                        Name = "josh",
+                        Email = "josh@mail.com",
+                        Role = Role.Admin,
+                        Salt = salt,
+                        Hash = HashPassword(salt, "password"),
+                        ModifiedDate = now,
+                        CreatedDate = now
+                    });
+                    salt = GetRandomBytes();
+                    _db.Users.Add(new User
+                    {
+                        DisplayName = "Kelly",
+                        Name = "kelly",
+                        Email = "kelly@mail.com",
+                        Role = Role.User,
+                        Salt = salt,
+                        Hash = HashPassword(salt, "password"),
+                        ModifiedDate = now,
+                        CreatedDate = now
+                    });
+                    _db.SaveChanges();
+                }
             }
-        };
+            catch (Exception e)
+            {
+                return Result.Fail(e.Message);
+            }
+
+
+            return Result.Ok();
+        }
 
         public Result LogoutUser(string username)
         {
-            var user = _users.SingleOrDefault(x => x.Name == username);
+            var user = _db.Users.SingleOrDefault(x => x.Name == username);
             if (user is null) return Result.Fail("Invalid user");
             user.RefreshKey = null;
+            _db.SaveChanges();
             return Result.Ok();
         }
 
         public Result<(User user, string refreshToken)> AuthenticateUser(string username, string password)
         {
-            var user = _users.SingleOrDefault(x => x.Name == username && x.Hash.SequenceEqual(HashPassword(x.Salt, password)));
-
-            // return null if user not found
+            var user = _db.Users.SingleOrDefault(x => x.Name == username);
             if (user == null)
-                return Result.Fail<(User, string)>("Invalid credentials");
+                return Result.Fail<(User, string)>("Invalid username");
+
+            if (!user.Hash.SequenceEqual(HashPassword(user.Salt, password)))
+            {
+                return Result.Fail<(User, string)>("Invalid password");
+            }
 
             // authentication successful so generate jwt refresh token
             var (refreshToken, refreshKey) = GenerateRefreshToken(user);
             user.RefreshKey = refreshKey;
+            _db.SaveChanges();
 
             return Result.Ok((user, refreshToken));
         }
 
         public Result<string> RefreshUser(string username, string refreshKey)
         {
-            var user = _users.SingleOrDefault(x => x.Name == username);
+            var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Name == username);
 
             if (user?.RefreshKey != refreshKey)
-                return Result.Fail<string>("Invalid refresh key");
+                return Result.Fail<string>("Invalid refresh key or user");
 
             var accessKey = GenerateAccessToken(user);
             return Result.Ok(accessKey);
+        }
+
+        public Result<User> GetUser(string username)
+        {
+            var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Name == username);
+            if (user is null)
+            {
+                return Result.Fail<User>("invalid user");
+            }
+
+            return Result.Ok(user);
         }
 
         private string GenerateAccessToken(User user)
@@ -115,13 +161,19 @@ namespace TurnTracker.Domain.Services
 
         private string GetRandomKey(ushort length = 100)
         {
+            var bytes = GetRandomBytes(length);
+            return Convert.ToBase64String(bytes);
+        }
+
+        private byte[] GetRandomBytes(ushort length = 50)
+        {
             var bytes = new byte[length];
             using (var rng = new RNGCryptoServiceProvider())
             {
                 rng.GetNonZeroBytes(bytes);
             }
 
-            return Convert.ToBase64String(bytes);
+            return bytes;
         }
 
         private static byte[] HashPassword(byte[] salt, string password)

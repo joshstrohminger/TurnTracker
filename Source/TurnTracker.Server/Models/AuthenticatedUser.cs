@@ -5,20 +5,16 @@ namespace TurnTracker.Server.Models
 {
     public class AuthenticatedUser
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string DisplayName { get; set; }
-        public string RefreshToken { get; set; }
-        public Role Role { get; set; }
-
-        public AuthenticatedUser()
-        {
-        }
+        public int Id { get; }
+        public string Username { get; }
+        public string DisplayName { get; }
+        public string RefreshToken { get; }
+        public Role Role { get; }
 
         public AuthenticatedUser(User user, string refreshToken)
         {
             Id = user.Id;
-            Name = user.Name;
+            Username = user.Name;
             DisplayName = user.DisplayName;
             RefreshToken = refreshToken;
             Role = user.Role;

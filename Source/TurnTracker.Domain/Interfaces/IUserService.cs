@@ -7,6 +7,8 @@ namespace TurnTracker.Domain.Interfaces
     {
         Result<(User user, string refreshToken)> AuthenticateUser(string username, string password);
         Result<string> RefreshUser(string username, string refreshKey);
+        Result<User> GetUser(string username);
         Result LogoutUser(string username);
+        Result EnsureSeedUsers();
     }
 }

@@ -19,11 +19,6 @@ namespace TurnTracker.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Setting>().HasData(
-                new Setting {Key = "registration.open", Name = "Registration Open", Type = "bool", BoolValue = true,
-                    CreatedDate = DateTimeOffset.Now, ModifiedDate = DateTimeOffset.Now,
-                    IntValue =0});
-
             modelBuilder.Entity<Participant>()
                 .HasOne(participant => participant.User)
                 .WithMany(user => user.Participants)

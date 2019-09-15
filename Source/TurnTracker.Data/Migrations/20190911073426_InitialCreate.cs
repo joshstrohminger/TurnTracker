@@ -136,11 +136,6 @@ namespace TurnTracker.Data.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.InsertData(
-                table: "Settings",
-                columns: new[] { "Key", "BoolValue", "CreatedDate", "IntValue", "Name", "StringValue", "Type", "ModifiedDate" },
-                values: new object[] { "registration.open", true, new DateTimeOffset(new DateTime(2019, 9, 11, 0, 34, 26, 415, DateTimeKind.Unspecified).AddTicks(8149), new TimeSpan(0, -7, 0, 0, 0)), 0, "Registration Open", null, "bool", new DateTimeOffset(new DateTime(2019, 9, 11, 0, 34, 26, 415, DateTimeKind.Unspecified).AddTicks(8149)) });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Activities_OwnerId",
                 table: "Activities",

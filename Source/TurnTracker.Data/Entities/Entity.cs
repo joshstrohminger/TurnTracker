@@ -5,10 +5,10 @@ namespace TurnTracker.Data.Entities
 {
     public abstract class Entity
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTimeOffset CreatedDate { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        //[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTimeOffset ModifiedDate { get; set; }
     }
 }

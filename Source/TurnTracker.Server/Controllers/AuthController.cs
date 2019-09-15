@@ -2,6 +2,7 @@ using System.Security.Claims;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using TurnTracker.Data;
 using TurnTracker.Domain.Authorization;
 using TurnTracker.Domain.Interfaces;
@@ -11,27 +12,20 @@ namespace TurnTracker.Server.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]
-    public class TestController : Controller
+    public class AuthController : Controller
     {
         private readonly IUserService _userService;
 
-        public TestController(IUserService userService)
+        public AuthController(IUserService userService)
         {
             _userService = userService;
         }
 
         [AllowAnonymous]
-        [HttpGet("[action]")]
-        public string Data()
-        {
-            return "some data for anybody";
-        }
-
-        [AllowAnonymous]
         [HttpPost("[action]")]
-        public IActionResult Login(string username, string password)
+        public IActionResult Login([FromBody] Credentials credentials)
         {
-            var (_, isFailure, (user, refreshToken)) = _userService.AuthenticateUser(username, password);
+            var (_, isFailure, (user, refreshToken)) = _userService.AuthenticateUser(credentials.Username, credentials.Password);
             if (isFailure) return Unauthorized();
             return Ok(new AuthenticatedUser(user, refreshToken));
         }
@@ -60,11 +54,31 @@ namespace TurnTracker.Server.Controllers
             return BadRequest();
         }
 
+        [HttpGet("[action]")]
+        public IActionResult Profile()
+        {
+            var (isSuccess, _, user) = _userService.GetUser(User.Identity.Name);
+            if (isSuccess)
+            {
+                var profile = new UserProfile(user);
+                return Ok(profile);
+            }
+
+            return BadRequest();
+        }
+
         [AllowAnonymous]
         [HttpPost("[action]")]
         public IActionResult AcceptInvite(string token)
         {
             return null;
+        }
+
+        [AllowAnonymous]
+        [HttpGet("[action]")]
+        public string AnonymousData()
+        {
+            return "some data for anybody";
         }
 
         [HttpGet("[action]")]

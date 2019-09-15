@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TurnTracker.Data;
 
 namespace TurnTracker.Data.Migrations
 {
     [DbContext(typeof(TurnContext))]
-    partial class TurnContextModelSnapshot : ModelSnapshot
+    [Migration("20190915015728_AddUserProfile")]
+    partial class AddUserProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,9 +27,11 @@ namespace TurnTracker.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("CreatedDate");
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .ValueGeneratedOnAdd();
 
-                    b.Property<DateTimeOffset>("ModifiedDate");
+                    b.Property<DateTimeOffset>("ModifiedDate")
+                        .ValueGeneratedOnAddOrUpdate();
 
                     b.Property<string>("Name")
                         .IsRequired();
@@ -51,9 +55,11 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<int>("ActivityId");
 
-                    b.Property<DateTimeOffset>("CreatedDate");
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .ValueGeneratedOnAdd();
 
-                    b.Property<DateTimeOffset>("ModifiedDate");
+                    b.Property<DateTimeOffset>("ModifiedDate")
+                        .ValueGeneratedOnAddOrUpdate();
 
                     b.Property<int>("UserId");
 
@@ -73,11 +79,13 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<bool>("BoolValue");
 
-                    b.Property<DateTimeOffset>("CreatedDate");
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .ValueGeneratedOnAdd();
 
                     b.Property<int>("IntValue");
 
-                    b.Property<DateTimeOffset>("ModifiedDate");
+                    b.Property<DateTimeOffset>("ModifiedDate")
+                        .ValueGeneratedOnAddOrUpdate();
 
                     b.Property<string>("Name")
                         .IsRequired();
@@ -100,11 +108,13 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<int>("ActivityId");
 
-                    b.Property<DateTimeOffset>("CreatedDate");
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .ValueGeneratedOnAdd();
 
                     b.Property<int>("CreatorId");
 
-                    b.Property<DateTimeOffset>("ModifiedDate");
+                    b.Property<DateTimeOffset>("ModifiedDate")
+                        .ValueGeneratedOnAddOrUpdate();
 
                     b.Property<DateTimeOffset>("Occurred");
 
@@ -127,7 +137,8 @@ namespace TurnTracker.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("CreatedDate");
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("DisplayName")
                         .IsRequired();
@@ -146,7 +157,8 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<bool>("MobileNumberVerified");
 
-                    b.Property<DateTimeOffset>("ModifiedDate");
+                    b.Property<DateTimeOffset>("ModifiedDate")
+                        .ValueGeneratedOnAddOrUpdate();
 
                     b.Property<bool>("MultiFactorEnabled");
 

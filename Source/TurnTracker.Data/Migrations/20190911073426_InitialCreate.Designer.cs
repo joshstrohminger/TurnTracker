@@ -98,18 +98,6 @@ namespace TurnTracker.Data.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("Settings");
-
-                    b.HasData(
-                        new
-                        {
-                            Key = "registration.open",
-                            BoolValue = true,
-                            CreatedDate = new DateTimeOffset(new DateTime(2019, 9, 11, 0, 34, 26, 415, DateTimeKind.Unspecified).AddTicks(8149), new TimeSpan(0, -7, 0, 0, 0)),
-                            IntValue = 0,
-                            ModifiedDate = new DateTimeOffset(new DateTime(2019, 9, 11, 0, 34, 26, 418, DateTimeKind.Unspecified).AddTicks(77), new TimeSpan(0, -7, 0, 0, 0)),
-                            Name = "Registration Open",
-                            Type = "bool"
-                        });
                 });
 
             modelBuilder.Entity("TurnTracker.Data.Entities.Turn", b =>

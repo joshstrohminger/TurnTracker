@@ -59,7 +59,9 @@ export class AuthService {
             role: Role.Admin,
             username: 'josh',
             email: 'josh@mail.com',
+            emailVerified: false,
             mobileNumber: '+1 (888) 123-4567',
+            mobileNumberVerified: true,
             multiFactorEnabled: true
           };
           this.saveUser();

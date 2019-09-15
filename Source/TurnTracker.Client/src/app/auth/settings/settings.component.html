@@ -16,12 +16,12 @@
 
   <div class="row">
     <label>Email</label>
-    <span>{{user.email}}</span>
+    <span>{{user.email}}<span *ngIf="!user.emailVerified" class="unverified">unverified</span></span>
   </div>
 
   <div class="row">
     <label>Mobile Number</label>
-    <span>{{user.mobileNumber}}</span>
+    <span>{{user.mobileNumber}}<span *ngIf="!user.mobileNumberVerified" class="unverified">unverified</span></span>
   </div>
 
   <div class="row">
