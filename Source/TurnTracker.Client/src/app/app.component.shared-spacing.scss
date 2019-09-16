@@ -1,0 +1,3 @@
+$navHeight: 48px;
+$mainPadding: 1em;
+$paddedViewHeight: calc(100vh - #{$navHeight} - #{$mainPadding} - #{$mainPadding});

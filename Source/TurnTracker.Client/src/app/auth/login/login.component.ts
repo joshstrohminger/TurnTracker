@@ -16,8 +16,8 @@ export class LoginComponent implements OnInit {
   public loginForm: FormGroup;
   public error: string = null;
   private overlayRef = this.overlay.create({
-    hasBackdrop: true,
-    backdropClass: 'dark-backdrop',
+    //hasBackdrop: true,
+    //backdropClass: 'dark-backdrop',
     positionStrategy: this.overlay.position()
      .global()
      .centerHorizontally()
@@ -33,9 +33,11 @@ export class LoginComponent implements OnInit {
 
   showSpinner() {
     this.overlayRef.attach(new ComponentPortal(MatSpinner));
+    this.loginForm.disable();
   }
   stopSpinner() {
     this.overlayRef.detach();
+    this.loginForm.enable();
   }
 
   onSubmit() {

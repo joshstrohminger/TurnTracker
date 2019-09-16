@@ -3,67 +3,99 @@ import {
   HttpHandler,
   HttpInterceptor,
   HttpRequest,
-  HttpHeaders
+  HttpHeaders,
+  HttpErrorResponse,
+  HttpResponse,
+  HttpEventType
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { map, mergeMap, catchError } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { map, mergeMap, catchError, filter } from 'rxjs/operators';
+import { AuthService } from './auth.service';
+import { AuthError } from './models/AuthError';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
   private readonly baseUrl = `${window.location.origin}/api/`;
 
+  constructor(private authService: AuthService) { }
+
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
-    const savedAccessToken = localStorage.getItem('access-token');
-    return (savedAccessToken ? of(savedAccessToken) : this.getAccessTokenUsingRefreshToken(next))
-      .pipe(
-        catchError(error => of(null as string)),
-        map(accessToken => {
-          const update: {setHeaders?: {}, url: string} = {
-            url: `${this.baseUrl}${request.url}`
-          };
-          if (accessToken) {
-            update.setHeaders = { Authorization: `Bearer ${accessToken}` };
+    if (request.url.endsWith('/login')) {
+      return next.handle(this.buildRequestWithAccessToken(request));
+    }
+
+    const accessTokenInfo = this.authService.getAccessToken();
+    return (accessTokenInfo.isValid ? of(accessTokenInfo.token) : this.getAccessTokenUsingRefreshToken(next)).pipe(
+      map(accessToken => this.buildRequestWithAccessToken(request, accessToken)),
+      mergeMap(preppedRequest => next.handle(preppedRequest).pipe(
+        catchError(error => {
+          if (error instanceof AuthError) {
+            console.log('rethrowing AuthError: ' + error.statusText)
+            throw error;
+          } else if (error instanceof HttpErrorResponse && error.status === 401) {
+            console.log('invalid access token, refreshing');
+            return this.getAccessTokenUsingRefreshToken(next).pipe(
+              map(accessToken => this.buildRequestWithAccessToken(request, accessToken)),
+              mergeMap(secondRequest => next.handle(secondRequest))
+            );
+          } else {
+            throw error;
           }
-          return request.clone(update);
-        }),
-        mergeMap(requestToSend => {
-          console.log('making request', requestToSend);
-          return next.handle(requestToSend);
         })
-      );
+      )),
+      catchError(error => {
+        if (error instanceof AuthError) {
+          console.error('logging out from AuthError: ' + error.statusText);
+          this.authService.logoutClientOnly();
+        }
+        throw error;
+      })
+    );
+  }
+
+  private buildRequestWithAccessToken(request: HttpRequest<any>, accessToken?: string): HttpRequest<any> {
+    const update: { setHeaders?: {}, url: string } = {
+      url: `${this.baseUrl}${request.url}`
+    };
+    if (accessToken) {
+      update.setHeaders = { Authorization: `Bearer ${accessToken}` };
+    }
+    return request.clone(update);
   }
 
   private getAccessTokenUsingRefreshToken(next: HttpHandler): Observable<string> {
-    const refreshToken = localStorage.getItem('refresh-token');
+    const refreshTokenInfo = this.authService.getRefreshToken();
 
-    if (!refreshToken) {
-      return of(null);
+    if (!refreshTokenInfo.isValid) {
+      return throwError(new AuthError('missing refresh token'));
     }
 
     const refreshRequest = new HttpRequest(
       'POST',
-      `${this.baseUrl}auth/refresh`,
+      `${this.baseUrl}${this.authService.refreshUrl}`,
+      null,
       {
-        headers: new HttpHeaders({ Authorization: `Bearer ${refreshToken}` }),
+        headers: new HttpHeaders().set('Authorization', `Bearer ${refreshTokenInfo.token}`),
         responseType: 'text'
       });
 
     return next.handle(refreshRequest).pipe(
+      filter(event => event instanceof HttpResponse),
       map(
-        event => {
-          console.log('used refresh token', event);
-          const accessToken = '' + event;
-          localStorage.setItem('access-token', accessToken);
+        (response: HttpResponse<string>) => {
+          console.log('used refresh token', response);
+          const accessToken = response.body;
+          this.authService.saveAccessToken(accessToken);
           return accessToken;
-        },
-        error => {
-          console.error('failed to use refresh token', error);
-          return null;
-        })
+        }),
+      catchError(error => {
+        const message = 'failed to use refresh token';
+        console.error(message, error);
+        throw new AuthError(message);
+      })
     );
-
   }
 }

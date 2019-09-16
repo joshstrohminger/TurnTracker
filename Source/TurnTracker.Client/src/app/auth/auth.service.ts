@@ -7,11 +7,19 @@ import { Credentials } from './login/Credentials';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { AuthenticatedUser } from './models/AuthenticatedUser';
 import { Profile } from './models/Profile';
+import { TokenInfo } from './models/TokenInfo';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+
+  public readonly refreshUrl = 'auth/refresh';
+  private readonly userKey = 'user';
+  private readonly accessTokenKey = 'access-token';
+  private readonly accessTokenExpirationKey = 'access-token-exp';
+  private readonly refreshTokenKey = 'refresh-token';
+  private readonly refreshTokenExpirationKey = 'refresh-token-exp';
 
   public get isLoggedIn() {
     return !!this._currentUser;
@@ -23,7 +31,7 @@ export class AuthService {
   }
 
   constructor(private router: Router, private route: ActivatedRoute, private http: HttpClient) {
-    const saved = localStorage.getItem('user');
+    const saved = localStorage.getItem(this.userKey);
     if (saved) {
       this._currentUser = JSON.parse(saved);
     }
@@ -31,14 +39,14 @@ export class AuthService {
 
   private saveUser(user?: AuthenticatedUser) {
     if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('access-token', user.accessToken);
-      localStorage.setItem('refresh-token', user.refreshToken);
+      localStorage.setItem(this.userKey, JSON.stringify(user));
+      this.saveAccessToken(user.accessToken);
+      this.saveRefreshToken(user.refreshToken);
       this._currentUser = user;
     } else {
-      localStorage.removeItem('user');
-      localStorage.removeItem('access-token');
-      localStorage.removeItem('refresh-token');
+      localStorage.removeItem(this.userKey);
+      this.saveAccessToken();
+      this.saveRefreshToken();
       this._currentUser = null;
     }
   }
@@ -56,7 +64,7 @@ export class AuthService {
       map(profile => {
         this.saveUser(profile);
         this.route.queryParams.pipe(first()).subscribe(params => {
-          const url = params && params.redirectUrl || '/home';
+          const url = params && params.redirectUrl || '/activities';
           this.router.navigateByUrl(url);
         });
         return null as string;
@@ -75,15 +83,61 @@ export class AuthService {
       () => console.log('logged out successfully'),
       error => {
         console.error('failed to logout', error);
-        this.saveUser();
+        this.logoutClientOnly();
       },
-      () => {
-        this.router.navigateByUrl('/login');
-        this.saveUser();
-      });
+      () => this.logoutClientOnly());
+  }
+
+  logoutClientOnly(): void {
+    this.saveUser();
+    this.router.navigateByUrl('/login');
   }
 
   getProfile(): Observable<Profile> {
     return this.http.get<Profile>('auth/profile');
+  }
+
+  getAccessToken(): TokenInfo {
+    return this.getToken(this.accessTokenKey, this.accessTokenExpirationKey);
+  }
+
+  getRefreshToken(): TokenInfo {
+    return this.getToken(this.refreshTokenKey, this.refreshTokenExpirationKey);
+  }
+
+  private getToken(tokenKey: string, expirationKey: string): TokenInfo {
+    const token = localStorage.getItem(tokenKey);
+    const exp = localStorage.getItem(expirationKey);
+    return new TokenInfo(
+      token,
+      token && exp && (parseInt(exp, 10) > new Date().getTime())
+    );
+  }
+
+  saveAccessToken(accessToken?: string): boolean {
+    return this.saveToken(accessToken, this.accessTokenKey, this.accessTokenExpirationKey);
+  }
+
+  saveRefreshToken(refreshToken?: string): boolean {
+    return this.saveToken(refreshToken, this.refreshTokenKey, this.refreshTokenExpirationKey);
+  }
+
+  private saveToken(token: string, tokenKey: string, expirationKey: string): boolean {
+    if (token) {
+      try {
+        const exp = JSON.parse(atob(token.split('.')[1]))['exp'] as number;
+        localStorage.setItem(tokenKey, token);
+        // exp is number of seconds but date is number of milliseconds
+        localStorage.setItem(expirationKey, (exp * 1000).toString());
+      } catch (error) {
+        console.error('failed to parse jwt', token);
+        return false;
+      }
+    } else {
+      // clear it since one wasn't provided
+      localStorage.removeItem(tokenKey);
+      localStorage.removeItem(expirationKey);
+    }
+    return true;
   }
 }

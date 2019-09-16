@@ -23,32 +23,33 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 
 import { AppComponent } from './app.component';
 import { environment } from '../environments/environment';
-import { HomeComponent } from './components/home/home.component';
-import { NotFoundComponent } from './components/not-found/not-found.component';
+import { NotFoundComponent } from './anonymous/not-found/not-found.component';
 import { SettingsComponent } from './auth/settings/settings.component';
-import { AboutComponent } from './components/about/about.component';
+import { AboutComponent } from './anonymous/about/about.component';
 import { LoginComponent } from './auth/login/login.component';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthInterceptor } from './auth/auth.interceptor';
 import { LoginGuard } from './auth/login.guard';
+import { ActivitiesComponent } from './user/activities/activities.component';
 
 const routes: Routes = [
-  { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
+  { path: 'activities', component: ActivitiesComponent, canActivate: [AuthGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
   { path: 'about', component: AboutComponent },
   { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
+  { path: '', redirectTo: '/activities', pathMatch: 'full' },
   { path: '**', component: NotFoundComponent }
 ];
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent,
+    ActivitiesComponent,
     NotFoundComponent,
     SettingsComponent,
     AboutComponent,
-    LoginComponent
+    LoginComponent,
+    ActivitiesComponent
   ],
   entryComponents: [
     MatSpinner

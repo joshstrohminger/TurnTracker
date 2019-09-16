@@ -95,7 +95,11 @@ namespace TurnTracker.Server
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            if (!_env.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
+
             app.UseCors(x => x
                 .AllowAnyOrigin()
                 .AllowAnyMethod()

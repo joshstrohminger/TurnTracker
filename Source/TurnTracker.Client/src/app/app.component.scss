@@ -1,10 +1,6 @@
-$navHeight: 48px;
+@import 'app.component.shared-spacing.scss';
 
-#navbar {
-  height: $navHeight;
-}
-
-.logo {
+#sidenav .logo {
   height: 32px;
   object-fit: contain;
 }
@@ -13,11 +9,12 @@ $navHeight: 48px;
   height: 100vh;
 }
 
-#main {
-  height: calc(100vh - #{$navHeight});
-  //margin-top: $navHeight;
+#navbar {
+  height: $navHeight;
 }
 
-#sidenav .mat-drawer-inner-container {
-  justify-content: space-between center;
+#main {
+  height: $paddedViewHeight;
+  padding: $mainPadding;
+  overflow: auto;
 }

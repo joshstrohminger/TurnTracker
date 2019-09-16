@@ -43,6 +43,8 @@ namespace TurnTracker.Domain.Services
                         Role = Role.Admin,
                         Salt = salt,
                         Hash = HashPassword(salt, "password"),
+                        MobileNumber = "+1 (888) 123-4567",
+                        MobileNumberVerified = true,
                         ModifiedDate = now,
                         CreatedDate = now
                     });

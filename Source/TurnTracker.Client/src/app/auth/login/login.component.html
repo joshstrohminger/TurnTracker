@@ -1,4 +1,4 @@
-<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" fxLayout fxFill fxLayoutAlign="space-around center">
+<form class="main-filler" [formGroup]="loginForm" (ngSubmit)="onSubmit()" fxLayoutAlign="space-around center">
   <mat-card>
     <mat-card-header>
       <mat-card-title>Login</mat-card-title>
@@ -14,10 +14,10 @@
             <input matInput placeholder="Password" type="password" formControlName="password" required>
           </mat-form-field>
         </div>
+        <div class="error-message">{{error}}</div>
     </mat-card-content>
     <mat-card-actions>
       <button mat-flat-button type="submit" color="primary" [disabled]="!loginForm.valid">Login</button>
     </mat-card-actions>
-    <mat-card-footer [hidden]="!error" class="error-message">{{error}}</mat-card-footer>
   </mat-card>
 </form>
