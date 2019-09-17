@@ -16,7 +16,12 @@ namespace TurnTracker.Data.Entities
         public int CreatorId { get; set; }
         public User Creator { get; set; }
 
+        public int? DisablerId { get; set; }
+        public User Disabler { get; set; }
+
         public int ActivityId { get; set; }
         public Activity Activity { get; set; }
+
+        public bool IsDisabled { get; set; }
     }
 }

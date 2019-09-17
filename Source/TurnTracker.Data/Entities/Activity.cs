@@ -14,6 +14,8 @@ namespace TurnTracker.Data.Entities
         public string Name { get; set; }
 
         public TimeSpan? Period { get; set; }
+        public Unit? PeriodUnit { get; set; }
+        public uint? PeriodCount { get; set; }
 
         public int OwnerId { get; set; }
         public User Owner { get; set; }

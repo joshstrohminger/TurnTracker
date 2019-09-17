@@ -79,9 +79,15 @@ namespace TurnTracker.Server
                 using (var context = serviceScope.ServiceProvider.GetService<TurnContext>())
                 {
                     context.Database.Migrate();
+
                     if (serviceScope.ServiceProvider.GetService<IUserService>().EnsureSeedUsers().IsFailure)
                     {
                         throw new Exception("Failed to seed users");
+                    }
+
+                    if (serviceScope.ServiceProvider.GetService<ITurnService>().EnsureSeedActivities().IsFailure)
+                    {
+                        throw new Exception("Failed to seed activities");
                     }
                 }
             }
@@ -93,10 +99,6 @@ namespace TurnTracker.Server
             else
             {
                 app.UseHsts();
-            }
-
-            if (!_env.IsDevelopment())
-            {
                 app.UseHttpsRedirection();
             }
 
