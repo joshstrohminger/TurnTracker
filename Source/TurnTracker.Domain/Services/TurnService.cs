@@ -76,6 +76,16 @@ namespace TurnTracker.Domain.Services
                 .Where(x => x.OwnerId == userId);
         }
 
+        public Turn GetTurn(int id)
+        {
+            return _db.Turns
+                .AsNoTracking()
+                .Include(x => x.Creator)
+                .Include(x => x.Disabler)
+                .Include(x => x.User)
+                .FirstOrDefault(x => x.Id == id);
+        }
+
         public IEnumerable<Activity> GetActivitiesByParticipant(int userId)
         {
             return _db.Participants
