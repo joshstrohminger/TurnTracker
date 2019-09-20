@@ -102,13 +102,14 @@ namespace TurnTracker.Domain.Services
                 .Include(x => x.Turns)
                 .Include(x => x.Owner)
                 .Include(x => x.Participants)
+                .ThenInclude(x => x.User)
                 .FirstOrDefault(x => x.Id == activityId);
         }
 
-        public ActivityInfo GetActivityInfo(int activityId)
+        public ActivityDetails GetActivityDetails(int activityId)
         {
             var activity = GetActivity(activityId);
-            return activity is null ? null : new ActivityInfo(activity);
+            return activity is null ? null : new ActivityDetails(activity);
         }
 
         public Result TakeTurn(int activityId, int byUserId, int forUserId, DateTimeOffset when)

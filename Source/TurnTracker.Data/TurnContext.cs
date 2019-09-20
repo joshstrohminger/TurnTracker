@@ -33,6 +33,18 @@ namespace TurnTracker.Data
                 .HasOne(turn => turn.Creator)
                 .WithMany(user => user.TurnsCreated)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Activity>()
+                .Property(x => x.PeriodUnit)
+                .HasConversion(
+                    v => v.ToString(),
+                    s => Enum.Parse<Unit>(s));
+
+            modelBuilder.Entity<Activity>()
+                .Property(x => x.Period)
+                .HasConversion(
+                    v => v.Value.Ticks,
+                    t => TimeSpan.FromTicks(t));
         }
     }
 }

@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { ActivitySummary } from '../models/ActivitySummary';
 
 @Component({
   selector: 'app-activities',
@@ -7,9 +9,16 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ActivitiesComponent implements OnInit {
 
-  constructor() { }
+  activities: ActivitySummary[];
+
+  constructor(private http: HttpClient) { }
 
   ngOnInit() {
+    this.http.get<ActivitySummary[]>('activities/participating')
+      .subscribe(activities => this.activities = activities,
+        error => {
+          alert('failed to get activities: ' + error.status);
+      });
   }
 
 }

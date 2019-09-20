@@ -13,6 +13,7 @@ namespace TurnTracker.Data.Entities
         [Required]
         public string Name { get; set; }
 
+        [DataType("interval")]
         public TimeSpan? Period { get; set; }
         public Unit? PeriodUnit { get; set; }
         public uint? PeriodCount { get; set; }

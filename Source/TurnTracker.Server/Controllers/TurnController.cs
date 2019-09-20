@@ -34,7 +34,7 @@ namespace TurnTracker.Server.Controllers
             return BadRequest();
         }
 
-        [HttpDelete("{id")]
+        [HttpDelete("{id}")]
         public IActionResult DisableTurn(int id)
         {
             var result = _turnService.DisableTurn(id, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));

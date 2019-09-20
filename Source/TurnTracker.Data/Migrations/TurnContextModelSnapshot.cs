@@ -34,11 +34,11 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<int>("OwnerId");
 
-                    b.Property<TimeSpan?>("Period");
+                    b.Property<long?>("Period");
 
                     b.Property<long?>("PeriodCount");
 
-                    b.Property<int?>("PeriodUnit");
+                    b.Property<string>("PeriodUnit");
 
                     b.HasKey("Id");
 

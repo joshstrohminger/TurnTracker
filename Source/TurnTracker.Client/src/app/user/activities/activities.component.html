@@ -1,1 +1,5 @@
-<p>activities works!</p>
+<ul *ngIf="activities">
+  <li *ngFor="let activity of activities">
+    <a [routerLink]="['/activity', activity.id]">{{activity.name}}</a>
+  </li>
+</ul>

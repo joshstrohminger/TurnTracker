@@ -31,8 +31,10 @@ import { AuthGuard } from './auth/auth.guard';
 import { AuthInterceptor } from './auth/auth.interceptor';
 import { LoginGuard } from './auth/login.guard';
 import { ActivitiesComponent } from './user/activities/activities.component';
+import { ActivityComponent } from './user/activity/activity.component';
 
 const routes: Routes = [
+  { path: 'activity/:id', component: ActivityComponent, canActivate: [AuthGuard] },
   { path: 'activities', component: ActivitiesComponent, canActivate: [AuthGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
   { path: 'about', component: AboutComponent },
@@ -49,7 +51,8 @@ const routes: Routes = [
     SettingsComponent,
     AboutComponent,
     LoginComponent,
-    ActivitiesComponent
+    ActivitiesComponent,
+    ActivityComponent
   ],
   entryComponents: [
     MatSpinner

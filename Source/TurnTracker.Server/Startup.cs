@@ -67,6 +67,7 @@ namespace TurnTracker.Server
                 });
 
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ITurnService, TurnService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -80,14 +81,16 @@ namespace TurnTracker.Server
                 {
                     context.Database.Migrate();
 
-                    if (serviceScope.ServiceProvider.GetService<IUserService>().EnsureSeedUsers().IsFailure)
+                    var result = serviceScope.ServiceProvider.GetService<IUserService>().EnsureSeedUsers();
+                    if (result.IsFailure)
                     {
-                        throw new Exception("Failed to seed users");
+                        throw new Exception($"Failed to seed users: {result.Error}");
                     }
 
-                    if (serviceScope.ServiceProvider.GetService<ITurnService>().EnsureSeedActivities().IsFailure)
+                    result = serviceScope.ServiceProvider.GetService<ITurnService>().EnsureSeedActivities();
+                    if (result.IsFailure)
                     {
-                        throw new Exception("Failed to seed activities");
+                        throw new Exception($"Failed to seed activities: {result.Error}");
                     }
                 }
             }

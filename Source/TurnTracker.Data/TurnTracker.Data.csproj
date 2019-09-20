@@ -17,6 +17,14 @@
     <Compile Remove="Migrations\20190911072211_Initial.Designer.cs" />
     <Compile Remove="Migrations\20190911073041_InitialCreate.cs" />
     <Compile Remove="Migrations\20190911073041_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20190911073426_InitialCreate.cs" />
+    <Compile Remove="Migrations\20190911073426_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20190915015728_AddUserProfile.cs" />
+    <Compile Remove="Migrations\20190915015728_AddUserProfile.Designer.cs" />
+    <Compile Remove="Migrations\20190915022753_RemoveGeneratedAttributes.cs" />
+    <Compile Remove="Migrations\20190915022753_RemoveGeneratedAttributes.Designer.cs" />
+    <Compile Remove="Migrations\20190917071603_AllowTurnsToBeDisabled.cs" />
+    <Compile Remove="Migrations\20190917071603_AllowTurnsToBeDisabled.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

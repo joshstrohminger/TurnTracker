@@ -19,7 +19,7 @@ namespace TurnTracker.Server.Controllers
         public IActionResult GetActivityDetails(int id)
         {
             //todo verify that the user has access to this
-            var activity = _turnService.GetActivityInfo(id);
+            var activity = _turnService.GetActivityDetails(id);
             if (activity is null) return BadRequest();
 
             return Json(activity);

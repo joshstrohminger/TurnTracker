@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace TurnTracker.Data.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class Init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -39,6 +39,9 @@ namespace TurnTracker.Data.Migrations
                     IsDisabled = table.Column<bool>(nullable: false),
                     Email = table.Column<string>(nullable: false),
                     EmailVerified = table.Column<bool>(nullable: false),
+                    MobileNumber = table.Column<string>(nullable: true),
+                    MobileNumberVerified = table.Column<bool>(nullable: false),
+                    MultiFactorEnabled = table.Column<bool>(nullable: false),
                     Role = table.Column<byte>(type: "tinyint", nullable: false),
                     Hash = table.Column<byte[]>(nullable: false),
                     Salt = table.Column<byte[]>(nullable: false),
@@ -58,7 +61,9 @@ namespace TurnTracker.Data.Migrations
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
                     Name = table.Column<string>(nullable: false),
-                    Period = table.Column<TimeSpan>(nullable: true),
+                    Period = table.Column<long>(nullable: true),
+                    PeriodUnit = table.Column<string>(nullable: true),
+                    PeriodCount = table.Column<long>(nullable: true),
                     OwnerId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
@@ -111,7 +116,9 @@ namespace TurnTracker.Data.Migrations
                     UserId = table.Column<int>(nullable: false),
                     Occurred = table.Column<DateTimeOffset>(nullable: false),
                     CreatorId = table.Column<int>(nullable: false),
-                    ActivityId = table.Column<int>(nullable: false)
+                    DisablerId = table.Column<int>(nullable: true),
+                    ActivityId = table.Column<int>(nullable: false),
+                    IsDisabled = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -125,6 +132,12 @@ namespace TurnTracker.Data.Migrations
                     table.ForeignKey(
                         name: "FK_Turns_Users_CreatorId",
                         column: x => x.CreatorId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Turns_Users_DisablerId",
+                        column: x => x.DisablerId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -160,6 +173,11 @@ namespace TurnTracker.Data.Migrations
                 name: "IX_Turns_CreatorId",
                 table: "Turns",
                 column: "CreatorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Turns_DisablerId",
+                table: "Turns",
+                column: "DisablerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Turns_UserId",

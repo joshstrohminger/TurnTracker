@@ -6,7 +6,7 @@ using TurnTracker.Data.Entities;
 
 namespace TurnTracker.Domain.Models
 {
-    public class ActivityInfo
+    public class ActivityDetails
     {
         public int Id { get; }
         public string Name { get; }
@@ -19,7 +19,7 @@ namespace TurnTracker.Domain.Models
         public List<ParticipantInfo> Participants { get; }
         public List<TurnInfo> Turns { get; }
 
-        public ActivityInfo(Activity activity)
+        public ActivityDetails(Activity activity)
         {
             Id = activity.Id;
             Name = activity.Name;

@@ -10,8 +10,8 @@ using TurnTracker.Data;
 namespace TurnTracker.Data.Migrations
 {
     [DbContext(typeof(TurnContext))]
-    [Migration("20190917071603_AllowTurnsToBeDisabled")]
-    partial class AllowTurnsToBeDisabled
+    [Migration("20190920052812_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -36,11 +36,11 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<int>("OwnerId");
 
-                    b.Property<TimeSpan?>("Period");
+                    b.Property<long?>("Period");
 
                     b.Property<long?>("PeriodCount");
 
-                    b.Property<int?>("PeriodUnit");
+                    b.Property<string>("PeriodUnit");
 
                     b.HasKey("Id");
 

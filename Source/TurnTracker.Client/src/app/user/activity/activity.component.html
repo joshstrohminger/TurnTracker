@@ -1,0 +1,24 @@
+<div *ngIf="activity">
+  <h1>{{activity.name}}</h1>
+  <div>
+    <label>Period: </label>
+    <span>{{activity.period}}</span>
+    <span *ngIf="activity.periodCount && activity.periodUnit"> {{activity.periodCount}} {{units[activity.periodUnit]}}</span>
+  </div>
+  <div>
+    <label>Owner: </label>
+    <span>{{activity.ownerName}}</span>
+  </div>
+  <ul>
+    <li *ngFor="let participant of activity.participants">
+      <span>{{participant.name}}</span>
+      <span> {{participant.turnsNeeded}}</span>
+    </li>
+  </ul>
+  <ul>
+    <li *ngFor="let turn of activity.turns">
+      <span>{{turn.occurred}}</span>
+      <span> {{names.get(turn.userId)}}</span>
+    </li>
+  </ul>
+</div>
