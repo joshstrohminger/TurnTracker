@@ -1,14 +1,19 @@
-$fabRight: 2em;
-$fabVertical: 2em;
+$fabSpacing: 1em;
 
-#add-fab {
+#bottom-fab-container {
   position: absolute;
-  right: $fabRight;
-  bottom: $fabVertical;
+  right: $fabSpacing;
+  bottom: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  button {
+    margin-bottom: $fabSpacing;
+  }
 }
 
 #refresh-fab {
   position: absolute;
-  right: $fabRight;
-  top: $fabVertical;
+  right: $fabSpacing;
+  top: $fabSpacing;
 }

@@ -21,5 +21,8 @@
       <span> {{names.get(turn.userId)}}</span>
     </li>
   </ul>
-  <button mat-fab color="primary" (click)="takeTurn()" id="add-fab" matTooltip="Take Turn" [disabled]="busy"><mat-icon>add</mat-icon></button>
+  <div id="bottom-fab-container">
+    <button mat-fab color="primary" (click)="takeTurn()" matTooltip="Take Turn" [disabled]="busy"><mat-icon>add</mat-icon></button>
+    <button mat-mini-fab color="accent" (click)="takeTurnWithOptions()" matTooltip="Take Turn With Options" [disabled]="busy"><mat-icon>date_range</mat-icon></button>
+  </div>
 </div>

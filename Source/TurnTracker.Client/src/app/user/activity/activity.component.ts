@@ -32,6 +32,15 @@ export class ActivityComponent implements OnInit {
     this.refreshActivityUnsafe();
   }
 
+  takeTurnWithOptions() {
+    if (this.busy) {
+      return;
+    }
+    this.busy = true;
+    console.log('taking turn with options');
+    this.busy = false;
+  }
+
   takeTurn(forUserId?: number) {
     if (this.busy) {
       return;
