@@ -15,7 +15,8 @@ import {
   MatInputModule,
   MatCardModule,
   MatProgressSpinnerModule,
-  MatGridListModule} from '@angular/material';
+  MatGridListModule,
+  MatTooltipModule} from '@angular/material';
   import { BrowserModule } from '@angular/platform-browser';
   import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Routes, RouterModule } from '@angular/router';
@@ -74,6 +75,7 @@ const routes: Routes = [
     MatProgressSpinnerModule,
     MatSidenavModule,
     MatToolbarModule,
+    MatTooltipModule,
     OverlayModule,
     ReactiveFormsModule,
     RouterModule.forRoot(routes),

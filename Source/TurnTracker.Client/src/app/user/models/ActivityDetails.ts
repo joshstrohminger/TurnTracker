@@ -7,7 +7,6 @@ export class ActivityDetails {
     public name: string;
     public hasDisabledTurns: boolean;
     public due?: string;
-    public period?: string;
     public periodUnit?: Unit;
     public periodCount?: number;
     public ownerName: string;

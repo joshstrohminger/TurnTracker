@@ -12,7 +12,6 @@ namespace TurnTracker.Domain.Models
         public string Name { get; }
         public bool HasDisabledTurns { get; }
         public DateTimeOffset? Due { get; }
-        public TimeSpan? Period { get; }
         public Unit? PeriodUnit { get; }
         public uint? PeriodCount { get; }
         public string OwnerName { get; }
@@ -23,7 +22,6 @@ namespace TurnTracker.Domain.Models
         {
             Id = activity.Id;
             Name = activity.Name;
-            Period = activity.Period;
             PeriodUnit = activity.PeriodUnit;
             PeriodCount = activity.PeriodCount;
             OwnerName = activity.Owner.DisplayName;
@@ -40,15 +38,15 @@ namespace TurnTracker.Domain.Models
                 return info;
             }).ToList();
 
-            if (Period.HasValue)
+            if (activity.Period.HasValue)
             {
                 if (Turns.Count == 0)
                 {
-                    Due = DateTimeOffset.UtcNow;
+                    Due = DateTimeOffset.Now;
                 }
                 else
                 {
-                    Due = Turns[0].Occurred + Period.Value;
+                    Due = Turns[0].Occurred + activity.Period.Value;
                 }
             }
 

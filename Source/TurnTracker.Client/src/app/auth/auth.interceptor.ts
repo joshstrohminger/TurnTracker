@@ -24,21 +24,21 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
     if (request.url.endsWith('/login')) {
-      return next.handle(this.buildRequestWithAccessToken(request));
+      return next.handle(this.modifyRequest(request));
     }
 
     const accessTokenInfo = this.authService.getAccessToken();
     return (accessTokenInfo.isValid ? of(accessTokenInfo.token) : this.getAccessTokenUsingRefreshToken(next)).pipe(
-      map(accessToken => this.buildRequestWithAccessToken(request, accessToken)),
+      map(accessToken => this.modifyRequest(request, accessToken)),
       mergeMap(preppedRequest => next.handle(preppedRequest).pipe(
         catchError(error => {
           if (error instanceof AuthError) {
-            console.log('rethrowing AuthError: ' + error.statusText)
+            console.log('rethrowing AuthError: ' + error.statusText);
             throw error;
           } else if (error instanceof HttpErrorResponse && error.status === 401) {
             console.log('invalid access token, refreshing');
             return this.getAccessTokenUsingRefreshToken(next).pipe(
-              map(accessToken => this.buildRequestWithAccessToken(request, accessToken)),
+              map(accessToken => this.modifyRequest(request, accessToken)),
               mergeMap(secondRequest => next.handle(secondRequest))
             );
           } else {
@@ -56,7 +56,7 @@ export class AuthInterceptor implements HttpInterceptor {
     );
   }
 
-  private buildRequestWithAccessToken(request: HttpRequest<any>, accessToken?: string): HttpRequest<any> {
+  private modifyRequest(request: HttpRequest<any>, accessToken?: string): HttpRequest<any> {
     const update: { setHeaders?: {}, url: string } = {
       url: `${this.baseUrl}${request.url}`
     };

@@ -25,10 +25,11 @@ namespace TurnTracker.Server.Controllers
             return Json(turn);
         }
 
-        [HttpPost("take")]
+        [HttpPost]
         public IActionResult TakeTurn([FromBody] NewTurn turn)
         {
-            var result = _turnService.TakeTurn(turn.ActivityId, turn.ByUserId, turn.ForUserId, turn.When);
+            var myId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var result = _turnService.TakeTurn(turn.ActivityId, myId, turn.ForUserId, turn.When);
             if (result.IsSuccess) return Ok();
 
             return BadRequest();

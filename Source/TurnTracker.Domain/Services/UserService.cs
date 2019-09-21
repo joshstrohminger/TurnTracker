@@ -34,7 +34,7 @@ namespace TurnTracker.Domain.Services
                 if (!_db.Users.Any())
                 {
                     var salt = GetRandomBytes();
-                    var now = DateTimeOffset.UtcNow;
+                    var now = DateTimeOffset.Now;
                     _db.Users.Add(new User
                     {
                         DisplayName = "Joshua",

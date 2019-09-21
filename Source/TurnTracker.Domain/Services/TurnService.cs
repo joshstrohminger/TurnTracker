@@ -41,6 +41,13 @@ namespace TurnTracker.Domain.Services
                         return participantResult;
                     }
 
+                    for(var i = 1; i < 8; i++)
+                    {
+                        var forUser = userIds[i % 2];
+                        var byUser = userIds[i / 2 % 2];
+                        TakeTurn(activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
+                    }
+
                     // second activity
                     activityIdResult = AddActivity(userIds[1], "Flea Meds", 1, Unit.Month);
                     if (activityIdResult.IsFailure)
@@ -53,6 +60,34 @@ namespace TurnTracker.Domain.Services
                     if (participantResult.IsFailure)
                     {
                         return participantResult;
+                    }
+
+                    for (var i = 1; i < 25; i++)
+                    {
+                        var forUser = userIds[i % 2];
+                        var byUser = userIds[i / 2 % 2];
+                        TakeTurn(activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
+                    }
+
+                    // third activity
+                    activityIdResult = AddActivity(userIds[0], "Take Out the Trash");
+                    if (activityIdResult.IsFailure)
+                    {
+                        return activityIdResult;
+                    }
+
+                    activityId = activityIdResult.Value;
+                    participantResult = AddParticipants(activityId, userIds);
+                    if (participantResult.IsFailure)
+                    {
+                        return participantResult;
+                    }
+
+                    for (var i = 1; i < 37; i++)
+                    {
+                        var forUser = userIds[i % 2];
+                        var byUser = userIds[i / 2 % 2];
+                        TakeTurn(activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
                     }
                 }
                 return Result.Ok();
@@ -114,7 +149,7 @@ namespace TurnTracker.Domain.Services
 
         public Result TakeTurn(int activityId, int byUserId, int forUserId, DateTimeOffset when)
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = DateTimeOffset.Now;
             try
             {
                 _db.Turns.Add(new Turn
@@ -144,7 +179,7 @@ namespace TurnTracker.Domain.Services
                 if (!turn.IsDisabled)
                 {
                     turn.IsDisabled = true;
-                    turn.ModifiedDate = DateTimeOffset.UtcNow;
+                    turn.ModifiedDate = DateTimeOffset.Now;
                     _db.Update(turn);
                     _db.SaveChanges();
                 }
@@ -196,7 +231,7 @@ namespace TurnTracker.Domain.Services
                     }
                 }
 
-                var now = DateTimeOffset.UtcNow;
+                var now = DateTimeOffset.Now;
                 var activity = new Activity
                 {
                     OwnerId = ownerId,
@@ -225,7 +260,7 @@ namespace TurnTracker.Domain.Services
                 return Result.Fail("missing user ids");
             }
 
-            var now = DateTimeOffset.UtcNow;
+            var now = DateTimeOffset.Now;
             try
             {
                 foreach (var userId in userIds)

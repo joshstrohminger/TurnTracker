@@ -1,9 +1,9 @@
 <div *ngIf="activity">
-  <h1>{{activity.name}}</h1>
+  <h1>{{activity.name}} <button mat-mini-fab color="accent" (click)="refreshActivity()" id="refresh-fab" matTooltip="Refresh" [disabled]="busy"><mat-icon>refresh</mat-icon></button></h1>
   <div>
     <label>Period: </label>
-    <span>{{activity.period}}</span>
-    <span *ngIf="activity.periodCount && activity.periodUnit"> {{activity.periodCount}} {{units[activity.periodUnit]}}</span>
+    <span *ngIf="activity.periodCount && activity.periodUnit; else noPeriod">{{activity.periodCount}} {{units[activity.periodUnit]}}</span>
+    <ng-template #noPeriod>none</ng-template>
   </div>
   <div>
     <label>Owner: </label>
@@ -21,4 +21,5 @@
       <span> {{names.get(turn.userId)}}</span>
     </li>
   </ul>
+  <button mat-fab color="primary" (click)="takeTurn()" id="add-fab" matTooltip="Take Turn" [disabled]="busy"><mat-icon>add</mat-icon></button>
 </div>
