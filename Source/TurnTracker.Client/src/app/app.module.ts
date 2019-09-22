@@ -20,7 +20,9 @@ import {
   MatChipsModule,
   MatSnackBarModule,
   MAT_SNACK_BAR_DEFAULT_OPTIONS,
-  MatDialogModule} from '@angular/material';
+  MatDialogModule,
+  MatSlideToggleModule,
+  MatSelectModule} from '@angular/material';
   import { BrowserModule } from '@angular/platform-browser';
   import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Routes, RouterModule } from '@angular/router';
@@ -82,7 +84,9 @@ const routes: Routes = [
     MatInputModule,
     MatListModule,
     MatProgressSpinnerModule,
+    MatSelectModule,
     MatSidenavModule,
+    MatSlideToggleModule,
     MatSnackBarModule,
     MatToolbarModule,
     MatTooltipModule,

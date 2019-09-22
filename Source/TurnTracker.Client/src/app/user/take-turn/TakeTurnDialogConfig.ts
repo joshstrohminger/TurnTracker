@@ -1,7 +1,8 @@
 import { Participant } from '../models/Participant';
 
 export interface TakeTurnDialogConfig {
-  activityId: string;
+  activityName: string;
+  activityId: number;
   participants: Participant[];
   myUserId: number;
 }

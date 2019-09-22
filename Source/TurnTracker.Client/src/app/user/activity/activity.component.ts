@@ -54,13 +54,16 @@ export class ActivityComponent implements OnInit {
     }
     this.busy = true;
     const dialogRef = this._dialog.open(TakeTurnDialog, {data: <TakeTurnDialogConfig>{
-      activityId: this._activityId,
+      activityName: this.activity.name,
+      activityId: this.activity.id,
       myUserId: this.myUserId,
       participants: this.activity.participants
     }});
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result: NewTurn) => {
       this.busy = false;
-      console.log('after closed', result);
+      if (result) {
+        this.takeTurnUnsafe(result);
+      }
     });
   }
 
@@ -70,12 +73,11 @@ export class ActivityComponent implements OnInit {
     }
     this.busy = true;
 
-    const turn = <NewTurn>{
-      activityId: this.activity.id,
-      forUserId: forUserId || this.myUserId,
-      when: DateTime.local()
-    };
+    const turn = new NewTurn(this.activity.id, forUserId || this.myUserId);
+    this.takeTurnUnsafe(turn);
+  }
 
+  private takeTurnUnsafe(turn: NewTurn) {
     this._http.post<ActivityDetails>('turn', turn)
       .subscribe(updatedDetails => {
         this.busy = false;

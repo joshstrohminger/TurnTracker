@@ -1,1 +1,21 @@
-<p>take-turn works!</p>
+<h2 mat-dialog-title>{{activityName}}</h2>
+<form [formGroup]="turnForm" (submit)="takeTurn()">
+  <mat-dialog-content>
+    <div id="new-turn-wrapper">
+      <mat-form-field>
+        <mat-label>Time Taken</mat-label>
+        <input matInput type="datetime-local" formControlName="when">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>User</mat-label>
+        <mat-select formControlName="forUserId">
+          <mat-option *ngFor="let participant of participants" [value]="participant.userId">{{participant.name}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-button type="submit" [mat-dialog-close]="true" color="primary">Take Turn</button>
+  </mat-dialog-actions>
+</form>
