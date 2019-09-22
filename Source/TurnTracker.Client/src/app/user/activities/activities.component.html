@@ -1,5 +1,7 @@
-<ul *ngIf="activities">
-  <li *ngFor="let activity of activities">
-    <a [routerLink]="['/activity', activity.id]">{{activity.name}}</a>
-  </li>
-</ul>
+<mat-action-list *ngIf="activities">
+  <button [ngClass]="{'error': activity.due}" mat-list-item *ngFor="let activity of activities" [routerLink]="['/activity', activity.id]">
+    <span>{{activity.name}}</span>
+    <span *ngIf="activity.currentTurnUserDisplayName">{{activity.currentTurnUserDisplayName}}</span>
+    <span *ngIf="activity.due">{{activity.due}} <mat-icon *ngIf="activity.overdue" color="warn">warning</mat-icon></span>
+  </button>
+</mat-action-list>

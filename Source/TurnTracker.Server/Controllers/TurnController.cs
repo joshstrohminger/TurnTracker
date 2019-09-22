@@ -30,7 +30,7 @@ namespace TurnTracker.Server.Controllers
         {
             var myId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var result = _turnService.TakeTurn(turn.ActivityId, myId, turn.ForUserId, turn.When);
-            if (result.IsSuccess) return Ok();
+            if (result.IsSuccess) return Json(result.Value);
 
             return BadRequest();
         }
@@ -39,7 +39,7 @@ namespace TurnTracker.Server.Controllers
         public IActionResult DisableTurn(int id)
         {
             var result = _turnService.DisableTurn(id, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
-            if (result.IsSuccess) return Ok();
+            if (result.IsSuccess) return Json(result.Value);
 
             return BadRequest();
         }

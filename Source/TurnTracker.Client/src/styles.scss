@@ -21,8 +21,16 @@ $primary: mat-color($dark-primary);
 $accent: mat-color($dark-accent);
 $warn: mat-color($dark-warn);
 
-.error-message, .unverified {
-  color: $warn;
+.accent {
+  color: $accent !important;
+}
+
+.primary {
+  color: $primary !important;
+}
+
+.error-message, .warn {
+  color: $warn !important;
 }
 
 label {

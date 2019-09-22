@@ -28,7 +28,7 @@ namespace TurnTracker.Domain.Services
                     var userIds = _db.Users.Select(x => x.Id).ToArray();
 
                     // first activity
-                    var activityIdResult = AddActivity(userIds[0], "Clean Litterbox", 2, Unit.Day);
+                    var activityIdResult = AddActivity(userIds[0], "Clean Litterbox", true, 2, Unit.Day);
                     if (activityIdResult.IsFailure)
                     {
                         return activityIdResult;
@@ -49,7 +49,7 @@ namespace TurnTracker.Domain.Services
                     }
 
                     // second activity
-                    activityIdResult = AddActivity(userIds[1], "Flea Meds", 1, Unit.Month);
+                    activityIdResult = AddActivity(userIds[1], "Flea Meds", true, 1, Unit.Month);
                     if (activityIdResult.IsFailure)
                     {
                         return activityIdResult;
@@ -70,7 +70,7 @@ namespace TurnTracker.Domain.Services
                     }
 
                     // third activity
-                    activityIdResult = AddActivity(userIds[0], "Take Out the Trash");
+                    activityIdResult = AddActivity(userIds[0], "Take Out the Trash", false);
                     if (activityIdResult.IsFailure)
                     {
                         return activityIdResult;
@@ -118,36 +118,63 @@ namespace TurnTracker.Domain.Services
                 .Include(x => x.Creator)
                 .Include(x => x.Disabler)
                 .Include(x => x.User)
-                .FirstOrDefault(x => x.Id == id);
+                .SingleOrDefault(x => x.Id == id);
         }
 
         public IEnumerable<Activity> GetActivitiesByParticipant(int userId)
         {
             return _db.Participants
                 .AsNoTracking()
-                .Include(x => x.Activity)
                 .Where(x => x.UserId == userId)
-                .Select(x => x.Activity);
+                .Select(x => x.Activity)
+                .Include(x => x.CurrentTurnUser)
+                .OrderByDescending(x => x.Due);
         }
 
         public Activity GetActivity(int activityId)
         {
-            return _db.Activities
-                .AsNoTracking()
-                .Include(x => x.Turns)
+            return GetActivity(activityId, true, true);
+        }
+
+        public Activity GetActivityShallow(int activityId)
+        {
+            return GetActivity(activityId, true, false);
+        }
+
+        private Activity GetActivity(int activityId, bool readOnly, bool includeTurns)
+        {
+            IQueryable<Activity> query = _db.Activities;
+
+            if (readOnly)
+            {
+                query = query.AsNoTracking();
+            }
+
+            if (includeTurns)
+            {
+                query = query.Include(x => x.Turns);
+            }
+
+            return query
                 .Include(x => x.Owner)
                 .Include(x => x.Participants)
                 .ThenInclude(x => x.User)
-                .FirstOrDefault(x => x.Id == activityId);
+                .SingleOrDefault(x => x.Id == activityId);
+        }
+
+        public ActivityDetails GetActivityDetailsShallow(int activityId)
+        {
+            var activity = GetActivity(activityId, true, false);
+            return activity is null ? null : ActivityDetails.Populate(activity);
         }
 
         public ActivityDetails GetActivityDetails(int activityId)
         {
-            var activity = GetActivity(activityId);
-            return activity is null ? null : new ActivityDetails(activity);
+            var activity = GetActivity(activityId, true, true);
+            return activity is null ? null : ActivityDetails.Calculate(activity);
         }
 
-        public Result TakeTurn(int activityId, int byUserId, int forUserId, DateTimeOffset when)
+        public Result<ActivityDetails> TakeTurn(int activityId, int byUserId, int forUserId, DateTimeOffset when)
         {
             var now = DateTimeOffset.Now;
             try
@@ -161,19 +188,29 @@ namespace TurnTracker.Domain.Services
                     CreatedDate = now,
                     ModifiedDate = now
                 });
+
+                var activity = GetActivity(activityId, false, true);
+                if (activity == null)
+                {
+                    return Result.Fail<ActivityDetails>("no such activity");
+                }
+
+                var details = ActivityDetails.Calculate(activity);
+
                 _db.SaveChanges();
-                return Result.Ok();
+
+                return Result.Ok(details);
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Failed to take turn: {e}");
-                return Result.Fail(e.Message);
+                return Result.Fail<ActivityDetails>(e.Message);
             }
         }
 
-        public Result DisableTurn(int turnId, int byUserId)
+        public Result<ActivityDetails> DisableTurn(int turnId, int byUserId)
         {
-            var turn = _db.Turns.FirstOrDefault(x => x.Id == turnId);
+            var turn = _db.Turns.Find(turnId);
             if (turn != null)
             {
                 if (!turn.IsDisabled)
@@ -184,13 +221,13 @@ namespace TurnTracker.Domain.Services
                     _db.SaveChanges();
                 }
 
-                return Result.Ok();
+                return Result.Ok(GetActivityDetails(turn.ActivityId));
             }
 
-            return Result.Fail("Invalid turn id");
+            return Result.Fail<ActivityDetails>("Invalid turn id");
         }
 
-        public Result<int> AddActivity(int ownerId, string name, uint? periodCount = null, Unit? periodUnit = null)
+        public Result<int> AddActivity(int ownerId, string name, bool takeTurns, uint? periodCount = null, Unit? periodUnit = null)
         {
             try
             {
@@ -239,6 +276,7 @@ namespace TurnTracker.Domain.Services
                     PeriodCount = periodCount,
                     PeriodUnit = periodUnit,
                     Period = period,
+                    TakeTurns = takeTurns,
                     CreatedDate = now,
                     ModifiedDate = now
                 };

@@ -4,4 +4,5 @@ export class Participant {
     public name: string;
     public turnsNeeded: number;
     public hasDisabledTurns: boolean;
+    public turnOrder: number;
 }

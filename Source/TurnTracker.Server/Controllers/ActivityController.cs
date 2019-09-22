@@ -19,10 +19,21 @@ namespace TurnTracker.Server.Controllers
         public IActionResult GetActivityDetails(int id)
         {
             //todo verify that the user has access to this
-            var activity = _turnService.GetActivityDetails(id);
-            if (activity is null) return BadRequest();
+            var details = _turnService.GetActivityDetailsShallow(id);
+            if (details is null) return BadRequest();
 
-            return Json(activity);
+            return Json(details);
+        }
+
+        // ReSharper disable once StringLiteralTypo
+        [HttpGet("{id}/allturns")]
+        public IActionResult GetActivityDetailsWithAllTurns(int id)
+        {
+            //todo verify that the user has access to this
+            var details = _turnService.GetActivityDetails(id);
+            if (details is null) return BadRequest();
+
+            return Json(details);
         }
     }
 }

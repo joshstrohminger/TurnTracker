@@ -20,7 +20,6 @@
         </div>
         <div fxFlex fxLayout fxLayoutAlign="end">
           <a mat-button [routerLink]="'/settings'" *ngIf="authService.isLoggedIn">{{authService.currentUser.displayName}}</a>
-          <a mat-button (click)="authService.logout()" *ngIf="authService.isLoggedIn">Logout</a>
           <a mat-button [routerLink]="'/login'" *ngIf="!authService.isLoggedIn">Login</a>
         </div>
       </mat-toolbar>

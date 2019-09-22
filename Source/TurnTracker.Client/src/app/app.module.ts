@@ -16,7 +16,11 @@ import {
   MatCardModule,
   MatProgressSpinnerModule,
   MatGridListModule,
-  MatTooltipModule} from '@angular/material';
+  MatTooltipModule,
+  MatChipsModule,
+  MatSnackBarModule,
+  MAT_SNACK_BAR_DEFAULT_OPTIONS,
+  MatDialogModule} from '@angular/material';
   import { BrowserModule } from '@angular/platform-browser';
   import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Routes, RouterModule } from '@angular/router';
@@ -33,6 +37,7 @@ import { AuthInterceptor } from './auth/auth.interceptor';
 import { LoginGuard } from './auth/login.guard';
 import { ActivitiesComponent } from './user/activities/activities.component';
 import { ActivityComponent } from './user/activity/activity.component';
+import { TakeTurnDialog } from './user/take-turn/take-turn.dialog';
 
 const routes: Routes = [
   { path: 'activity/:id', component: ActivityComponent, canActivate: [AuthGuard] },
@@ -53,10 +58,12 @@ const routes: Routes = [
     AboutComponent,
     LoginComponent,
     ActivitiesComponent,
-    ActivityComponent
+    ActivityComponent,
+    TakeTurnDialog
   ],
   entryComponents: [
-    MatSpinner
+    MatSpinner,
+    TakeTurnDialog
   ],
   imports: [
     BrowserAnimationsModule,
@@ -67,6 +74,8 @@ const routes: Routes = [
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
+    MatChipsModule,
+    MatDialogModule,
     MatFormFieldModule,
     MatGridListModule,
     MatIconModule,
@@ -74,6 +83,7 @@ const routes: Routes = [
     MatListModule,
     MatProgressSpinnerModule,
     MatSidenavModule,
+    MatSnackBarModule,
     MatToolbarModule,
     MatTooltipModule,
     OverlayModule,
@@ -82,7 +92,8 @@ const routes: Routes = [
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 5000 }}
   ],
   bootstrap: [
     AppComponent

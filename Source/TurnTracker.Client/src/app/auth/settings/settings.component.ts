@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { Role } from '../models/Role';
 import { Profile } from '../models/Profile';
+import { MatSnackBar } from '@angular/material';
+import { ErrorService } from 'src/app/services/error.service';
 
 @Component({
   selector: 'app-settings',
@@ -16,11 +18,11 @@ export class SettingsComponent implements OnInit {
     return Role;
   }
 
-  constructor(private authService: AuthService) { }
+  constructor(private _authService: AuthService, private _errorService: ErrorService) { }
 
   ngOnInit() {
-    this.authService.getProfile().subscribe(
+    this._authService.getProfile().subscribe(
       profile => this.user = profile,
-      error => console.error('failed to get profile', error));
+      error => this._errorService.show('Failed to get profile and settings', error));
   }
 }

@@ -15,9 +15,10 @@ namespace TurnTracker.Domain.Interfaces
         IEnumerable<Activity> GetActivitiesByParticipant(int userId);
         Activity GetActivity(int activityId);
         ActivityDetails GetActivityDetails(int activityId);
-        Result TakeTurn(int activityId, int byUserId, int forUserId, DateTimeOffset when);
-        Result DisableTurn(int turnId, int byUserId);
-        Result<int> AddActivity(int ownerId, string name, uint? periodCount = null, Unit? periodUnit = null);
+        ActivityDetails GetActivityDetailsShallow(int activityId);
+        Result<ActivityDetails> TakeTurn(int activityId, int byUserId, int forUserId, DateTimeOffset when);
+        Result<ActivityDetails> DisableTurn(int turnId, int byUserId);
+        Result<int> AddActivity(int ownerId, string name, bool takeTurns, uint? periodCount = null, Unit? periodUnit = null);
         Result AddParticipants(int activityId, params int[] userIds);
         Turn GetTurn(int id);
     }

@@ -26,7 +26,10 @@ namespace TurnTracker.Server.Controllers
                 .Select(a => new ActivitySummary
                 {
                     Id = a.Id,
-                    Name = a.Name
+                    Name = a.Name,
+                    CurrentTurnUserId = a.CurrentTurnUserId,
+                    CurrentTurnUserDisplayName = a.CurrentTurnUser?.DisplayName,
+                    Due = a.Due
                 }));
         }
     }

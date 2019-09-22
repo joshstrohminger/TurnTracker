@@ -7,6 +7,10 @@ import { Unit } from '../models/Unit';
 import { DateTime } from 'luxon';
 import { AuthService } from 'src/app/auth/auth.service';
 import { NewTurn } from '../models/NewTurn';
+import { MatSnackBar, MatDialog } from '@angular/material';
+import { ErrorService } from 'src/app/services/error.service';
+import { TakeTurnDialog } from '../take-turn/take-turn.dialog';
+import { TakeTurnDialogConfig } from '../take-turn/TakeTurnDialogConfig';
 
 @Component({
   selector: 'app-activity',
@@ -15,7 +19,9 @@ import { NewTurn } from '../models/NewTurn';
 })
 export class ActivityComponent implements OnInit {
 
+  private _activityId: string;
   activity: ActivityDetails;
+  includeTurns = false;
   busy = false;
   names = new Map<number, string>();
   myUserId: number;
@@ -23,13 +29,23 @@ export class ActivityComponent implements OnInit {
     return Unit;
   }
 
-  constructor(private route: ActivatedRoute, private http: HttpClient, private authService: AuthService) { }
+  constructor(
+    private _route: ActivatedRoute,
+    private _http: HttpClient,
+    private _authService: AuthService,
+    private _errorService: ErrorService,
+    private _dialog: MatDialog) { }
 
   ngOnInit() {
-    if (this.authService.isLoggedIn) {
-      this.myUserId = this.authService.currentUser.id;
+    if (this._authService.isLoggedIn) {
+      this.myUserId = this._authService.currentUser.id;
     }
-    this.refreshActivityUnsafe();
+    this._route.paramMap.pipe(
+      switchMap((params: ParamMap) => params.get('id'))
+    ).subscribe(id => {
+      this._activityId = id;
+      this.refreshActivity();
+    });
   }
 
   takeTurnWithOptions() {
@@ -37,8 +53,15 @@ export class ActivityComponent implements OnInit {
       return;
     }
     this.busy = true;
-    console.log('taking turn with options');
-    this.busy = false;
+    const dialogRef = this._dialog.open(TakeTurnDialog, {data: <TakeTurnDialogConfig>{
+      activityId: this._activityId,
+      myUserId: this.myUserId,
+      participants: this.activity.participants
+    }});
+    dialogRef.afterClosed().subscribe(result => {
+      this.busy = false;
+      console.log('after closed', result);
+    });
   }
 
   takeTurn(forUserId?: number) {
@@ -53,11 +76,14 @@ export class ActivityComponent implements OnInit {
       when: DateTime.local()
     };
 
-    this.http.post('turn', turn)
-      .subscribe(success => this.refreshActivityUnsafe(), error => {
+    this._http.post<ActivityDetails>('turn', turn)
+      .subscribe(updatedDetails => {
         this.busy = false;
-        console.error('failed to take turn', error);
-        alert('failed to take turn');
+        this.includeTurns = true;
+        this.updateActivity(updatedDetails);
+      }, error => {
+        this.busy = false;
+        this._errorService.show('Failed to take turn', error);
       });
   }
 
@@ -68,18 +94,33 @@ export class ActivityComponent implements OnInit {
     this.refreshActivityUnsafe();
   }
 
+  refreshActivityWithTurns() {
+    if (this.busy) {
+      return;
+    }
+    this.includeTurns = true;
+    this.refreshActivityUnsafe();
+  }
+
   private refreshActivityUnsafe() {
     this.busy = true;
+    this._http.get<ActivityDetails>(`activity/${this._activityId}${this.includeTurns ? '/allturns' : ''}`)
+      .subscribe(activity => {
+        this.busy = false;
+        this.updateActivity(activity);
+      }, error => {
+        this.busy = false;
+        this._errorService.show('Failed to get activity', error);
+      });
+  }
 
-    this.route.paramMap.pipe(
-      switchMap((params: ParamMap) => this.http.get<ActivityDetails>(`activity/${params.get('id')}`))
-    ).subscribe(activity => {
-      this.busy = false;
-      activity.participants.forEach(p => this.names.set(p.userId, p.name));
-      this.activity = activity;
-    }, error => {
-      alert('failed to get activity: ' + error);
-      this.busy = false;
-    });
+  private updateActivity(activity: ActivityDetails) {
+    activity.participants.forEach(p => this.names.set(p.userId, p.name));
+    const dueDate = DateTime.fromISO(activity.due);
+    if (dueDate.isValid) {
+      activity.dueDate = dueDate;
+      activity.overdue = dueDate <= DateTime.local();
+    }
+    this.activity = activity;
   }
 }

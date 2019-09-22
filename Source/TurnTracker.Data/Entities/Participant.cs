@@ -12,5 +12,10 @@ namespace TurnTracker.Data.Entities
 
         public int ActivityId { get; set; }
         public Activity Activity { get; set; }
+
+        public int TurnsNeeded { get; set; }
+        public int TurnOrder { get; set; }
+
+        public bool HasDisabledTurns { get; set; }
     }
 }
