@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivitySummary } from '../models/ActivitySummary';
 import { DateTime } from 'luxon';
 import { AuthService } from 'src/app/auth/auth.service';
-import { MatSnackBar } from '@angular/material';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { ErrorService } from 'src/app/services/error.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-activities',
@@ -13,10 +15,21 @@ import { ErrorService } from 'src/app/services/error.service';
 })
 export class ActivitiesComponent implements OnInit {
 
-  activities: ActivitySummary[];
+  activities: MatTableDataSource<ActivitySummary>;
   myUserId: number;
 
-  constructor(private _http: HttpClient, private _authService: AuthService, private _errorService: ErrorService) { }
+  @ViewChild(MatSort, {static: true}) sort: MatSort;
+  displayedColumns: string[] = ['name', 'currentTurnUserDisplayName', 'dueDate'];
+
+  constructor(
+    private _http: HttpClient,
+    private _authService: AuthService,
+    private _errorService: ErrorService,
+    private _router: Router) { }
+
+  viewDetails(activity: ActivitySummary) {
+    this._router.navigate(['/activity', activity.id]);
+  }
 
   ngOnInit() {
     if (this._authService.isLoggedIn) {
@@ -34,7 +47,8 @@ export class ActivitiesComponent implements OnInit {
             }
           }
         }
-        this.activities = activities;
+        this.activities = new MatTableDataSource(activities);
+        this.activities.sort = this.sort;
       }, error => this._errorService.show('Failed to get activities', error));
   }
 

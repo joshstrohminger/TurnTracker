@@ -9,24 +9,23 @@
     <label>Owner: </label>
     <span>{{activity.ownerName}}</span>
   </div>
-  <ul>
-    <li *ngFor="let participant of activity.participants" [ngClass]="{'accent': participant.userId === myUserId, 'primary': participant.userId === activity.currentTurnUserId, 'warn': participant.userId === activity.currentTurnUserId && activity.overdue}">
+  <mat-list>
+    <mat-list-item *ngFor="let participant of activity.participants" [ngClass]="{'accent': participant.userId === myUserId, 'primary': participant.userId === activity.currentTurnUserId, 'warn': participant.userId === activity.currentTurnUserId && activity.overdue}">
       <span>{{participant.name}}</span>
-      <span> {{participant.turnsNeeded}}</span>
-    </li>
-  </ul>
+      <span>{{participant.turnsNeeded}}</span>
+    </mat-list-item>
+  </mat-list>
   <div *ngIf="activity.turns; else loadTurns">
     <mat-list>
       <mat-list-item *ngFor="let turn of activity.turns" [ngClass]="{'accent': turn.userId === myUserId}">
         <span>{{names.get(turn.userId)}}</span>
-        <span>{{turn.occurred}}</span>
+        <span>-{{turn.occurred | date: 'short'}}</span>
       </mat-list-item>
     </mat-list>
   </div>
   <ng-template #loadTurns>
     <button mat-stroked-button color="accent" [disabled]="busy" (click)="refreshActivityWithTurns()">Load Turns</button>
   </ng-template>
-  <button mat-mini-fab color="accent" (click)="refreshActivity()" id="refresh-fab" matTooltip="Refresh" matTooltipPosition="before" [disabled]="busy"><mat-icon>refresh</mat-icon></button>
   <div id="bottom-fab-container">
     <button mat-fab color="primary" (click)="takeTurn()" matTooltip="Take Turn" matTooltipPosition="before" [disabled]="busy"><mat-icon>add</mat-icon></button>
     <button mat-mini-fab color="accent" (click)="takeTurnWithOptions()" matTooltip="Take Turn With Options" matTooltipPosition="before" [disabled]="busy"><mat-icon>date_range</mat-icon></button>

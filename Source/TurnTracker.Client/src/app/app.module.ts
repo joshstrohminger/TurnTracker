@@ -22,7 +22,9 @@ import {
   MAT_SNACK_BAR_DEFAULT_OPTIONS,
   MatDialogModule,
   MatSlideToggleModule,
-  MatSelectModule} from '@angular/material';
+  MatSelectModule,
+  MatTableModule,
+  MatSortModule} from '@angular/material';
   import { BrowserModule } from '@angular/platform-browser';
   import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Routes, RouterModule } from '@angular/router';
@@ -88,6 +90,8 @@ const routes: Routes = [
     MatSidenavModule,
     MatSlideToggleModule,
     MatSnackBarModule,
+    MatSortModule,
+    MatTableModule,
     MatToolbarModule,
     MatTooltipModule,
     OverlayModule,

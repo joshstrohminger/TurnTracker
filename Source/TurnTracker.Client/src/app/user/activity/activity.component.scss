@@ -1,7 +1,7 @@
 $fabSpacing: 1em;
 
 #bottom-fab-container {
-  position: absolute;
+  position: fixed;
   right: $fabSpacing;
   bottom: 0;
   display: flex;
@@ -10,10 +10,4 @@ $fabSpacing: 1em;
   button {
     margin-bottom: $fabSpacing;
   }
-}
-
-#refresh-fab {
-  position: absolute;
-  right: $fabSpacing;
-  top: $fabSpacing;
 }

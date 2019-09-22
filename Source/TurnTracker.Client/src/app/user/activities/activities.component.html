@@ -1,7 +1,21 @@
-<mat-action-list *ngIf="activities">
-  <button [ngClass]="{'error': activity.due}" mat-list-item *ngFor="let activity of activities" [routerLink]="['/activity', activity.id]">
-    <span>{{activity.name}}</span>
-    <span *ngIf="activity.currentTurnUserDisplayName">{{activity.currentTurnUserDisplayName}}</span>
-    <span *ngIf="activity.due">{{activity.due}} <mat-icon *ngIf="activity.overdue" color="warn">warning</mat-icon></span>
-  </button>
-</mat-action-list>
+<table mat-table [dataSource]="activities" class="mat-elevation-z8" matSort>
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Activity</th>
+    <td mat-cell *matCellDef="let activity">{{activity.name}}</td>
+  </ng-container>
+  <ng-container matColumnDef="currentTurnUserDisplayName">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Turn</th>
+    <td mat-cell *matCellDef="let activity">
+        <span *ngIf="activity.currentTurnUserDisplayName">{{activity.currentTurnUserDisplayName}}</span>
+    </td>
+  </ng-container>
+  <ng-container matColumnDef="dueDate">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Due</th>
+    <td mat-cell *matCellDef="let activity">
+        <span *ngIf="activity.dueDate">{{activity.dueDate | date: 'short'}} <mat-icon *ngIf="activity.overdue" color="warn">warning</mat-icon></span>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let activity; columns: displayedColumns" (click)="viewDetails(activity)"></tr>
+</table>
