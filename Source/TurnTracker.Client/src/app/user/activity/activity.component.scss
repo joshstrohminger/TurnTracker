@@ -11,3 +11,15 @@ $fabSpacing: 1em;
     margin-bottom: $fabSpacing;
   }
 }
+
+td:not(:last-child) {
+  padding-right: 1em;
+}
+
+#activity-wrapper > *:not(:first-child) {
+  margin-top: 1em;
+}
+
+#load-turns {
+  width: 100%;
+}

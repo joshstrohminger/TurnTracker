@@ -2,11 +2,40 @@
 @import 'app/app.component.shared-spacing.scss';
 
 @include mat-core();
-
+/*
+$mat-red
+$mat-pink
+$mat-purple
+$mat-deep-purple
+$mat-indigo
+$mat-blue
+$mat-light-blue
+$mat-cyan
+$mat-teal
+$mat-green
+$mat-light-green
+$mat-lime
+$mat-yellow
+$mat-amber
+$mat-orange
+$mat-deep-orange
+$mat-brown
+$mat-grey
+$mat-blue-grey
+*/
 // Available color palettes: https://material.io/design/color/
-$dark-primary: mat-palette($mat-cyan);
-$dark-accent:  mat-palette($mat-blue-grey, A200, A100, A400);
-$dark-warn:    mat-palette($mat-deep-orange);
+$dark-primary: mat-palette(
+  $mat-teal
+);
+$dark-accent:  mat-palette(
+  $mat-purple
+  , A200, A100, A400);
+$dark-warn:    mat-palette(
+  $mat-deep-orange
+  );
+// $dark-primary: mat-palette($mat-cyan);
+// $dark-accent:  mat-palette($mat-blue-grey, A200, A100, A400);
+// $dark-warn:    mat-palette($mat-deep-orange);
 $dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
 
 @include angular-material-theme($dark-theme);

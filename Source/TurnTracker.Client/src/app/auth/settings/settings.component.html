@@ -1,38 +1,58 @@
-<div id="properties" *ngIf="user">
-  <div class="row">
-    <label>UserName</label>
-    <span>{{user.username}}</span>
-  </div>
+<div *ngIf="user">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Profile</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div id="properties">
+        <!-- This empty mat-chip-list is here to allow us to use a mat-chip outside of the list and still get styled.
+        If there isn't a mat-chip-list somewhere in the view to bring in the styling, the mat-chips will be unstyled. -->
+        <mat-chip-list></mat-chip-list>
+        <div class="row">
+          <label>UserName</label>
+          <span>{{user.username}}</span>
+        </div>
 
-  <div class="row">
-    <label>Display Name</label>
-    <span>{{user.displayName}}</span>
-  </div>
+        <div class="row">
+          <label>Display Name</label>
+          <span>{{user.displayName}}</span>
+        </div>
 
-  <div class="row">
-    <label>Role</label>
-    <span>{{roles[user.role]}}</span>
-  </div>
+        <div class="row">
+          <label>Role</label>
+          <span>{{roles[user.role]}}</span>
+        </div>
 
-  <div class="row">
-    <label>Email</label>
-    <span>
-      {{user.email}}
-      <mat-chip color="warn" selected *ngIf="!user.emailVerified">unverified</mat-chip>
-    </span>
-  </div>
+        <div class="row">
+          <label>Email</label>
+          <span>
+            {{user.email}}
+            <mat-chip color="warn" selected *ngIf="!user.emailVerified">unverified</mat-chip>
+          </span>
+        </div>
 
-  <div class="row">
-    <label>Mobile Number</label>
-    <span>
-      {{user.mobileNumber}}
-      <mat-chip color="warn" selected *ngIf="!user.mobileNumberVerified">unverified</mat-chip></span>
-  </div>
+        <div class="row">
+          <label>Mobile Number</label>
+          <span>
+            {{user.mobileNumber}}
+            <mat-chip color="warn" selected *ngIf="!user.mobileNumberVerified">unverified</mat-chip></span>
+        </div>
 
-  <div class="row">
-    <label>Multi-Factor Authentication</label>
-    <span>
-      <mat-checkbox [ngModel]="user.multiFactorEnabled" [disabled]="true"></mat-checkbox>
-    </span>
-  </div>
+        <div class="row">
+          <label>Multi-Factor Authentication</label>
+          <span>
+            <mat-checkbox [ngModel]="user.multiFactorEnabled" [disabled]="true"></mat-checkbox>
+          </span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Notifications</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      notifiations go here
+    </mat-card-content>
+  </mat-card>
 </div>
