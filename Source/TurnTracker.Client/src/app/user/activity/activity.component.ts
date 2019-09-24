@@ -11,6 +11,8 @@ import { MatSnackBar, MatDialog } from '@angular/material';
 import { ErrorService } from 'src/app/services/error.service';
 import { TakeTurnDialog } from '../take-turn/take-turn.dialog';
 import { TakeTurnDialogConfig } from '../take-turn/TakeTurnDialogConfig';
+import { NotificationSetting } from '../models/NotificationSetting';
+import { NotificationType } from '../models/NotificationType';
 
 @Component({
   selector: 'app-activity',
@@ -20,11 +22,16 @@ import { TakeTurnDialogConfig } from '../take-turn/TakeTurnDialogConfig';
 export class ActivityComponent implements OnInit {
 
   private _activityId: string;
+
   activity: ActivityDetails;
   includeTurns = false;
   busy = false;
   names = new Map<number, string>();
   myUserId: number;
+  notifications: NotificationSetting[] = Object.keys(NotificationType)
+    .filter(key => !isNaN(Number(NotificationType[key])))
+    .map(key => new NotificationSetting(NotificationType[key]));
+
   public get units() {
     return Unit;
   }

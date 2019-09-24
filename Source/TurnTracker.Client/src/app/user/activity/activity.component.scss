@@ -12,7 +12,7 @@ $fabSpacing: 1em;
   }
 }
 
-td:not(:last-child) {
+table.padded td:not(:last-child) {
   padding-right: 1em;
 }
 
@@ -22,4 +22,13 @@ td:not(:last-child) {
 
 #load-turns {
   width: 100%;
+}
+
+#notifications td mat-checkbox {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+th.center {
+  text-align: center;
 }

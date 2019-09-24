@@ -42,6 +42,7 @@ import { LoginGuard } from './auth/login.guard';
 import { ActivitiesComponent } from './user/activities/activities.component';
 import { ActivityComponent } from './user/activity/activity.component';
 import { TakeTurnDialog } from './user/take-turn/take-turn.dialog';
+import { NotificationPipe } from './user/notification.pipe';
 
 const routes: Routes = [
   { path: 'activity/:id', component: ActivityComponent, canActivate: [AuthGuard] },
@@ -63,7 +64,8 @@ const routes: Routes = [
     LoginComponent,
     ActivitiesComponent,
     ActivityComponent,
-    TakeTurnDialog
+    TakeTurnDialog,
+    NotificationPipe
   ],
   entryComponents: [
     MatSpinner,
