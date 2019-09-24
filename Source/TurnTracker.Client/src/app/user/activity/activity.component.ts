@@ -22,6 +22,7 @@ import { NotificationType } from '../models/NotificationType';
 export class ActivityComponent implements OnInit {
 
   private _activityId: string;
+  private _openedTurns = false;
 
   activity: ActivityDetails;
   includeTurns = false;
@@ -103,10 +104,11 @@ export class ActivityComponent implements OnInit {
     this.refreshActivityUnsafe();
   }
 
-  refreshActivityWithTurns() {
-    if (this.busy) {
+  loadTurns() {
+    if (this.busy || this._openedTurns) {
       return;
     }
+    this._openedTurns = true;
     this.includeTurns = true;
     this.refreshActivityUnsafe();
   }

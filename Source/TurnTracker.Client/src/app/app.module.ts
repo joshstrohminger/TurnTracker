@@ -24,7 +24,8 @@ import {
   MatSlideToggleModule,
   MatSelectModule,
   MatTableModule,
-  MatSortModule} from '@angular/material';
+  MatSortModule,
+  MatExpansionModule} from '@angular/material';
   import { BrowserModule } from '@angular/platform-browser';
   import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Routes, RouterModule } from '@angular/router';
@@ -82,6 +83,7 @@ const routes: Routes = [
     MatCheckboxModule,
     MatChipsModule,
     MatDialogModule,
+    MatExpansionModule,
     MatFormFieldModule,
     MatGridListModule,
     MatIconModule,
