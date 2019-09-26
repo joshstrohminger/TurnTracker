@@ -1,0 +1,10 @@
+@import '~@angular/material/theming';
+
+@mixin timer-component-theme($theme) {
+
+  $warn: map-get($theme, warn);
+
+  .overdue {
+    color: mat-color($warn);
+  }
+}

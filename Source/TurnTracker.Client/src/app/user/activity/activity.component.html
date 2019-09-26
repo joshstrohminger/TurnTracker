@@ -8,6 +8,7 @@
       </mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
+      <app-timer *ngIf="activity.dueDate" [due]="activity.dueDate"></app-timer>
       <table mat-table [dataSource]="activity.participants" class="padded">
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef>Person</th>

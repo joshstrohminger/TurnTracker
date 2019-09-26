@@ -1,5 +1,6 @@
 @import '~@angular/material/theming';
 @import 'app/app.component.shared-spacing.scss';
+@import 'app/user/timer/timer.component.theme.scss';
 
 @include mat-core();
 /*
@@ -39,6 +40,7 @@ $dark-warn:    mat-palette(
 $dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
 
 @include angular-material-theme($dark-theme);
+@include timer-component-theme($dark-theme);
 
 html, body {
   margin: 0;
