@@ -44,9 +44,7 @@ namespace TurnTracker.Domain.Services
                         Salt = salt,
                         Hash = HashPassword(salt, "password"),
                         MobileNumber = "+1 (888) 123-4567",
-                        MobileNumberVerified = true,
-                        ModifiedDate = now,
-                        CreatedDate = now
+                        MobileNumberVerified = true
                     });
                     salt = GetRandomBytes();
                     _db.Users.Add(new User
@@ -56,9 +54,7 @@ namespace TurnTracker.Domain.Services
                         Email = "kelly@mail.com",
                         Role = Role.User,
                         Salt = salt,
-                        Hash = HashPassword(salt, "password"),
-                        ModifiedDate = now,
-                        CreatedDate = now
+                        Hash = HashPassword(salt, "password")
                     });
                     _db.SaveChanges();
                 }

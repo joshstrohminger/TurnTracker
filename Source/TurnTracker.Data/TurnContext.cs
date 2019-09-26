@@ -16,6 +16,24 @@ namespace TurnTracker.Data
         public DbSet<Participant> Participants { get; set; }
         public DbSet<Turn> Turns { get; set; }
         public DbSet<Setting> Settings { get; set; }
+        public DbSet<NotificationSetting> NotificationSettings { get; set; }
+
+        public override int SaveChanges()
+        {
+            var now = DateTimeOffset.Now;
+            foreach (var entry in ChangeTracker.Entries()
+                .Where(entry => entry.Entity is Entity && (entry.State == EntityState.Added || entry.State == EntityState.Modified)))
+            {
+                var entity = (Entity) entry.Entity;
+                entity.ModifiedDate = now;
+                if (entry.State == EntityState.Added)
+                {
+                    entity.CreatedDate = now;
+                }
+            }
+
+            return base.SaveChanges();
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +41,11 @@ namespace TurnTracker.Data
                 .HasOne(participant => participant.User)
                 .WithMany(user => user.Participants)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Participant>()
+                .HasMany(participant => participant.NotificationSettings)
+                .WithOne(notificationSetting => notificationSetting.Participant)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Turn>()
                 .HasOne(turn => turn.User)

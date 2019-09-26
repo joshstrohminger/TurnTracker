@@ -1,3 +1,5 @@
+import { NotificationSetting } from './NotificationSetting';
+
 export class Participant {
     public id: number;
     public userId: number;
@@ -5,4 +7,5 @@ export class Participant {
     public turnsNeeded: number;
     public hasDisabledTurns: boolean;
     public turnOrder: number;
+    public notificationSettings: NotificationSetting[];
 }

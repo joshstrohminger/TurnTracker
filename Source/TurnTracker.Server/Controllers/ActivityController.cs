@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Linq;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Domain.Interfaces;
 
@@ -19,7 +21,8 @@ namespace TurnTracker.Server.Controllers
         public IActionResult GetActivityDetails(int id)
         {
             //todo verify that the user has access to this
-            var details = _turnService.GetActivityDetailsShallow(id);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var details = _turnService.GetActivityDetailsShallow(id, userId);
             if (details is null) return BadRequest();
 
             return Json(details);
@@ -30,7 +33,8 @@ namespace TurnTracker.Server.Controllers
         public IActionResult GetActivityDetailsWithAllTurns(int id)
         {
             //todo verify that the user has access to this
-            var details = _turnService.GetActivityDetails(id);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var details = _turnService.GetActivityDetails(id, userId);
             if (details is null) return BadRequest();
 
             return Json(details);

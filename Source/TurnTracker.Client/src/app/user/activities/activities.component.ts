@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import { AuthService } from 'src/app/auth/auth.service';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { ErrorService } from 'src/app/services/error.service';
+import { MessageService } from 'src/app/services/message.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -24,7 +24,7 @@ export class ActivitiesComponent implements OnInit {
   constructor(
     private _http: HttpClient,
     private _authService: AuthService,
-    private _errorService: ErrorService,
+    private _messageService: MessageService,
     private _router: Router) { }
 
   viewDetails(activity: ActivitySummary) {
@@ -49,7 +49,7 @@ export class ActivitiesComponent implements OnInit {
         }
         this.activities = new MatTableDataSource(activities);
         this.activities.sort = this.sort;
-      }, error => this._errorService.show('Failed to get activities', error));
+      }, error => this._messageService.error('Failed to get activities', error));
   }
 
 }

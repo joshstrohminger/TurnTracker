@@ -7,12 +7,13 @@ import { Unit } from '../models/Unit';
 import { DateTime } from 'luxon';
 import { AuthService } from 'src/app/auth/auth.service';
 import { NewTurn } from '../models/NewTurn';
-import { MatSnackBar, MatDialog } from '@angular/material';
-import { ErrorService } from 'src/app/services/error.service';
+import { MatDialog } from '@angular/material';
+import { MessageService } from 'src/app/services/message.service';
 import { TakeTurnDialog } from '../take-turn/take-turn.dialog';
 import { TakeTurnDialogConfig } from '../take-turn/TakeTurnDialogConfig';
 import { NotificationSetting } from '../models/NotificationSetting';
 import { NotificationType } from '../models/NotificationType';
+import { NotificationPipe } from '../notification.pipe';
 
 @Component({
   selector: 'app-activity',
@@ -22,10 +23,10 @@ import { NotificationType } from '../models/NotificationType';
 export class ActivityComponent implements OnInit {
 
   private _activityId: string;
-  private _openedTurns = false;
+  private _notificationPipe = new NotificationPipe();
+  private _includeTurns = false;
 
   activity: ActivityDetails;
-  includeTurns = false;
   busy = false;
   names = new Map<number, string>();
   myUserId: number;
@@ -41,7 +42,7 @@ export class ActivityComponent implements OnInit {
     private _route: ActivatedRoute,
     private _http: HttpClient,
     private _authService: AuthService,
-    private _errorService: ErrorService,
+    private _messageService: MessageService,
     private _dialog: MatDialog) { }
 
   ngOnInit() {
@@ -89,11 +90,11 @@ export class ActivityComponent implements OnInit {
     this._http.post<ActivityDetails>('turn', turn)
       .subscribe(updatedDetails => {
         this.busy = false;
-        this.includeTurns = true;
+        this._includeTurns = true;
         this.updateActivity(updatedDetails);
       }, error => {
         this.busy = false;
-        this._errorService.show('Failed to take turn', error);
+        this._messageService.error('Failed to take turn', error);
       });
   }
 
@@ -105,33 +106,60 @@ export class ActivityComponent implements OnInit {
   }
 
   loadTurns() {
-    if (this.busy || this._openedTurns) {
+    if (this.busy || this._includeTurns) {
       return;
     }
-    this._openedTurns = true;
-    this.includeTurns = true;
+    this._includeTurns = true;
     this.refreshActivityUnsafe();
   }
 
   private refreshActivityUnsafe() {
     this.busy = true;
-    this._http.get<ActivityDetails>(`activity/${this._activityId}${this.includeTurns ? '/allturns' : ''}`)
+    this._http.get<ActivityDetails>(`activity/${this._activityId}${this._includeTurns ? '/allturns' : ''}`)
       .subscribe(activity => {
         this.busy = false;
         this.updateActivity(activity);
       }, error => {
         this.busy = false;
-        this._errorService.show('Failed to get activity', error);
+        this._messageService.error('Failed to get activity', error);
       });
   }
 
   private updateActivity(activity: ActivityDetails) {
-    activity.participants.forEach(p => this.names.set(p.userId, p.name));
+    for (const participant of activity.participants) {
+      this.names.set(participant.userId, participant.name);
+
+      // replace the current notification settings with those included here
+      if (participant.userId === this.myUserId) {
+        for (const note of this.notifications) {
+          note.participantId = participant.id;
+        }
+
+        if (participant.notificationSettings) {
+          for (const note of participant.notificationSettings) {
+            const index = this.notifications.findIndex(n => n.type === note.type);
+            if (index >= 0) {
+              this.notifications[index] = note;
+            }
+          }
+        }
+      }
+    }
+
     const dueDate = DateTime.fromISO(activity.due);
     if (dueDate.isValid) {
       activity.dueDate = dueDate;
       activity.overdue = dueDate <= DateTime.local();
     }
+
     this.activity = activity;
+  }
+
+  saveNotificationSetting(note: NotificationSetting) {
+    console.log('note changed', note);
+    const name = this._notificationPipe.transform(note.type);
+    this._http.post('notification', note)
+      .subscribe(() => this._messageService.success(`Saved '${name}'`),
+        error => this._messageService.error(`Error saving '${name}'`, error));
   }
 }

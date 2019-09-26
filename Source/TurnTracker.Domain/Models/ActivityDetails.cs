@@ -20,17 +20,17 @@ namespace TurnTracker.Domain.Models
         public List<ParticipantInfo> Participants { get; }
         public List<TurnInfo> Turns { get; }
 
-        public static ActivityDetails Calculate(Activity activity)
+        public static ActivityDetails Calculate(Activity activity, int userId)
         {
-            return new ActivityDetails(activity, true);
+            return new ActivityDetails(activity, true, userId);
         }
 
-        public static ActivityDetails Populate(Activity activity)
+        public static ActivityDetails Populate(Activity activity, int userId)
         {
-            return new ActivityDetails(activity, false);
+            return new ActivityDetails(activity, false, userId);
         }
 
-        private ActivityDetails(Activity activity, bool calculate)
+        private ActivityDetails(Activity activity, bool calculate, int userId)
         {
             Id = activity.Id;
             Name = activity.Name;
@@ -70,7 +70,7 @@ namespace TurnTracker.Domain.Models
                     .OrderBy(x => x.Count)
                     .ThenBy(x => x.FirstTurn)
                     .ThenBy(x => x.Participant.Id)
-                    .Select((x,i) => new ParticipantInfo(x, mostTurnsTaken, i))
+                    .Select((x,i) => new ParticipantInfo(x, mostTurnsTaken, i, x.Participant.UserId == userId))
                     .ToList();
 
                 HasDisabledTurns = Participants.Any(x => x.HasDisabledTurns);
@@ -95,7 +95,7 @@ namespace TurnTracker.Domain.Models
                 Due = activity.Due;
                 Participants = activity.Participants
                     .OrderBy(x => x.TurnOrder)
-                    .Select(x => new ParticipantInfo(x))
+                    .Select(x => new ParticipantInfo(x, x.UserId == userId))
                     .ToList();
             }
         }

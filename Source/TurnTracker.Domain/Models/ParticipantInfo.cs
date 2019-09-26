@@ -1,4 +1,6 @@
-﻿using TurnTracker.Data.Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
+using TurnTracker.Data.Entities;
 
 namespace TurnTracker.Domain.Models
 {
@@ -10,8 +12,9 @@ namespace TurnTracker.Domain.Models
         public int TurnsNeeded { get; }
         public bool HasDisabledTurns { get; }
         public int TurnOrder { get; }
+        public List<NotificationInfo> NotificationSettings { get; }
 
-        internal ParticipantInfo(TurnCount turnCount, int mostTurnsTaken, int turnOrder) : this(turnCount.Participant)
+        internal ParticipantInfo(TurnCount turnCount, int mostTurnsTaken, int turnOrder, bool includeNotificationSettings) : this(turnCount.Participant, includeNotificationSettings)
         {
             TurnsNeeded = mostTurnsTaken - turnCount.Count;
             HasDisabledTurns = turnCount.HasDisabledTurns;
@@ -24,7 +27,7 @@ namespace TurnTracker.Domain.Models
             p.TurnOrder = TurnOrder;
         }
 
-        internal ParticipantInfo(Participant p)
+        internal ParticipantInfo(Participant p, bool includeNotificationSettings)
         {
             Id = p.Id;
             UserId = p.UserId;
@@ -32,6 +35,10 @@ namespace TurnTracker.Domain.Models
             TurnsNeeded = p.TurnsNeeded;
             HasDisabledTurns = p.HasDisabledTurns;
             TurnOrder = p.TurnOrder;
+            if (includeNotificationSettings)
+            {
+                NotificationSettings = p.NotificationSettings.Select(x => new NotificationInfo(x)).ToList();
+            }
         }
     }
 }

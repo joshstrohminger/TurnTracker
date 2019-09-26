@@ -1,6 +1,7 @@
 import { NotificationType } from './NotificationType';
 
 export class NotificationSetting {
+  public participantId: number;
   public type: NotificationType;
   public sms: boolean;
   public email: boolean;

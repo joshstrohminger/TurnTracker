@@ -131,16 +131,6 @@ namespace TurnTracker.Domain.Services
                 .OrderByDescending(x => x.Due);
         }
 
-        public Activity GetActivity(int activityId)
-        {
-            return GetActivity(activityId, true, true);
-        }
-
-        public Activity GetActivityShallow(int activityId)
-        {
-            return GetActivity(activityId, true, false);
-        }
-
         private Activity GetActivity(int activityId, bool readOnly, bool includeTurns)
         {
             IQueryable<Activity> query = _db.Activities;
@@ -157,26 +147,25 @@ namespace TurnTracker.Domain.Services
 
             return query
                 .Include(x => x.Owner)
-                .Include(x => x.Participants)
-                .ThenInclude(x => x.User)
+                .Include(x => x.Participants).ThenInclude(x => x.User)
+                .Include(x => x.Participants).ThenInclude(x => x.NotificationSettings)
                 .SingleOrDefault(x => x.Id == activityId);
         }
 
-        public ActivityDetails GetActivityDetailsShallow(int activityId)
+        public ActivityDetails GetActivityDetailsShallow(int activityId, int userId)
         {
             var activity = GetActivity(activityId, true, false);
-            return activity is null ? null : ActivityDetails.Populate(activity);
+            return activity is null ? null : ActivityDetails.Populate(activity, userId);
         }
 
-        public ActivityDetails GetActivityDetails(int activityId)
+        public ActivityDetails GetActivityDetails(int activityId, int userId)
         {
             var activity = GetActivity(activityId, true, true);
-            return activity is null ? null : ActivityDetails.Calculate(activity);
+            return activity is null ? null : ActivityDetails.Calculate(activity, userId);
         }
 
         public Result<ActivityDetails> TakeTurn(int activityId, int byUserId, int forUserId, DateTimeOffset when)
         {
-            var now = DateTimeOffset.Now;
             try
             {
                 _db.Turns.Add(new Turn
@@ -184,9 +173,7 @@ namespace TurnTracker.Domain.Services
                     ActivityId = activityId,
                     CreatorId = byUserId,
                     UserId = forUserId,
-                    Occurred = when,
-                    CreatedDate = now,
-                    ModifiedDate = now
+                    Occurred = when
                 });
 
                 var activity = GetActivity(activityId, false, true);
@@ -195,7 +182,7 @@ namespace TurnTracker.Domain.Services
                     return Result.Fail<ActivityDetails>("no such activity");
                 }
 
-                var details = ActivityDetails.Calculate(activity);
+                var details = ActivityDetails.Calculate(activity, byUserId);
 
                 _db.SaveChanges();
 
@@ -216,12 +203,11 @@ namespace TurnTracker.Domain.Services
                 if (!turn.IsDisabled)
                 {
                     turn.IsDisabled = true;
-                    turn.ModifiedDate = DateTimeOffset.Now;
                     _db.Update(turn);
                     _db.SaveChanges();
                 }
 
-                return Result.Ok(GetActivityDetails(turn.ActivityId));
+                return Result.Ok(GetActivityDetails(turn.ActivityId, byUserId));
             }
 
             return Result.Fail<ActivityDetails>("Invalid turn id");
@@ -268,7 +254,6 @@ namespace TurnTracker.Domain.Services
                     }
                 }
 
-                var now = DateTimeOffset.Now;
                 var activity = new Activity
                 {
                     OwnerId = ownerId,
@@ -276,9 +261,7 @@ namespace TurnTracker.Domain.Services
                     PeriodCount = periodCount,
                     PeriodUnit = periodUnit,
                     Period = period,
-                    TakeTurns = takeTurns,
-                    CreatedDate = now,
-                    ModifiedDate = now
+                    TakeTurns = takeTurns
                 };
                 _db.Activities.Add(activity);
                 _db.SaveChanges();
@@ -298,7 +281,6 @@ namespace TurnTracker.Domain.Services
                 return Result.Fail("missing user ids");
             }
 
-            var now = DateTimeOffset.Now;
             try
             {
                 foreach (var userId in userIds)
@@ -306,9 +288,7 @@ namespace TurnTracker.Domain.Services
                     _db.Participants.Add(new Participant
                     {
                         ActivityId = activityId,
-                        UserId = userId,
-                        CreatedDate = now,
-                        ModifiedDate = now
+                        UserId = userId
                     });
                 }
 

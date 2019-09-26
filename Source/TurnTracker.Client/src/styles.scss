@@ -73,3 +73,15 @@ label {
 .main-filler {
   min-height: $paddedViewHeight;
 }
+
+snack-bar-container {
+  &.info {
+    color: $accent;
+  }
+  &.success {
+    color: $primary;
+  }
+  &.error {
+    color: $warn;
+  }
+}
