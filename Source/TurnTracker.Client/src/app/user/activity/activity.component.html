@@ -58,23 +58,26 @@
     <mat-expansion-panel-header>
       <mat-panel-title>Turns</mat-panel-title>
     </mat-expansion-panel-header>
-    <div *ngIf="activity.turns; else loadingTurns">
-      <table mat-table [dataSource]="activity.turns" class="padded">
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef>Person</th>
-          <td mat-cell *matCellDef="let turn">{{names.get(turn.userId)}}</td>
-        </ng-container>
-        <ng-container matColumnDef="occurred">
-          <th mat-header-cell *matHeaderCellDef>Occurred</th>
-          <td mat-cell *matCellDef="let turn">{{turn.occurred | date: 'short'}}</td>
-        </ng-container>
-        <ng-container matColumnDef="gift">
-            <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let turn"><mat-icon *ngIf="turn.userId !== turn.creatorId">cake</mat-icon></td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="['name','occurred','gift']"></tr>
-        <tr mat-row *matRowDef="let turn; columns: ['name','occurred','gift']" [ngClass]="{'accent': turn.userId === myUserId}"></tr>
-      </table>
+    <div *ngIf="turns.data; else loadingTurns">
+      <div class="positioning-wrapper">
+        <mat-slide-toggle (change)="filterTurns($event.checked)" [disabled]="busy" id="disabled-toggle">Show Disabled</mat-slide-toggle>
+        <table mat-table [dataSource]="turns" class="padded">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Person</th>
+            <td mat-cell *matCellDef="let turn">{{names.get(turn.userId)}}</td>
+          </ng-container>
+          <ng-container matColumnDef="occurred">
+            <th mat-header-cell *matHeaderCellDef>Occurred</th>
+            <td mat-cell *matCellDef="let turn">{{turn.occurred | date: 'short'}}</td>
+          </ng-container>
+          <ng-container matColumnDef="gift">
+              <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let turn"><mat-icon *ngIf="turn.userId !== turn.creatorId">cake</mat-icon></td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['name','occurred','gift']"></tr>
+          <tr mat-row *matRowDef="let turn; columns: ['name','occurred','gift']" [ngClass]="{'accent': turn.userId === myUserId}"></tr>
+        </table>
+      </div>
     </div>
     <ng-template #loadingTurns>
       <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>

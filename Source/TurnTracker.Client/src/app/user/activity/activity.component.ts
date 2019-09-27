@@ -7,13 +7,14 @@ import { Unit } from '../models/Unit';
 import { DateTime } from 'luxon';
 import { AuthService } from 'src/app/auth/auth.service';
 import { NewTurn } from '../models/NewTurn';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatTableDataSource } from '@angular/material';
 import { MessageService } from 'src/app/services/message.service';
 import { TakeTurnDialog } from '../take-turn/take-turn.dialog';
 import { TakeTurnDialogConfig } from '../take-turn/TakeTurnDialogConfig';
 import { NotificationSetting } from '../models/NotificationSetting';
 import { NotificationType } from '../models/NotificationType';
 import { NotificationPipe } from '../notification.pipe';
+import { Turn } from '../models/Turn';
 
 @Component({
   selector: 'app-activity',
@@ -30,6 +31,7 @@ export class ActivityComponent implements OnInit {
   busy = false;
   names = new Map<number, string>();
   myUserId: number;
+  turns = new MatTableDataSource<Turn>();
   notifications: NotificationSetting[] = Object.keys(NotificationType)
     .filter(key => !isNaN(Number(NotificationType[key])))
     .map(key => new NotificationSetting(NotificationType[key]));
@@ -55,6 +57,14 @@ export class ActivityComponent implements OnInit {
       this._activityId = id;
       this.refreshActivity();
     });
+  }
+
+  filterTurns(includeDisabledTurns: boolean) {
+    if (includeDisabledTurns) {
+      this.turns.filterPredicate = null;
+    } else {
+      this.turns.filterPredicate = (turn: Turn) => !turn.isDisabled;
+    }
   }
 
   takeTurnWithOptions() {
@@ -152,7 +162,10 @@ export class ActivityComponent implements OnInit {
       activity.overdue = dueDate <= DateTime.local();
     }
 
+    const turns = activity.turns;
+    activity.turns = null;
     this.activity = activity;
+    this.turns.data = turns;
   }
 
   saveNotificationSetting(note: NotificationSetting) {

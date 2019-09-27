@@ -36,3 +36,13 @@ th.center {
 mat-progress-spinner {
   margin: 1em auto;
 }
+
+.positioning-wrapper {
+  position: relative;
+}
+
+#disabled-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
