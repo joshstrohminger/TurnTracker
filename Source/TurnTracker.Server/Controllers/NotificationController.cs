@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Interfaces;
+using TurnTracker.Server.Utilities;
 
 namespace TurnTracker.Server.Controllers
 {
@@ -12,14 +14,16 @@ namespace TurnTracker.Server.Controllers
         #region Fields
 
         private readonly INotificationService _notificationService;
+        private readonly IResourceAuthorizationService _resourceAuthorizationService;
 
         #endregion
 
         #region ctor
 
-        public NotificationController(INotificationService notificationService)
+        public NotificationController(INotificationService notificationService, IResourceAuthorizationService resourceAuthorizationService)
         {
             _notificationService = notificationService;
+            _resourceAuthorizationService = resourceAuthorizationService;
         }
 
         #endregion
@@ -29,14 +33,15 @@ namespace TurnTracker.Server.Controllers
         [HttpPost]
         public IActionResult Save([FromBody] NotificationSetting setting)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            if (!_resourceAuthorizationService.CanModifyParticipant(setting.ParticipantId, User.GetId())) return Forbid();
+
             var result = _notificationService.UpdateNotificationSetting(setting.ParticipantId, setting.Type,
                 setting.Sms, setting.Email, setting.Push);
-            if (result.IsSuccess)
-            {
-                return Ok();
-            }
+            if (result.IsSuccess) return Ok();
 
-            return BadRequest();
+            return StatusCode(500);
         }
 
         #endregion

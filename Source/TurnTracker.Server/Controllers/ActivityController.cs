@@ -1,8 +1,7 @@
-﻿using System.Linq;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Domain.Interfaces;
+using TurnTracker.Server.Utilities;
 
 namespace TurnTracker.Server.Controllers
 {
@@ -11,19 +10,24 @@ namespace TurnTracker.Server.Controllers
     public class ActivityController : Controller
     {
         private readonly ITurnService _turnService;
+        private readonly IResourceAuthorizationService _resourceAuthorizationService;
 
-        public ActivityController(ITurnService turnService)
+        public ActivityController(ITurnService turnService, IResourceAuthorizationService resourceAuthorizationService)
         {
             _turnService = turnService;
+            _resourceAuthorizationService = resourceAuthorizationService;
         }
 
         [HttpGet("{id}")]
         public IActionResult GetActivityDetails(int id)
         {
-            //todo verify that the user has access to this
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var details = _turnService.GetActivityDetailsShallow(id, userId);
-            if (details is null) return BadRequest();
+            if (id <= 0) return BadRequest("ID must be greater than zero");
+
+            var myId = User.GetId();
+            if (!_resourceAuthorizationService.IsParticipantOf(id, myId)) return Forbid();
+
+            var details = _turnService.GetActivityDetailsShallow(id, myId);
+            if (details is null) return StatusCode(500);
 
             return Json(details);
         }
@@ -32,9 +36,12 @@ namespace TurnTracker.Server.Controllers
         [HttpGet("{id}/allturns")]
         public IActionResult GetActivityDetailsWithAllTurns(int id)
         {
-            //todo verify that the user has access to this
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var details = _turnService.GetActivityDetails(id, userId);
+            if (id <= 0) return BadRequest("ID must be greater than zero");
+
+            var myId = User.GetId();
+            if (!_resourceAuthorizationService.IsParticipantOf(id, myId)) return Forbid();
+
+            var details = _turnService.GetActivityDetails(id, myId);
             if (details is null) return BadRequest();
 
             return Json(details);

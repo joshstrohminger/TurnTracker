@@ -1,9 +1,9 @@
 ﻿using System.Linq;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Server.Models;
+using TurnTracker.Server.Utilities;
 
 namespace TurnTracker.Server.Controllers
 {
@@ -22,7 +22,7 @@ namespace TurnTracker.Server.Controllers
         public IActionResult GetMyActivities()
         {
             return Json(_turnService
-                .GetActivitiesByParticipant(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)))
+                .GetActivitiesByParticipant(User.GetId())
                 .Select(a => new ActivitySummary
                 {
                     Id = a.Id,

@@ -3,11 +3,11 @@ using System.Security.Claims;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using TurnTracker.Data;
 using TurnTracker.Domain.Authorization;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Server.Models;
+using TurnTracker.Server.Utilities;
 
 namespace TurnTracker.Server.Controllers
 {
@@ -26,6 +26,8 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public IActionResult Login([FromBody] Credentials credentials)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var (_, isFailure, (user, accessToken, refreshToken)) = _userService.AuthenticateUser(credentials.Username, credentials.Password);
             if (isFailure) return Unauthorized();
             return Ok(new AuthenticatedUser(user, accessToken, refreshToken));
@@ -34,7 +36,7 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public IActionResult Logout()
         {
-            if (_userService.LogoutUser(User.Identity.Name).IsSuccess)
+            if (_userService.LogoutUser(User.GetId()).IsSuccess)
             {
                 Console.WriteLine("Failed to logout");
             }
@@ -46,7 +48,7 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public IActionResult Refresh()
         {
-            var (isSuccess, _, accessToken) = _userService.RefreshUser(User.Identity.Name, User.FindFirstValue(nameof(ClaimType.RefreshKey)));
+            var (isSuccess, _, accessToken) = _userService.RefreshUser(User.GetId(), User.FindFirstValue(nameof(ClaimType.RefreshKey)));
             if (isSuccess)
             {
                 return Ok(accessToken);
@@ -58,7 +60,7 @@ namespace TurnTracker.Server.Controllers
         [HttpGet("[action]")]
         public IActionResult Profile()
         {
-            var (isSuccess, _, user) = _userService.GetUser(User.Identity.Name);
+            var (isSuccess, _, user) = _userService.GetUser(User.GetId());
             if (isSuccess)
             {
                 var profile = new UserProfile(user);
@@ -72,27 +74,27 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public IActionResult AcceptInvite(string token)
         {
-            return null;
+            throw new NotImplementedException();
         }
 
         [AllowAnonymous]
         [HttpGet("[action]")]
         public string AnonymousData()
         {
-            return "some data for anybody";
+            throw new NotImplementedException();
         }
 
         [HttpGet("[action]")]
         public string UserData()
         {
-            return $"some data only for users, current user {User.Identity.Name}";
+            throw new NotImplementedException();
         }
         
         [Authorize(Roles = nameof(Role.Admin))]
         [HttpGet("[action]")]
         public string AdminData()
         {
-            return $"some data only for admins, current user {User.Identity.Name}";
+            throw new NotImplementedException();
         }
     }
 }

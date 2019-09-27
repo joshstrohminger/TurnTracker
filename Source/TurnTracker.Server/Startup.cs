@@ -69,6 +69,7 @@ namespace TurnTracker.Server
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITurnService, TurnService>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IResourceAuthorizationService, ResourceAuthorizationService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

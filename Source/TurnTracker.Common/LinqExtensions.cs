@@ -28,5 +28,20 @@ namespace TurnTracker.Common
                 yield return item;
             }
         }
+
+        public static bool IsSubsetOf<TSource>(this IEnumerable<TSource> subset, IEnumerable<TSource> superset)
+        {
+            return !subset.Except(superset).Any();
+        }
+
+        public static bool ContainsSubset<TSource>(this IEnumerable<TSource> superset, IEnumerable<TSource> subset)
+        {
+            return !subset.Except(superset).Any();
+        }
+
+        public static IEnumerable<TSource> Yield<TSource>(this TSource source)
+        {
+            yield return source;
+        }
     }
 }

@@ -68,9 +68,9 @@ namespace TurnTracker.Domain.Services
             return Result.Ok();
         }
 
-        public Result LogoutUser(string username)
+        public Result LogoutUser(int userId)
         {
-            var user = _db.Users.SingleOrDefault(x => x.Name == username);
+            var user = _db.Users.SingleOrDefault(x => x.Id == userId);
             if (user is null) return Result.Fail("Invalid user");
             user.RefreshKey = null;
             _db.SaveChanges();
@@ -97,9 +97,9 @@ namespace TurnTracker.Domain.Services
             return Result.Ok((user, accessToken, refreshToken));
         }
 
-        public Result<string> RefreshUser(string username, string refreshKey)
+        public Result<string> RefreshUser(int userId, string refreshKey)
         {
-            var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Name == username);
+            var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Id == userId);
 
             if (user?.RefreshKey != refreshKey)
                 return Result.Fail<string>("Invalid refresh key or user");
@@ -108,9 +108,9 @@ namespace TurnTracker.Domain.Services
             return Result.Ok(accessKey);
         }
 
-        public Result<User> GetUser(string username)
+        public Result<User> GetUser(int userId)
         {
-            var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Name == username);
+            var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Id == userId);
             if (user is null)
             {
                 return Result.Fail<User>("invalid user");

@@ -1,8 +1,8 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Server.Models;
+using TurnTracker.Server.Utilities;
 
 namespace TurnTracker.Server.Controllers
 {
@@ -11,37 +11,40 @@ namespace TurnTracker.Server.Controllers
     public class TurnController : Controller
     {
         private readonly ITurnService _turnService;
+        private readonly IResourceAuthorizationService _resourceAuthorizationService;
 
-        public TurnController(ITurnService turnService)
+        public TurnController(ITurnService turnService, IResourceAuthorizationService resourceAuthorizationService)
         {
             _turnService = turnService;
-        }
-
-        [HttpGet("{id}")]
-        public IActionResult GetTurn(int id)
-        {
-            var turn = _turnService.GetTurn(id);
-            if (turn is null) return NotFound();
-            return Json(turn);
+            _resourceAuthorizationService = resourceAuthorizationService;
         }
 
         [HttpPost]
         public IActionResult TakeTurn([FromBody] NewTurn turn)
         {
-            var myId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var myId = User.GetId();
+            if(!_resourceAuthorizationService.AreParticipantsOf(turn.ActivityId, myId, turn.ForUserId)) return Forbid();
+
             var result = _turnService.TakeTurn(turn.ActivityId, myId, turn.ForUserId, turn.When);
             if (result.IsSuccess) return Json(result.Value);
 
-            return BadRequest();
+            return StatusCode(500);
         }
 
         [HttpDelete("{id}")]
         public IActionResult DisableTurn(int id)
         {
-            var result = _turnService.DisableTurn(id, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            if (id <= 0) return BadRequest("ID must be greater than zero");
+
+            var myId = User.GetId();
+            if (!_resourceAuthorizationService.CanModifyTurn(id, myId)) return Forbid();
+
+            var result = _turnService.DisableTurn(id, User.GetId());
             if (result.IsSuccess) return Json(result.Value);
 
-            return BadRequest();
+            return StatusCode(500);
         }
     }
 }
