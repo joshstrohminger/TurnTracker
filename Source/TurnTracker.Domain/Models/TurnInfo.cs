@@ -10,6 +10,8 @@ namespace TurnTracker.Domain.Models
         public DateTimeOffset Occurred { get; }
         public int CreatorId { get; }
         public bool IsDisabled { get; }
+        public string Modifier { get; }
+        public DateTimeOffset Modified { get; }
 
         public TurnInfo(Turn turn)
         {
@@ -18,6 +20,8 @@ namespace TurnTracker.Domain.Models
             Occurred = turn.Occurred;
             CreatorId = turn.CreatorId;
             IsDisabled = turn.IsDisabled;
+            Modifier = turn.Modifier?.DisplayName;
+            Modified = turn.ModifiedDate;
         }
     }
 }

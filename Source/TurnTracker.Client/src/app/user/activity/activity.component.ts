@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { ActivityDetails } from '../models/ActivityDetails';
 import { switchMap } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpRequest } from '@angular/common/http';
 import { Unit } from '../models/Unit';
 import { DateTime } from 'luxon';
 import { AuthService } from 'src/app/auth/auth.service';
@@ -26,6 +26,10 @@ export class ActivityComponent implements OnInit {
   private _activityId: string;
   private _notificationPipe = new NotificationPipe();
   private _includeTurns = false;
+  private _hasTurns = false;
+  public get hasTurns() {
+    return this._hasTurns;
+  }
 
   activity: ActivityDetails;
   busy = false;
@@ -45,7 +49,12 @@ export class ActivityComponent implements OnInit {
     private _http: HttpClient,
     private _authService: AuthService,
     private _messageService: MessageService,
-    private _dialog: MatDialog) { }
+    private _dialog: MatDialog) {
+      this.turns.filterPredicate = (turn: Turn, filter: string) => {
+        return turn && (!filter || !turn.isDisabled);
+      };
+      this.filterTurns(false);
+    }
 
   ngOnInit() {
     if (this._authService.isLoggedIn) {
@@ -60,11 +69,7 @@ export class ActivityComponent implements OnInit {
   }
 
   filterTurns(includeDisabledTurns: boolean) {
-    if (includeDisabledTurns) {
-      this.turns.filterPredicate = null;
-    } else {
-      this.turns.filterPredicate = (turn: Turn) => !turn.isDisabled;
-    }
+    this.turns.filter = includeDisabledTurns ? '' : 'asdf';
   }
 
   takeTurnWithOptions() {
@@ -106,6 +111,23 @@ export class ActivityComponent implements OnInit {
         this.busy = false;
         this._messageService.error('Failed to take turn', error);
       });
+  }
+
+  toggleTurnDisabled(turn: Turn) {
+    if (this.busy) {
+      return;
+    }
+    this.busy = true;
+    const url = `turn/${turn.id}`;
+    const request = turn.isDisabled ? this._http.put<ActivityDetails>(url, null) : this._http.delete<ActivityDetails>(url);
+    request.subscribe(updatedDetails => {
+      this.busy = false;
+      this._includeTurns = true;
+      this.updateActivity(updatedDetails);
+    }, error => {
+      this.busy = false;
+      this._messageService.error('Failed to modify turn', error);
+    });
   }
 
   refreshActivity() {
@@ -165,7 +187,8 @@ export class ActivityComponent implements OnInit {
     const turns = activity.turns;
     activity.turns = null;
     this.activity = activity;
-    this.turns.data = turns;
+    this.turns.data = turns || [];
+    this._hasTurns = !!turns;
   }
 
   saveNotificationSetting(note: NotificationSetting) {

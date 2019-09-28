@@ -29,6 +29,10 @@ table.padded td:not(:last-child) {
   margin-right: 1em;
 }
 
+tr.disabled {
+  opacity: 0.4;
+}
+
 th.center {
   text-align: center;
 }

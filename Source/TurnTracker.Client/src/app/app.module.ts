@@ -25,7 +25,8 @@ import {
   MatSelectModule,
   MatTableModule,
   MatSortModule,
-  MatExpansionModule} from '@angular/material';
+  MatExpansionModule,
+  MatMenuModule} from '@angular/material';
   import { BrowserModule } from '@angular/platform-browser';
   import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Routes, RouterModule } from '@angular/router';
@@ -91,6 +92,7 @@ const routes: Routes = [
     MatIconModule,
     MatInputModule,
     MatListModule,
+    MatMenuModule,
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSidenavModule,

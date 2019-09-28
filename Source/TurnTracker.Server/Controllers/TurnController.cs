@@ -36,12 +36,23 @@ namespace TurnTracker.Server.Controllers
         [HttpDelete("{id}")]
         public IActionResult DisableTurn(int id)
         {
+            return SetTurnDisabled(id, true);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult EnableTurn(int id)
+        {
+            return SetTurnDisabled(id, false);
+        }
+
+        private IActionResult SetTurnDisabled(int id, bool disabled)
+        {
             if (id <= 0) return BadRequest("ID must be greater than zero");
 
             var myId = User.GetId();
             if (!_resourceAuthorizationService.CanModifyTurn(id, myId)) return Forbid();
 
-            var result = _turnService.DisableTurn(id, User.GetId());
+            var result = _turnService.SetTurnDisabled(id, User.GetId(), disabled);
             if (result.IsSuccess) return Json(result.Value);
 
             return StatusCode(500);

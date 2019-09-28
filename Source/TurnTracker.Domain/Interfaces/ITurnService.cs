@@ -16,7 +16,7 @@ namespace TurnTracker.Domain.Interfaces
         ActivityDetails GetActivityDetails(int activityId, int userId);
         ActivityDetails GetActivityDetailsShallow(int activityId, int userId);
         Result<ActivityDetails> TakeTurn(int activityId, int byUserId, int forUserId, DateTimeOffset when);
-        Result<ActivityDetails> DisableTurn(int turnId, int byUserId);
+        Result<ActivityDetails> SetTurnDisabled(int turnId, int byUserId, bool disabled);
         Result<int> AddActivity(int ownerId, string name, bool takeTurns, uint? periodCount = null, Unit? periodUnit = null);
         Result AddParticipants(int activityId, params int[] userIds);
         Turn GetTurn(int id);

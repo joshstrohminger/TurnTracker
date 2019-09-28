@@ -116,7 +116,7 @@ namespace TurnTracker.Domain.Services
             return _db.Turns
                 .AsNoTracking()
                 .Include(x => x.Creator)
-                .Include(x => x.Disabler)
+                .Include(x => x.Modifier)
                 .Include(x => x.User)
                 .SingleOrDefault(x => x.Id == id);
         }
@@ -195,14 +195,14 @@ namespace TurnTracker.Domain.Services
             }
         }
 
-        public Result<ActivityDetails> DisableTurn(int turnId, int byUserId)
+        public Result<ActivityDetails> SetTurnDisabled(int turnId, int byUserId, bool disabled)
         {
             var turn = _db.Turns.Find(turnId);
             if (turn != null)
             {
-                if (!turn.IsDisabled)
+                if (turn.IsDisabled != disabled)
                 {
-                    turn.IsDisabled = true;
+                    turn.IsDisabled = disabled;
                     _db.Update(turn);
                     _db.SaveChanges();
                 }
