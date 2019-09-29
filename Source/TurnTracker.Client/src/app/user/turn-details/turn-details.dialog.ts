@@ -12,11 +12,12 @@ export class TurnDetailsDialog implements OnInit {
 
   turn: Turn;
   names: Map<number, string>;
+  canModifyTurn: boolean;
 
   constructor(@Inject(MAT_DIALOG_DATA) config: TurnDetailsDialogConfig) {
     this.names = config.names;
     this.turn = config.turn;
-    console.log('details', this.turn, this.names);
+    this.canModifyTurn = config.canModifyTurn;
   }
 
   ngOnInit() {

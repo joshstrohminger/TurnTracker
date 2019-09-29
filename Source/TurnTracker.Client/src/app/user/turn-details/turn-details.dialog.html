@@ -37,6 +37,6 @@
 </mat-dialog-content>
 <mat-dialog-actions>
   <button mat-button mat-dialog-close>Close</button>
-  <button mat-button color="warn"
+  <button mat-button color="warn" *ngIf="canModifyTurn"
     [mat-dialog-close]="true">{{turn.isDisabled ? 'Enable Turn' : 'Disable Turn'}}</button>
 </mat-dialog-actions>

@@ -94,12 +94,14 @@ export class ActivityComponent implements OnInit {
   }
 
   showTurnDetails(turn: Turn) {
+    const canModifyTurn = this.myUserId === turn.creatorId || this.myUserId === turn.userId;
     const dialogRef = this._dialog.open(TurnDetailsDialog, {data: <TurnDetailsDialogConfig>{
       turn: turn,
-      names: this.names
+      names: this.names,
+      canModifyTurn: canModifyTurn
     }});
     dialogRef.afterClosed().subscribe((toggleTurnDisabled: boolean) => {
-      if (toggleTurnDisabled) {
+      if (toggleTurnDisabled && canModifyTurn) {
         this.toggleTurnDisabled(turn);
       }
     });
