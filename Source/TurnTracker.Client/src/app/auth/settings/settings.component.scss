@@ -6,10 +6,6 @@ td {
   padding: 0.5em;
 }
 
-mat-chip {
-  margin-left: 1em;
-}
-
 td:first-child {
   font-weight: bold;
   text-align: right;
@@ -21,4 +17,8 @@ td:not(:last-child) {
 
 mat-card:not(:first-of-type) {
   margin-top: 1em;
+}
+
+button.verify {
+  margin-left: 1em;
 }

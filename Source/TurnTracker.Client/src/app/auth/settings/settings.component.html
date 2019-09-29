@@ -4,9 +4,6 @@
       <mat-card-title>Profile</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <!-- This empty mat-chip-list is here to allow us to use a mat-chip outside of the list and still get styled.
-      If there isn't a mat-chip-list somewhere in the view to bring in the styling, the mat-chips will be unstyled. -->
-      <mat-chip-list></mat-chip-list>
       <table id="properties">
         <tr>
           <td><label>UserName</label></td>
@@ -25,7 +22,7 @@
           <td>
             <div>
               <span>{{user.email}}</span>
-              <mat-chip color="warn" selected *ngIf="!user.emailVerified">unverified</mat-chip>
+              <button class="verify" *ngIf="!user.emailVerified" mat-stroked-button color="warn">Verify</button>
             </div>
           </td>
         </tr>
@@ -34,13 +31,17 @@
           <td>
             <div>
               <span>{{user.mobileNumber}}</span>
-              <mat-chip color="warn" selected *ngIf="!user.mobileNumberVerified">unverified</mat-chip>
+              <button class="verify" *ngIf="!user.mobileNumberVerified" mat-stroked-button color="warn">Verify</button>
             </div>
           </td>
         </tr>
         <tr>
           <td><label>Multi-Factor Authentication</label></td>
           <td><mat-checkbox [ngModel]="user.multiFactorEnabled" [disabled]="true"></mat-checkbox></td>
+        </tr>
+        <tr>
+          <td><label>Password</label></td>
+          <td><button mat-stroked-button color="primary">Change Password</button></td>
         </tr>
       </table>
     </mat-card-content>
