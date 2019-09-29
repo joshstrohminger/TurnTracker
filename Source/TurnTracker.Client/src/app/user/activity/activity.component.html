@@ -11,7 +11,7 @@
       <app-timer *ngIf="activity.dueDate" [due]="activity.dueDate"></app-timer>
       <table mat-table [dataSource]="activity.participants" class="padded">
         <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef>Person</th>
+          <th mat-header-cell *matHeaderCellDef>Turn</th>
           <td mat-cell *matCellDef="let participant" [ngClass]="{'accent': participant.userId === myUserId, 'primary': participant.userId === activity.currentTurnUserId, 'warn': participant.userId === activity.currentTurnUserId && activity.overdue}">{{participant.name}}</td>
         </ng-container>
         <ng-container matColumnDef="turnsNeeded">
@@ -63,7 +63,7 @@
         <mat-slide-toggle (change)="filterTurns($event.checked)" [disabled]="busy" id="disabled-toggle">Show Disabled</mat-slide-toggle>
         <table mat-table [dataSource]="turns" class="padded">
           <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef style="padding-left: 0.5em">Person</th>
+            <th mat-header-cell *matHeaderCellDef style="padding-left: 0.5em">Turn</th>
             <td mat-cell *matCellDef="let turn" style="padding-left: 0.5em" [ngClass]="{'accent': turn.userId === myUserId}">{{names.get(turn.userId)}}</td>
           </ng-container>
           <ng-container matColumnDef="occurred">
@@ -100,7 +100,7 @@
     </mat-menu>
   </mat-expansion-panel>
   <div id="bottom-fab-container">
-    <button mat-fab color="primary" (click)="takeTurn()" matTooltip="Take Turn" matTooltipPosition="before" [disabled]="busy"><mat-icon>add</mat-icon></button>
     <button mat-mini-fab color="accent" (click)="takeTurnWithOptions()" matTooltip="Take Turn With Options" matTooltipPosition="before" [disabled]="busy"><mat-icon>date_range</mat-icon></button>
+    <button mat-fab color="primary" (click)="takeTurn()" matTooltip="Take Turn" matTooltipPosition="before" [disabled]="busy"><mat-icon>add</mat-icon></button>
   </div>
 </div>

@@ -1,23 +1,22 @@
 #properties {
-  margin: 1em;
+  margin: 1em auto;
 }
 
-.row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  & > * {
-    flex-grow: 1;
-    flex-shrink: 1;
-    flex-basis: 100%;
-    margin: 0.5em 0.75em;
-  }
+td {
+  padding: 0.5em;
 }
 
-label {
+mat-chip {
+  margin-left: 1em;
+}
+
+td:first-child {
   font-weight: bold;
   text-align: right;
+}
+
+td:not(:last-child) {
+  padding-right: 1em;
 }
 
 mat-card:not(:first-of-type) {

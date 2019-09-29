@@ -129,7 +129,7 @@ export class ActivityComponent implements OnInit {
       });
   }
 
-  toggleTurnDisabled(turn: Turn) {
+  private toggleTurnDisabled(turn: Turn) {
     if (this.busy) {
       return;
     }
@@ -137,12 +137,13 @@ export class ActivityComponent implements OnInit {
     const url = `turn/${turn.id}`;
     const request = turn.isDisabled ? this._http.put<ActivityDetails>(url, null) : this._http.delete<ActivityDetails>(url);
     request.subscribe(updatedDetails => {
+      this._messageService.success(`${turn.isDisabled ? 'Enabled' : 'Disabled'} turn`);
       this.busy = false;
       this._includeTurns = true;
       this.updateActivity(updatedDetails);
     }, error => {
       this.busy = false;
-      this._messageService.error('Failed to modify turn', error);
+      this._messageService.error(`Failed to ${turn.isDisabled ? 'enable' : 'disable'} turn`, error);
     });
   }
 

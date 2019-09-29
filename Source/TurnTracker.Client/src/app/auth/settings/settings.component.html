@@ -4,47 +4,45 @@
       <mat-card-title>Profile</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <div id="properties">
-        <!-- This empty mat-chip-list is here to allow us to use a mat-chip outside of the list and still get styled.
-        If there isn't a mat-chip-list somewhere in the view to bring in the styling, the mat-chips will be unstyled. -->
-        <mat-chip-list></mat-chip-list>
-        <div class="row">
-          <label>UserName</label>
-          <span>{{user.username}}</span>
-        </div>
-
-        <div class="row">
-          <label>Display Name</label>
-          <span>{{user.displayName}}</span>
-        </div>
-
-        <div class="row">
-          <label>Role</label>
-          <span>{{roles[user.role]}}</span>
-        </div>
-
-        <div class="row">
-          <label>Email</label>
-          <span>
-            {{user.email}}
-            <mat-chip color="warn" selected *ngIf="!user.emailVerified">unverified</mat-chip>
-          </span>
-        </div>
-
-        <div class="row">
-          <label>Mobile Number</label>
-          <span>
-            {{user.mobileNumber}}
-            <mat-chip color="warn" selected *ngIf="!user.mobileNumberVerified">unverified</mat-chip></span>
-        </div>
-
-        <div class="row">
-          <label>Multi-Factor Authentication</label>
-          <span>
-            <mat-checkbox [ngModel]="user.multiFactorEnabled" [disabled]="true"></mat-checkbox>
-          </span>
-        </div>
-      </div>
+      <!-- This empty mat-chip-list is here to allow us to use a mat-chip outside of the list and still get styled.
+      If there isn't a mat-chip-list somewhere in the view to bring in the styling, the mat-chips will be unstyled. -->
+      <mat-chip-list></mat-chip-list>
+      <table id="properties">
+        <tr>
+          <td><label>UserName</label></td>
+          <td><span>{{user.username}}</span></td>
+        </tr>
+        <tr>
+          <td><label>Display Name</label></td>
+          <td><span>{{user.displayName}}</span></td>
+        </tr>
+        <tr>
+          <td><label>Role</label></td>
+          <td><span>{{roles[user.role]}}</span></td>
+        </tr>
+        <tr>
+          <td><label>Email</label></td>
+          <td>
+            <div>
+              <span>{{user.email}}</span>
+              <mat-chip color="warn" selected *ngIf="!user.emailVerified">unverified</mat-chip>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><label>Mobile Number</label></td>
+          <td>
+            <div>
+              <span>{{user.mobileNumber}}</span>
+              <mat-chip color="warn" selected *ngIf="!user.mobileNumberVerified">unverified</mat-chip>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><label>Multi-Factor Authentication</label></td>
+          <td><mat-checkbox [ngModel]="user.multiFactorEnabled" [disabled]="true"></mat-checkbox></td>
+        </tr>
+      </table>
     </mat-card-content>
   </mat-card>
   <mat-card>
