@@ -3,6 +3,7 @@ using System.Security.Claims;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using TurnTracker.Data;
 using TurnTracker.Domain.Authorization;
 using TurnTracker.Domain.Interfaces;
@@ -16,10 +17,12 @@ namespace TurnTracker.Server.Controllers
     public class AuthController : Controller
     {
         private readonly IUserService _userService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IUserService userService)
+        public AuthController(IUserService userService, ILogger<AuthController> logger)
         {
             _userService = userService;
+            _logger = logger;
         }
 
         [AllowAnonymous]
@@ -36,9 +39,10 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public IActionResult Logout()
         {
-            if (_userService.LogoutUser(User.GetId()).IsSuccess)
+            var myId = User.GetId();
+            if (_userService.LogoutUser(myId).IsSuccess)
             {
-                Console.WriteLine("Failed to logout");
+                _logger.LogWarning($"Failed to logout username: {User.Identity.Name}, id: {myId}");
             }
 
             return Ok();

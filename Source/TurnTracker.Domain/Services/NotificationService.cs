@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using CSharpFunctionalExtensions;
+using Microsoft.Extensions.Logging;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Interfaces;
@@ -12,14 +13,16 @@ namespace TurnTracker.Domain.Services
         #region Fields
 
         private readonly TurnContext _db;
+        private readonly ILogger<NotificationService> _logger;
 
         #endregion
 
         #region ctor
 
-        public NotificationService(TurnContext db)
+        public NotificationService(TurnContext db, ILogger<NotificationService> logger)
         {
             _db = db;
+            _logger = logger;
         }
 
         #endregion
@@ -68,7 +71,7 @@ namespace TurnTracker.Domain.Services
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Failed to update notification settings: {e}");
+                _logger.LogError(e, "Failed to update notification settings");
                 return Result.Fail(e.Message);
             }
         }

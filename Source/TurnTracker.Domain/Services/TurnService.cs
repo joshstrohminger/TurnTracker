@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using TurnTracker.Common;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Interfaces;
@@ -13,10 +15,12 @@ namespace TurnTracker.Domain.Services
     public class TurnService : ITurnService
     {
         private readonly TurnContext _db;
+        private ILogger<TurnService> _logger;
 
-        public TurnService(TurnContext db)
+        public TurnService(TurnContext db, ILogger<TurnService> logger)
         {
             _db = db;
+            _logger = logger;
         }
 
         public Result EnsureSeedActivities()
@@ -94,7 +98,7 @@ namespace TurnTracker.Domain.Services
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Failed to seed activities: {e}");
+                _logger.LogError(e, "Failed to seed activities");
                 return Result.Fail(e.Message);
             }
         }
@@ -190,7 +194,7 @@ namespace TurnTracker.Domain.Services
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Failed to take turn: {e}");
+                _logger.LogError(e, "Failed to take turn");
                 return Result.Fail<ActivityDetails>(e.Message);
             }
         }
@@ -270,7 +274,7 @@ namespace TurnTracker.Domain.Services
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Failed to add activity: {e}");
+                _logger.LogError(e, "Failed to add activity");
                 return Result.Fail<int>(e.Message);
             }
         }
@@ -298,7 +302,7 @@ namespace TurnTracker.Domain.Services
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Failed to add users {string.Join(',', userIds)} to activity {activityId}: {e}");
+                _logger.LogError(e, $"Failed to add users {string.Join(',', userIds)} to activity {activityId}");
                 return Result.Fail(e.Message);
             }
         }

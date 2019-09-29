@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace TurnTracker.Server
 {
@@ -12,6 +13,7 @@ namespace TurnTracker.Server
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                //.ConfigureLogging(logging => { logging.ClearProviders(); })
                 .UseStartup<Startup>();
     }
 }

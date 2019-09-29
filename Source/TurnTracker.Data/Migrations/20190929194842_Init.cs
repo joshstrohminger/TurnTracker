@@ -15,6 +15,7 @@ namespace TurnTracker.Data.Migrations
                     Key = table.Column<string>(nullable: false),
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
+                    Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),
                     Name = table.Column<string>(nullable: false),
                     Type = table.Column<string>(nullable: false),
                     IntValue = table.Column<int>(nullable: false),
@@ -34,6 +35,7 @@ namespace TurnTracker.Data.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
+                    Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),
                     Name = table.Column<string>(nullable: false),
                     DisplayName = table.Column<string>(nullable: false),
                     IsDisabled = table.Column<bool>(nullable: false),
@@ -42,7 +44,7 @@ namespace TurnTracker.Data.Migrations
                     MobileNumber = table.Column<string>(nullable: true),
                     MobileNumberVerified = table.Column<bool>(nullable: false),
                     MultiFactorEnabled = table.Column<bool>(nullable: false),
-                    Role = table.Column<byte>(type: "tinyint", nullable: false),
+                    Role = table.Column<int>(nullable: false),
                     Hash = table.Column<byte[]>(nullable: false),
                     Salt = table.Column<byte[]>(nullable: false),
                     RefreshKey = table.Column<string>(nullable: true)
@@ -60,15 +62,26 @@ namespace TurnTracker.Data.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
+                    Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),
                     Name = table.Column<string>(nullable: false),
                     Period = table.Column<long>(nullable: true),
                     PeriodUnit = table.Column<string>(nullable: true),
                     PeriodCount = table.Column<long>(nullable: true),
-                    OwnerId = table.Column<int>(nullable: false)
+                    TakeTurns = table.Column<bool>(nullable: false),
+                    OwnerId = table.Column<int>(nullable: false),
+                    CurrentTurnUserId = table.Column<int>(nullable: true),
+                    Due = table.Column<DateTimeOffset>(nullable: true),
+                    HasDisabledTurns = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Activities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Activities_Users_CurrentTurnUserId",
+                        column: x => x.CurrentTurnUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Activities_Users_OwnerId",
                         column: x => x.OwnerId,
@@ -85,8 +98,12 @@ namespace TurnTracker.Data.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
+                    Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),
                     UserId = table.Column<int>(nullable: false),
-                    ActivityId = table.Column<int>(nullable: false)
+                    ActivityId = table.Column<int>(nullable: false),
+                    TurnsNeeded = table.Column<int>(nullable: false),
+                    TurnOrder = table.Column<int>(nullable: false),
+                    HasDisabledTurns = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -113,10 +130,11 @@ namespace TurnTracker.Data.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
+                    Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),
                     UserId = table.Column<int>(nullable: false),
                     Occurred = table.Column<DateTimeOffset>(nullable: false),
                     CreatorId = table.Column<int>(nullable: false),
-                    DisablerId = table.Column<int>(nullable: true),
+                    ModifierId = table.Column<int>(nullable: true),
                     ActivityId = table.Column<int>(nullable: false),
                     IsDisabled = table.Column<bool>(nullable: false)
                 },
@@ -136,8 +154,8 @@ namespace TurnTracker.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Turns_Users_DisablerId",
-                        column: x => x.DisablerId,
+                        name: "FK_Turns_Users_ModifierId",
+                        column: x => x.ModifierId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -149,10 +167,46 @@ namespace TurnTracker.Data.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "NotificationSettings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    CreatedDate = table.Column<DateTimeOffset>(nullable: false),
+                    ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
+                    Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),
+                    Type = table.Column<int>(nullable: false),
+                    Sms = table.Column<bool>(nullable: false),
+                    Email = table.Column<bool>(nullable: false),
+                    Push = table.Column<bool>(nullable: false),
+                    ParticipantId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NotificationSettings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_NotificationSettings_Participants_ParticipantId",
+                        column: x => x.ParticipantId,
+                        principalTable: "Participants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Activities_CurrentTurnUserId",
+                table: "Activities",
+                column: "CurrentTurnUserId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Activities_OwnerId",
                 table: "Activities",
                 column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_NotificationSettings_ParticipantId",
+                table: "NotificationSettings",
+                column: "ParticipantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Participants_ActivityId",
@@ -175,9 +229,9 @@ namespace TurnTracker.Data.Migrations
                 column: "CreatorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Turns_DisablerId",
+                name: "IX_Turns_ModifierId",
                 table: "Turns",
-                column: "DisablerId");
+                column: "ModifierId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Turns_UserId",
@@ -188,13 +242,16 @@ namespace TurnTracker.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Participants");
+                name: "NotificationSettings");
 
             migrationBuilder.DropTable(
                 name: "Settings");
 
             migrationBuilder.DropTable(
                 name: "Turns");
+
+            migrationBuilder.DropTable(
+                name: "Participants");
 
             migrationBuilder.DropTable(
                 name: "Activities");

@@ -10,7 +10,7 @@ using TurnTracker.Data;
 namespace TurnTracker.Data.Migrations
 {
     [DbContext(typeof(TurnContext))]
-    [Migration("20190920052812_Init")]
+    [Migration("20190929194842_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -29,6 +29,12 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<DateTimeOffset>("CreatedDate");
 
+                    b.Property<int?>("CurrentTurnUserId");
+
+                    b.Property<DateTimeOffset?>("Due");
+
+                    b.Property<bool>("HasDisabledTurns");
+
                     b.Property<DateTimeOffset>("ModifiedDate");
 
                     b.Property<string>("Name")
@@ -42,11 +48,50 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<string>("PeriodUnit");
 
+                    b.Property<bool>("TakeTurns");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CurrentTurnUserId");
 
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Activities");
+                });
+
+            modelBuilder.Entity("TurnTracker.Data.Entities.NotificationSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset>("CreatedDate");
+
+                    b.Property<bool>("Email");
+
+                    b.Property<DateTimeOffset>("ModifiedDate");
+
+                    b.Property<int>("ParticipantId");
+
+                    b.Property<bool>("Push");
+
+                    b.Property<bool>("Sms");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
+                    b.Property<int>("Type");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.ToTable("NotificationSettings");
                 });
 
             modelBuilder.Entity("TurnTracker.Data.Entities.Participant", b =>
@@ -59,7 +104,17 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<DateTimeOffset>("CreatedDate");
 
+                    b.Property<bool>("HasDisabledTurns");
+
                     b.Property<DateTimeOffset>("ModifiedDate");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
+                    b.Property<int>("TurnOrder");
+
+                    b.Property<int>("TurnsNeeded");
 
                     b.Property<int>("UserId");
 
@@ -90,6 +145,10 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<string>("StringValue");
 
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
+
                     b.Property<string>("Type")
                         .IsRequired();
 
@@ -110,13 +169,17 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<int>("CreatorId");
 
-                    b.Property<int?>("DisablerId");
-
                     b.Property<bool>("IsDisabled");
 
                     b.Property<DateTimeOffset>("ModifiedDate");
 
+                    b.Property<int?>("ModifierId");
+
                     b.Property<DateTimeOffset>("Occurred");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
 
                     b.Property<int>("UserId");
 
@@ -126,7 +189,7 @@ namespace TurnTracker.Data.Migrations
 
                     b.HasIndex("CreatorId");
 
-                    b.HasIndex("DisablerId");
+                    b.HasIndex("ModifierId");
 
                     b.HasIndex("UserId");
 
@@ -167,11 +230,14 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<string>("RefreshKey");
 
-                    b.Property<byte>("Role")
-                        .HasColumnType("tinyint");
+                    b.Property<int>("Role");
 
                     b.Property<byte[]>("Salt")
                         .IsRequired();
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate();
 
                     b.HasKey("Id");
 
@@ -180,9 +246,21 @@ namespace TurnTracker.Data.Migrations
 
             modelBuilder.Entity("TurnTracker.Data.Entities.Activity", b =>
                 {
+                    b.HasOne("TurnTracker.Data.Entities.User", "CurrentTurnUser")
+                        .WithMany()
+                        .HasForeignKey("CurrentTurnUserId");
+
                     b.HasOne("TurnTracker.Data.Entities.User", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("TurnTracker.Data.Entities.NotificationSetting", b =>
+                {
+                    b.HasOne("TurnTracker.Data.Entities.Participant", "Participant")
+                        .WithMany("NotificationSettings")
+                        .HasForeignKey("ParticipantId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -211,9 +289,9 @@ namespace TurnTracker.Data.Migrations
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("TurnTracker.Data.Entities.User", "Disabler")
+                    b.HasOne("TurnTracker.Data.Entities.User", "Modifier")
                         .WithMany()
-                        .HasForeignKey("DisablerId");
+                        .HasForeignKey("ModifierId");
 
                     b.HasOne("TurnTracker.Data.Entities.User", "User")
                         .WithMany("TurnsTaken")

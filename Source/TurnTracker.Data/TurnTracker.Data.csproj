@@ -25,6 +25,14 @@
     <Compile Remove="Migrations\20190915022753_RemoveGeneratedAttributes.Designer.cs" />
     <Compile Remove="Migrations\20190917071603_AllowTurnsToBeDisabled.cs" />
     <Compile Remove="Migrations\20190917071603_AllowTurnsToBeDisabled.Designer.cs" />
+    <Compile Remove="Migrations\20190920052812_Init.cs" />
+    <Compile Remove="Migrations\20190920052812_Init.Designer.cs" />
+    <Compile Remove="Migrations\20190922033237_AddCalculatedValues.cs" />
+    <Compile Remove="Migrations\20190922033237_AddCalculatedValues.Designer.cs" />
+    <Compile Remove="Migrations\20190925051046_AddNotificationSettings.cs" />
+    <Compile Remove="Migrations\20190925051046_AddNotificationSettings.Designer.cs" />
+    <Compile Remove="Migrations\20190928061427_RenameTurnColumn.cs" />
+    <Compile Remove="Migrations\20190928061427_RenameTurnColumn.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

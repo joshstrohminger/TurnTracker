@@ -27,7 +27,6 @@ namespace TurnTracker.Data.Entities
 
         public bool MultiFactorEnabled { get; set; }
 
-        [Column(TypeName = "tinyint")]
         public Role Role { get; set; } 
 
         [Required]

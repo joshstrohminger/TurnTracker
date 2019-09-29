@@ -15,7 +15,6 @@ namespace TurnTracker.Data.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Column(TypeName = "tinyint")]
         public NotificationType Type { get; set; }
         public bool Sms { get; set; }
         public bool Email { get; set; }

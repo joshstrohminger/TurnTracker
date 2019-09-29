@@ -83,8 +83,7 @@ namespace TurnTracker.Data.Migrations
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate();
 
-                    b.Property<byte>("Type")
-                        .HasColumnType("tinyint");
+                    b.Property<int>("Type");
 
                     b.HasKey("Id");
 
@@ -229,8 +228,7 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<string>("RefreshKey");
 
-                    b.Property<byte>("Role")
-                        .HasColumnType("tinyint");
+                    b.Property<int>("Role");
 
                     b.Property<byte[]>("Salt")
                         .IsRequired();

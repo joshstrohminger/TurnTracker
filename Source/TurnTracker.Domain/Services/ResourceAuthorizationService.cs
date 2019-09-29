@@ -53,18 +53,5 @@ namespace TurnTracker.Domain.Services
         {
             return _db.Participants.AsNoTracking().SingleOrDefault(x => x.Id == participantId)?.UserId == userId;
         }
-
-        public static Result<TResult> AsResult<TResult>(Func<TResult> func)
-        {
-            try
-            {
-                return Result.Ok(func());
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return Result.Fail<TResult>(e.Message);
-            }
-        }
     }
 }
