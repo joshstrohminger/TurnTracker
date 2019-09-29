@@ -38,6 +38,8 @@ export class ActivityComponent implements OnInit {
   names = new Map<number, string>();
   myUserId: number;
   turns = new MatTableDataSource<Turn>();
+  mobileNumberVerified: boolean;
+  emailVerified: boolean;
   notifications: NotificationSetting[] = Object.keys(NotificationType)
     .filter(key => !isNaN(Number(NotificationType[key])))
     .map(key => new NotificationSetting(NotificationType[key]));
@@ -183,6 +185,9 @@ export class ActivityComponent implements OnInit {
         for (const note of this.notifications) {
           note.participantId = participant.id;
         }
+
+        this.mobileNumberVerified = participant.mobileNumberVerified;
+        this.emailVerified = participant.emailVerified;
 
         if (participant.notificationSettings) {
           for (const note of participant.notificationSettings) {

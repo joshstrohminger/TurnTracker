@@ -22,7 +22,7 @@
           <td>
             <div>
               <span>{{user.email}}</span>
-              <button class="verify" *ngIf="!user.emailVerified" mat-stroked-button color="warn">Verify</button>
+              <button class="verify" *ngIf="!user.emailVerified" mat-flat-button color="warn">Verify</button>
             </div>
           </td>
         </tr>
@@ -31,7 +31,7 @@
           <td>
             <div>
               <span>{{user.mobileNumber}}</span>
-              <button class="verify" *ngIf="!user.mobileNumberVerified" mat-stroked-button color="warn">Verify</button>
+              <button class="verify" *ngIf="!user.mobileNumberVerified" mat-flat-button color="warn">Verify</button>
             </div>
           </td>
         </tr>

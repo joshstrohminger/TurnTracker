@@ -8,4 +8,6 @@ export class Participant {
     public hasDisabledTurns: boolean;
     public turnOrder: number;
     public notificationSettings: NotificationSetting[];
+    public emailVerified: boolean;
+    public mobileNumberVerified: boolean;
 }
