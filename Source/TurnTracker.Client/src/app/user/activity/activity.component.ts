@@ -15,6 +15,8 @@ import { NotificationSetting } from '../models/NotificationSetting';
 import { NotificationType } from '../models/NotificationType';
 import { NotificationPipe } from '../notification.pipe';
 import { Turn } from '../models/Turn';
+import { TurnDetailsDialog } from '../turn-details/turn-details.dialog';
+import { TurnDetailsDialogConfig } from '../turn-details/TurnDetailsDialogConfig';
 
 @Component({
   selector: 'app-activity',
@@ -87,6 +89,18 @@ export class ActivityComponent implements OnInit {
       this.busy = false;
       if (result) {
         this.takeTurnUnsafe(result);
+      }
+    });
+  }
+
+  showTurnDetails(turn: Turn) {
+    const dialogRef = this._dialog.open(TurnDetailsDialog, {data: <TurnDetailsDialogConfig>{
+      turn: turn,
+      names: this.names
+    }});
+    dialogRef.afterClosed().subscribe((toggleTurnDisabled: boolean) => {
+      if (toggleTurnDisabled) {
+        this.toggleTurnDisabled(turn);
       }
     });
   }

@@ -46,6 +46,7 @@ import { ActivityComponent } from './user/activity/activity.component';
 import { TakeTurnDialog } from './user/take-turn/take-turn.dialog';
 import { NotificationPipe } from './user/notification.pipe';
 import { TimerComponent } from './user/timer/timer.component';
+import { TurnDetailsDialog } from './user/turn-details/turn-details.dialog';
 
 const routes: Routes = [
   { path: 'activity/:id', component: ActivityComponent, canActivate: [AuthGuard] },
@@ -69,11 +70,13 @@ const routes: Routes = [
     ActivityComponent,
     TakeTurnDialog,
     NotificationPipe,
-    TimerComponent
+    TimerComponent,
+    TurnDetailsDialog
   ],
   entryComponents: [
     MatSpinner,
-    TakeTurnDialog
+    TakeTurnDialog,
+    TurnDetailsDialog
   ],
   imports: [
     BrowserAnimationsModule,

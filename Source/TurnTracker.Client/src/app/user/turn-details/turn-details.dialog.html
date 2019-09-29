@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Turn Details</h2>
+<mat-dialog-content>
+  <div id="details">
+    <table>
+      <tr>
+        <td><label>For</label></td>
+        <td><span>{{names.get(turn.userId)}}</span></td>
+      </tr>
+      <tr>
+        <td><label>When</label></td>
+        <td><span>{{turn.occurred | date: 'short'}}</span></td>
+      </tr>
+      <tr *ngIf="turn.userId !== turn.creatorId">
+        <td><label>Creator</label></td>
+        <td><span>{{names.get(turn.creatorId)}}</span></td>
+      </tr>
+      <tr *ngIf="turn.occurred !== turn.created">
+        <td><label>Created</label></td>
+        <td><span>{{turn.created | date: 'short'}}</span></td>
+      </tr>
+      <ng-container *ngIf="turn.modifierId">
+        <tr>
+          <td><label>Status</label></td>
+          <td><span>{{turn.isDisabled ? 'Disabled' : 'Enabled'}}</span></td>
+        </tr>
+        <tr>
+          <td><label>Modified</label></td>
+          <td><span>{{turn.modified | date: 'short'}}</span></td>
+        </tr>
+        <tr>
+          <td><label>Modifier</label></td>
+          <td><span>{{names.get(turn.modifierId)}}</span></td>
+        </tr>
+      </ng-container>
+    </table>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Close</button>
+  <button mat-button color="warn"
+    [mat-dialog-close]="true">{{turn.isDisabled ? 'Enable Turn' : 'Disable Turn'}}</button>
+</mat-dialog-actions>

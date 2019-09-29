@@ -203,6 +203,7 @@ namespace TurnTracker.Domain.Services
                 if (turn.IsDisabled != disabled)
                 {
                     turn.IsDisabled = disabled;
+                    turn.ModifierId = byUserId;
                     _db.Update(turn);
                     _db.SaveChanges();
                 }

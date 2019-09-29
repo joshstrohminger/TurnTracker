@@ -92,18 +92,10 @@
     </ng-template>
     <mat-menu #optionsMenu="matMenu">
       <ng-template matMenuContent let-turn="turn">
-        <button mat-menu-item (click)="toggleTurnDisabled(turn)" [disabled]="busy">
-          <div *ngIf="turn.isDisabled; else enableButton">
-            <mat-icon color="warn">add_circle_outline</mat-icon>
-            <span>Enable Turn</span>
-          </div>
+        <button mat-menu-item (click)="showTurnDetails(turn)" [disabled]="busy">
+          <mat-icon>info</mat-icon>
+          <span>Details</span>
         </button>
-        <ng-template #enableButton>
-          <div>
-            <mat-icon color="warn">remove_circle_outline</mat-icon>
-            <span>Disable Turn</span>
-          </div>
-        </ng-template>
       </ng-template>
     </mat-menu>
   </mat-expansion-panel>
