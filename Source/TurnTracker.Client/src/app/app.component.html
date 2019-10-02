@@ -3,7 +3,7 @@
     <mat-nav-list>
       <a mat-list-item (click)="sidenav.toggle()"><mat-icon color="accent">close</mat-icon></a>
       <a mat-list-item [routerLink]="'/'"><img class="logo" src="assets/logo.svg"></a>
-      <a mat-list-item [routerLink]="'/settings'"><mat-icon>settings</mat-icon></a>
+      <a mat-list-item [routerLink]="'/profile'"><mat-icon>account_circle</mat-icon></a>
       <a mat-list-item [routerLink]="'/about'"><mat-icon>info</mat-icon></a>
       <a mat-list-item (click)="authService.logout()" *ngIf="authService.isLoggedIn"><mat-icon color="warn">logout</mat-icon></a>
     </mat-nav-list>
@@ -19,7 +19,7 @@
           <a mat-button [routerLink]="'/'">Turn Tracker</a>
         </div>
         <div fxFlex fxLayout fxLayoutAlign="end">
-          <a mat-button [routerLink]="'/settings'" *ngIf="authService.isLoggedIn">{{authService.currentUser.displayName}}</a>
+          <a mat-button [routerLink]="'/profile'" *ngIf="authService.isLoggedIn">{{authService.currentUser.displayName}}</a>
           <a mat-button [routerLink]="'/login'" *ngIf="!authService.isLoggedIn">Login</a>
         </div>
       </mat-toolbar>

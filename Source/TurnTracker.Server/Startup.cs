@@ -13,6 +13,7 @@ using TurnTracker.Domain;
 using TurnTracker.Domain.Authorization;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Domain.Services;
+using TurnTracker.Server.Utilities;
 
 namespace TurnTracker.Server
 {
@@ -31,7 +32,10 @@ namespace TurnTracker.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc(options =>
+            {
+                options.InputFormatters.Insert(0, new StringBodyInputFormatter());
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddResponseCompression();
 
             var appSettingsSection = _configuration.GetSection("AppSettings");

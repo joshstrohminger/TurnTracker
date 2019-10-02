@@ -34,27 +34,25 @@ namespace TurnTracker.Domain.Services
                 if (!_db.Users.Any())
                 {
                     var salt = GetRandomBytes();
-                    var now = DateTimeOffset.Now;
                     _db.Users.Add(new User
                     {
                         DisplayName = "Joshua",
-                        Name = "josh",
+                        Username = "josh",
                         Email = "josh@mail.com",
                         Role = Role.Admin,
-                        Salt = salt,
-                        Hash = HashPassword(salt, "password"),
-                        MobileNumber = "+1 (888) 123-4567",
-                        MobileNumberVerified = true
+                        PasswordSalt = salt,
+                        PasswordHash = HashPassword(salt, "password"),
+                        MobileNumber = "+1 (888) 123-4567"
                     });
                     salt = GetRandomBytes();
                     _db.Users.Add(new User
                     {
                         DisplayName = "Kelly",
-                        Name = "kelly",
-                        Email = "kelly@mail.com",
+                        Username = "kelly",
                         Role = Role.User,
-                        Salt = salt,
-                        Hash = HashPassword(salt, "password")
+                        PasswordSalt = salt,
+                        PasswordHash = HashPassword(salt, "password"),
+                        MobileNumber = "+1 (888) 123-4567"
                     });
                     _db.SaveChanges();
                 }
@@ -79,11 +77,11 @@ namespace TurnTracker.Domain.Services
 
         public Result<(User user, string accessToken, string refreshToken)> AuthenticateUser(string username, string password)
         {
-            var user = _db.Users.SingleOrDefault(x => x.Name == username);
+            var user = _db.Users.SingleOrDefault(x => x.Username == username);
             if (user == null)
                 return Result.Fail<(User, string, string)>("Invalid username");
 
-            if (!user.Hash.SequenceEqual(HashPassword(user.Salt, password)))
+            if (!user.PasswordHash.SequenceEqual(HashPassword(user.PasswordSalt, password)))
             {
                 return Result.Fail<(User, string, string)>("Invalid password");
             }
@@ -106,6 +104,25 @@ namespace TurnTracker.Domain.Services
 
             var accessKey = GenerateAccessToken(user);
             return Result.Ok(accessKey);
+        }
+
+        public Result<User> SetDisplayName(int userId, string displayName)
+        {
+            if (string.IsNullOrWhiteSpace(displayName))
+            {
+                return Result.Fail<User>("DisplayName can't be null or empty");
+            }
+
+            var user = _db.Users.SingleOrDefault(x => x.Id == userId);
+            if (user is null)
+            {
+                return Result.Fail<User>("Invalid user");
+            }
+
+            user.DisplayName = displayName.Trim();
+            _db.SaveChanges();
+
+            return Result.Ok(user);
         }
 
         public Result<User> GetUser(int userId)
@@ -135,7 +152,7 @@ namespace TurnTracker.Domain.Services
         {
             IEnumerable<Claim> claims = new[]
             {
-                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Role, user.Role.ToString()),
                 new Claim(ClaimTypes.GivenName, user.DisplayName),

@@ -23,6 +23,8 @@ namespace TurnTracker.Domain
         public TimeSpan AccessTokenExpiration { get; set; }
         public TimeSpan InviteTokenExpiration { get; set; }
         public TimeSpan RefreshTokenExpiration { get; set; }
+        public TimeSpan EmailVerificationExpiration { get; set; }
+        public TimeSpan MobileNumberVerificationExpiration { get; set; }
 
         #endregion Properties
 

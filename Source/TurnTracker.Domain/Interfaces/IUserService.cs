@@ -10,5 +10,6 @@ namespace TurnTracker.Domain.Interfaces
         Result<User> GetUser(int userId);
         Result LogoutUser(int userId);
         Result EnsureSeedUsers();
+        Result<User> SetDisplayName(int userId, string displayName);
     }
 }

@@ -10,7 +10,7 @@ using TurnTracker.Data;
 namespace TurnTracker.Data.Migrations
 {
     [DbContext(typeof(TurnContext))]
-    [Migration("20190929194842_Init")]
+    [Migration("20190930054045_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -207,37 +207,46 @@ namespace TurnTracker.Data.Migrations
                     b.Property<string>("DisplayName")
                         .IsRequired();
 
-                    b.Property<string>("Email")
-                        .IsRequired();
+                    b.Property<string>("Email");
 
-                    b.Property<bool>("EmailVerified");
+                    b.Property<string>("EmailBeingVerified");
 
-                    b.Property<byte[]>("Hash")
-                        .IsRequired();
+                    b.Property<DateTimeOffset?>("EmailVerificationCreated");
+
+                    b.Property<byte[]>("EmailVerificationHash");
+
+                    b.Property<byte[]>("EmailVerificationSalt");
 
                     b.Property<bool>("IsDisabled");
 
                     b.Property<string>("MobileNumber");
 
-                    b.Property<bool>("MobileNumberVerified");
+                    b.Property<string>("MobileNumberBeingVerified");
+
+                    b.Property<DateTimeOffset?>("MobileNumberVerificationCreated");
+
+                    b.Property<byte[]>("MobileNumberVerificationHash");
+
+                    b.Property<byte[]>("MobileNumberVerificationSalt");
 
                     b.Property<DateTimeOffset>("ModifiedDate");
 
-                    b.Property<bool>("MultiFactorEnabled");
+                    b.Property<byte[]>("PasswordHash")
+                        .IsRequired();
 
-                    b.Property<string>("Name")
+                    b.Property<byte[]>("PasswordSalt")
                         .IsRequired();
 
                     b.Property<string>("RefreshKey");
 
                     b.Property<int>("Role");
 
-                    b.Property<byte[]>("Salt")
-                        .IsRequired();
-
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate();
+
+                    b.Property<string>("Username")
+                        .IsRequired();
 
                     b.HasKey("Id");
 

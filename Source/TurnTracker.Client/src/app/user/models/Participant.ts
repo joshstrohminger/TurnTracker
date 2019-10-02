@@ -1,5 +1,12 @@
 import { NotificationSetting } from './NotificationSetting';
 
+export enum VerificationStatus {
+    None,
+    Pending,
+    Expired,
+    Verified
+}
+
 export class Participant {
     public id: number;
     public userId: number;
@@ -8,6 +15,6 @@ export class Participant {
     public hasDisabledTurns: boolean;
     public turnOrder: number;
     public notificationSettings: NotificationSetting[];
-    public emailVerified: boolean;
-    public mobileNumberVerified: boolean;
+    public mobileNumberVerification: VerificationStatus;
+    public emailVerification: VerificationStatus;
 }

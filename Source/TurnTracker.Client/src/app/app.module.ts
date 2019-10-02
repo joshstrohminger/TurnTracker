@@ -35,7 +35,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppComponent } from './app.component';
 import { environment } from '../environments/environment';
 import { NotFoundComponent } from './anonymous/not-found/not-found.component';
-import { SettingsComponent } from './auth/settings/settings.component';
+import { ProfileComponent } from './auth/profile/profile.component';
 import { AboutComponent } from './anonymous/about/about.component';
 import { LoginComponent } from './auth/login/login.component';
 import { AuthGuard } from './auth/auth.guard';
@@ -51,7 +51,7 @@ import { TurnDetailsDialog } from './user/turn-details/turn-details.dialog';
 const routes: Routes = [
   { path: 'activity/:id', component: ActivityComponent, canActivate: [AuthGuard] },
   { path: 'activities', component: ActivitiesComponent, canActivate: [AuthGuard] },
-  { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
+  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'about', component: AboutComponent },
   { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
   { path: '', redirectTo: '/activities', pathMatch: 'full' },
@@ -63,7 +63,7 @@ const routes: Routes = [
     AppComponent,
     ActivitiesComponent,
     NotFoundComponent,
-    SettingsComponent,
+    ProfileComponent,
     AboutComponent,
     LoginComponent,
     ActivitiesComponent,

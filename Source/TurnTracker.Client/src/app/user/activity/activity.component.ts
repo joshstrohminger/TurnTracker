@@ -17,6 +17,7 @@ import { NotificationPipe } from '../notification.pipe';
 import { Turn } from '../models/Turn';
 import { TurnDetailsDialog } from '../turn-details/turn-details.dialog';
 import { TurnDetailsDialogConfig } from '../turn-details/TurnDetailsDialogConfig';
+import { VerificationStatus } from '../models/Participant';
 
 @Component({
   selector: 'app-activity',
@@ -186,8 +187,8 @@ export class ActivityComponent implements OnInit {
           note.participantId = participant.id;
         }
 
-        this.mobileNumberVerified = participant.mobileNumberVerified;
-        this.emailVerified = participant.emailVerified;
+        this.mobileNumberVerified = participant.mobileNumberVerification === VerificationStatus.Verified;
+        this.emailVerified = participant.emailVerification === VerificationStatus.Verified;
 
         if (participant.notificationSettings) {
           for (const note of participant.notificationSettings) {

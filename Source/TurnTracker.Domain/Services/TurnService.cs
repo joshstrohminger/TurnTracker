@@ -15,7 +15,7 @@ namespace TurnTracker.Domain.Services
     public class TurnService : ITurnService
     {
         private readonly TurnContext _db;
-        private ILogger<TurnService> _logger;
+        private readonly ILogger<TurnService> _logger;
 
         public TurnService(TurnContext db, ILogger<TurnService> logger)
         {

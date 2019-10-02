@@ -1,0 +1,64 @@
+<div *ngIf="user">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Profile</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <table id="properties">
+        <tr>
+          <td><label>UserName</label></td>
+          <td><span>{{user.username}}</span></td>
+        </tr>
+        <tr>
+          <td><label>Display Name</label></td>
+          <td *ngIf="!displayNameControl; else editDisplayNameTemplate">
+            <span>{{user.displayName}}</span>
+            <button mat-icon-button class="action" matTooltip="Edit DisplayName" color="primary" (click)="editDisplayName()">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </td>
+          <ng-template #editDisplayNameTemplate>
+            <td>
+              <mat-form-field hintLabel="Edit the DisplayName">
+                <input matInput [formControl]="displayNameControl">
+                <mat-error *ngIf="displayNameControl.invalid">{{getErrorMessage()}}</mat-error>
+              </mat-form-field>
+              <button mat-icon-button [disabled]="displayNameControl.invalid || displayNameControl.disabled" class="action" type="submit" (click)="saveDisplayName()" matTooltip="Save DisplayName" color="primary">
+                <mat-icon>save</mat-icon>
+              </button>
+              <button mat-icon-button [disabled]="displayNameControl.disabled" class="action" matTooltip="Cancel Editing DisplayName" (click)="cancelEditingDisplayName()">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </td>
+          </ng-template>
+        </tr>
+        <tr>
+          <td><label>Role</label></td>
+          <td><span>{{roles[user.role]}}</span></td>
+        </tr>
+        <tr>
+          <td><label>Email</label></td>
+          <td>
+            <div>
+              <span>{{user.email}}</span>
+              <button class="action" *ngIf="!user.emailVerified" mat-flat-button color="warn">Verify</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><label>Mobile Number</label></td>
+          <td>
+            <div>
+              <span>{{user.mobileNumber}}</span>
+              <button class="action" *ngIf="!user.mobileNumberVerified" mat-flat-button color="warn">Verify</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><label>Password</label></td>
+          <td><button mat-stroked-button color="primary">Change Password</button></td>
+        </tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>

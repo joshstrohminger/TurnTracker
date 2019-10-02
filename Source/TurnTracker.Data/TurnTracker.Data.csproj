@@ -33,6 +33,10 @@
     <Compile Remove="Migrations\20190925051046_AddNotificationSettings.Designer.cs" />
     <Compile Remove="Migrations\20190928061427_RenameTurnColumn.cs" />
     <Compile Remove="Migrations\20190928061427_RenameTurnColumn.Designer.cs" />
+    <Compile Remove="Migrations\20190929194842_Init.cs" />
+    <Compile Remove="Migrations\20190929194842_Init.Designer.cs" />
+    <Compile Remove="Migrations\20190930011800_Init.cs" />
+    <Compile Remove="Migrations\20190930011800_Init.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

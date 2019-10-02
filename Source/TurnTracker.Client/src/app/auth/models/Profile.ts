@@ -9,5 +9,4 @@ export class Profile {
   public mobileNumberVerified: boolean;
   public email: string;
   public emailVerified: boolean;
-  public multiFactorEnabled: boolean;
 }

@@ -37,6 +37,15 @@ export class AuthService {
     }
   }
 
+  setCurrentUserDisplayName(displayName: string) {
+    const saved = localStorage.getItem(this.userKey);
+    if (saved) {
+      this._currentUser = JSON.parse(saved);
+      this._currentUser.displayName = displayName;
+      localStorage.setItem(this.userKey, JSON.stringify(this._currentUser));
+    }
+  }
+
   private saveUser(user?: AuthenticatedUser) {
     if (user) {
       localStorage.setItem(this.userKey, JSON.stringify(user));
@@ -94,7 +103,7 @@ export class AuthService {
   }
 
   getProfile(): Observable<Profile> {
-    return this.http.get<Profile>('auth/profile');
+    return this.http.get<Profile>('profile');
   }
 
   getAccessToken(): TokenInfo {

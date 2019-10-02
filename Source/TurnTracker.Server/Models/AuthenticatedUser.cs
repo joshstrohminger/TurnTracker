@@ -15,7 +15,7 @@ namespace TurnTracker.Server.Models
         public AuthenticatedUser(User user, string accessToken, string refreshToken)
         {
             Id = user.Id;
-            Username = user.Name;
+            Username = user.Username;
             DisplayName = user.DisplayName;
             RefreshToken = refreshToken;
             AccessToken = accessToken;

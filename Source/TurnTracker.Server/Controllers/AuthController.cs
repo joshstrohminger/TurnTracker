@@ -60,39 +60,6 @@ namespace TurnTracker.Server.Controllers
 
             return BadRequest();
         }
-
-        [HttpGet("[action]")]
-        public IActionResult Profile()
-        {
-            var (isSuccess, _, user) = _userService.GetUser(User.GetId());
-            if (isSuccess)
-            {
-                var profile = new UserProfile(user);
-                return Ok(profile);
-            }
-
-            return BadRequest();
-        }
-
-        [AllowAnonymous]
-        [HttpPost("[action]")]
-        public IActionResult AcceptInvite(string token)
-        {
-            throw new NotImplementedException();
-        }
-
-        [AllowAnonymous]
-        [HttpGet("[action]")]
-        public string AnonymousData()
-        {
-            throw new NotImplementedException();
-        }
-
-        [HttpGet("[action]")]
-        public string UserData()
-        {
-            throw new NotImplementedException();
-        }
         
         [Authorize(Roles = nameof(Role.Admin))]
         [HttpGet("[action]")]

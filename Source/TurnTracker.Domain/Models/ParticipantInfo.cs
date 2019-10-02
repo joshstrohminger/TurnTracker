@@ -13,8 +13,8 @@ namespace TurnTracker.Domain.Models
         public bool HasDisabledTurns { get; }
         public int TurnOrder { get; }
         public List<NotificationInfo> NotificationSettings { get; }
-        public bool? EmailVerified { get; set; }
-        public bool? MobileNumberVerified { get; set; }
+        public bool? HasEmail { get; set; }
+        public bool? HasMobileNumber { get; set; }
 
         internal ParticipantInfo(TurnCount turnCount, int mostTurnsTaken, int turnOrder, bool includeNotificationSettings) : this(turnCount.Participant, includeNotificationSettings)
         {
@@ -40,8 +40,8 @@ namespace TurnTracker.Domain.Models
             if (includeNotificationSettings)
             {
                 NotificationSettings = p.NotificationSettings.Select(x => new NotificationInfo(x)).ToList();
-                EmailVerified = p.User.EmailVerified;
-                MobileNumberVerified = p.User.MobileNumberVerified;
+                HasEmail = p.User.Email != null;
+                HasMobileNumber = p.User.MobileNumber != null;
             }
         }
     }
