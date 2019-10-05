@@ -35,7 +35,18 @@ namespace TurnTracker.Server.Controllers
             if (isFailure) return Unauthorized();
             return Ok(new AuthenticatedUser(user, accessToken, refreshToken));
         }
-        
+
+        [HttpPost("[action]")]
+        public IActionResult ChangePassword([FromBody] PasswordChange change)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var myId = User.GetId();
+            var result = _userService.ChangePassword(myId, change.OldPassword, change.NewPassword);
+            if (result.IsFailure) return Unauthorized();
+            return Ok();
+        }
+
         [HttpPost("[action]")]
         public IActionResult Logout()
         {

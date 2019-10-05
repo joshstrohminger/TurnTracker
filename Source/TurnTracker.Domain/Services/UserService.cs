@@ -95,6 +95,25 @@ namespace TurnTracker.Domain.Services
             return Result.Ok((user, accessToken, refreshToken));
         }
 
+        public Result ChangePassword(int userId, string oldPassword, string newPassword)
+        {
+            var user = _db.Users.SingleOrDefault(x => x.Id == userId);
+            if (user is null) return Result.Fail("Invalid user");
+
+            if (!user.PasswordHash.SequenceEqual(HashPassword(user.PasswordSalt, oldPassword)))
+            {
+                return Result.Fail("Invalid password");
+            }
+
+            // authentication successful set the new password
+            var salt = GetRandomBytes();
+            user.PasswordSalt = salt;
+            user.PasswordHash = HashPassword(salt, newPassword);
+            _db.SaveChanges();
+
+            return Result.Ok();
+        }
+
         public Result<string> RefreshUser(int userId, string refreshKey)
         {
             var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Id == userId);

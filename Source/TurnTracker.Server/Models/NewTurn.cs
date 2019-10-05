@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using TurnTracker.Server.Utilities;
+using TurnTracker.Server.Validators;
 
 namespace TurnTracker.Server.Models
 {

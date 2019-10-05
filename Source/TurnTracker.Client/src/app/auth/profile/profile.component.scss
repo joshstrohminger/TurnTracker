@@ -22,3 +22,22 @@ mat-card:not(:first-of-type) {
 button.action {
   margin-left: 1em;
 }
+
+#password-strength {
+  display: flex;
+  align-items: center;
+  align-items: center;
+  justify-content: center;
+  mat-progress-spinner {
+    margin-top: 1em;
+  }
+  #strength-icon {
+    position: absolute;
+    margin-top: 0.2em;
+    font-size: 200%;
+  }
+}
+
+#password-form > div:not(:first-child) {
+  margin-bottom: 1em;
+}

@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using TurnTracker.Common;
 
-namespace TurnTracker.Server.Utilities
+namespace TurnTracker.Server.Validators
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class InThePastAttribute : ValidationAttribute

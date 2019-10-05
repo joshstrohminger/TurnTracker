@@ -1,10 +1,10 @@
-import { ValidationErrors, AbstractControl, ValidatorFn } from '@angular/forms';
+import { ValidationErrors, AbstractControl, ValidatorFn, FormGroup } from '@angular/forms';
 
 export class TurnTrackerValidators {
 
   static newValue(originalValue: any): ValidatorFn {
     return (control: AbstractControl): ValidationErrors => {
-      if (control.value === originalValue) {
+      if (control && control.value === originalValue) {
         return {
           'newvalue': 'Must be a new value'
         };
@@ -13,15 +13,57 @@ export class TurnTrackerValidators {
     };
   }
 
-  static nonWhitespace: ValidatorFn = (control: AbstractControl): ValidationErrors => {
+  static whitespace: ValidatorFn = (control: AbstractControl): ValidationErrors => {
     if (control.value) {
       const length = ('' + control.value).trim().length;
       if (length === 0) {
         return {
-          'nonwhitespace': 'Value only contains whitespace'
+          'whitespace': 'Value only contains whitespace'
         };
       }
     }
     return null;
+  }
+
+  static minTrimmedLength(min: number): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors => {
+      if (control) {
+        const actual = ('' + control.value).trim().length;
+        if (actual < min) {
+          return {
+            'mintrimmedlength': {min, actual}
+          };
+        }
+      }
+      return null;
+    };
+  }
+
+  static different(...controlNames: string[]): ValidatorFn {
+    return (group: FormGroup): ValidationErrors => {
+      if (group && controlNames.length >= 2) {
+        let firstValue;
+        let first = true;
+        for (const name of controlNames) {
+          const control = group.get(name);
+          if (control) {
+            const value = control.value;
+            if (first) {
+              firstValue = value;
+              first = false;
+            } else if (firstValue !== value) {
+              return {
+                'different': 'Values must match'
+              };
+            }
+          } else {
+            return {
+              'different': `Invalid control name '${name}'`
+            };
+          }
+        }
+      }
+      return null;
+    };
   }
 }

@@ -17,20 +17,6 @@
               <mat-icon>edit</mat-icon>
             </button>
           </td>
-          <ng-template #editDisplayNameTemplate>
-            <td>
-              <mat-form-field hintLabel="Edit the DisplayName">
-                <input matInput [formControl]="displayNameControl">
-                <mat-error *ngIf="displayNameControl.invalid">{{getErrorMessage()}}</mat-error>
-              </mat-form-field>
-              <button mat-icon-button [disabled]="displayNameControl.invalid || displayNameControl.disabled" class="action" type="submit" (click)="saveDisplayName()" matTooltip="Save DisplayName" color="primary">
-                <mat-icon>save</mat-icon>
-              </button>
-              <button mat-icon-button [disabled]="displayNameControl.disabled" class="action" matTooltip="Cancel Editing DisplayName" (click)="cancelEditingDisplayName()">
-                <mat-icon>cancel</mat-icon>
-              </button>
-            </td>
-          </ng-template>
         </tr>
         <tr>
           <td><label>Role</label></td>
@@ -55,10 +41,60 @@
           </td>
         </tr>
         <tr>
-          <td><label>Password</label></td>
-          <td><button mat-stroked-button color="primary">Change Password</button></td>
+          <td>
+            <label>Password</label>
+            <div id="password-strength" *ngIf="passwordForm">
+              <mat-progress-spinner mode="determinate" [color]="passwordStrengthColor" [value]="passwordStrength"></mat-progress-spinner>
+              <span id="strength-icon">{{passwordStrengthIcon}}</span>
+            </div>
+          </td>
+          <td *ngIf="!passwordForm; else changePasswordTemplate">
+            <button mat-stroked-button color="primary" (click)="editPassword()">Change Password</button>
+          </td>
         </tr>
       </table>
+      <ng-template #editDisplayNameTemplate>
+        <td>
+          <mat-form-field hintLabel="Edit the DisplayName">
+            <input matInput [formControl]="displayNameControl" [errorStateMatcher]="immediateErrors" required>
+            <mat-error *ngIf="displayNameControl.invalid">{{getDisplayNameErrorMessage()}}</mat-error>
+          </mat-form-field>
+          <button mat-icon-button [disabled]="displayNameControl.invalid || displayNameControl.disabled" class="action" type="submit" (click)="saveDisplayName()" matTooltip="Save DisplayName" color="primary">
+            <mat-icon>save</mat-icon>
+          </button>
+          <button mat-icon-button [disabled]="displayNameControl.disabled" class="action" matTooltip="Cancel Editing DisplayName" (click)="cancelEditingDisplayName()">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </td>
+      </ng-template>
+      <ng-template #changePasswordTemplate>
+        <td>
+          <form id="password-form" [formGroup]="passwordForm" (submit)="savePassword()">
+            <div>
+              <mat-form-field>
+                <input matInput type="password" formControlName="oldPassword" placeholder="Current Password" [errorStateMatcher]="immediateErrors" required>
+              </mat-form-field>
+            </div>
+            <div>
+              <mat-form-field>
+                <input matInput type="password" formControlName="newPassword" placeholder="New Password" [errorStateMatcher]="immediateErrors" required>
+                <mat-hint *ngIf="passwordStrength">Strength: {{passwordStrength | number: '1.0-0'}}</mat-hint>
+                <mat-error *ngIf="passwordForm.controls['newPassword'].hasError('mintrimmedlength')">Min Character Length: {{passwordForm.controls['newPassword'].getError('mintrimmedlength').actual}} of {{passwordForm.controls['newPassword'].getError('mintrimmedlength').min}}</mat-error>
+              </mat-form-field>
+            </div>
+            <div>
+              <mat-form-field>
+                <input matInput type="password" formControlName="confirmationPassword" placeholder="Confirm New Password" [errorStateMatcher]="parentErrors" required>
+                <mat-error *ngIf="passwordForm.hasError('different')">Must match new password</mat-error>
+              </mat-form-field>
+            </div>
+            <div>
+              <button mat-flat-button color="primary" type="submit" [disabled]="passwordForm.invalid">Save</button>
+              <button mat-stroked-button (click)="cancelEditingPassword()" class="action">Cancel</button>
+            </div>
+          </form>
+        </td>
+      </ng-template>
     </mat-card-content>
   </mat-card>
 </div>
