@@ -13,13 +13,14 @@ import { Observable, of, throwError } from 'rxjs';
 import { map, mergeMap, catchError, filter } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { AuthError } from './models/AuthError';
+import { MessageService } from '../services/message.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
   private readonly baseUrl = `${window.location.origin}/api/`;
 
-  constructor(private authService: AuthService) { }
+  constructor(private _authService: AuthService, private _messageService: MessageService) { }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
@@ -27,7 +28,7 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(this.modifyRequest(request));
     }
 
-    const accessTokenInfo = this.authService.getAccessToken();
+    const accessTokenInfo = this._authService.getAccessToken();
     return (accessTokenInfo.isValid ? of(accessTokenInfo.token) : this.getAccessTokenUsingRefreshToken(next)).pipe(
       map(accessToken => this.modifyRequest(request, accessToken)),
       mergeMap(preppedRequest => next.handle(preppedRequest).pipe(
@@ -48,8 +49,8 @@ export class AuthInterceptor implements HttpInterceptor {
       )),
       catchError(error => {
         if (error instanceof AuthError) {
-          console.error('logging out from AuthError: ' + error.statusText);
-          this.authService.logoutClientOnly();
+          this._messageService.error(`Logged out: ${error.statusText}`, error);
+          this._authService.logoutClientOnly();
         }
         throw error;
       })
@@ -67,7 +68,7 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   private getAccessTokenUsingRefreshToken(next: HttpHandler): Observable<string> {
-    const refreshTokenInfo = this.authService.getRefreshToken();
+    const refreshTokenInfo = this._authService.getRefreshToken();
 
     if (!refreshTokenInfo.isValid) {
       return throwError(new AuthError('missing refresh token'));
@@ -75,7 +76,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
     const refreshRequest = new HttpRequest(
       'POST',
-      `${this.baseUrl}${this.authService.refreshUrl}`,
+      `${this.baseUrl}${this._authService.refreshUrl}`,
       null,
       {
         headers: new HttpHeaders().set('Authorization', `Bearer ${refreshTokenInfo.token}`),
@@ -88,7 +89,7 @@ export class AuthInterceptor implements HttpInterceptor {
         (response: HttpResponse<string>) => {
           console.log('used refresh token', response);
           const accessToken = response.body;
-          this.authService.saveAccessToken(accessToken);
+          this._authService.saveAccessToken(accessToken);
           return accessToken;
         }),
       catchError(error => {

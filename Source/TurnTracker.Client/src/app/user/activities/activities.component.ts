@@ -8,6 +8,7 @@ import { MessageService } from 'src/app/services/message.service';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user.service';
 import { IUser } from 'src/app/auth/models/IUser';
+import { AuthError } from 'src/app/auth/models/AuthError';
 
 @Component({
   selector: 'app-activities',
@@ -59,7 +60,11 @@ export class ActivitiesComponent implements OnInit {
           this.filterActivities(true);
         }
         this.activities.data = activities || [];
-      }, error => this._messageService.error('Failed to get activities', error));
+      }, error => {
+        if (!(error instanceof AuthError)) {
+          this._messageService.error('Failed to get activities', error);
+        }
+      });
   }
 
   filterActivities(includeDisabledActivities: boolean) {
