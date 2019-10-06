@@ -29,7 +29,8 @@ namespace TurnTracker.Server.Controllers
                     Name = a.Name,
                     CurrentTurnUserId = a.CurrentTurnUserId,
                     CurrentTurnUserDisplayName = a.CurrentTurnUser?.DisplayName,
-                    Due = a.Due
+                    Due = a.Due,
+                    IsDisabled = a.IsDisabled
                 }));
         }
     }

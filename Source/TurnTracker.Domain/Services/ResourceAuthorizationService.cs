@@ -31,27 +31,59 @@ namespace TurnTracker.Domain.Services
                 .Any(x => x.ActivityId == activityId && x.UserId == userId);
         }
 
-        public bool AreParticipantsOf(int activityId, params int[] userIds)
+        public Result CanTakeTurn(int activityId, params int[] userIds)
         {
-            return userIds?.Length > 0 && _db.Participants.AsNoTracking().Where(x => x.ActivityId == activityId)
-                       .Select(x => x.UserId)
-                       .ContainsSubset(userIds);
+            if (userIds is null || userIds.Length == 0)
+            {
+                return Result.Fail("Invalid user IDs");
+            }
+
+            var activity = _db.Activities.AsNoTracking()
+                .Include(x => x.Participants)
+                .SingleOrDefault(x => x.Id == activityId);
+
+            if (activity is null)
+            {
+                return Result.Fail("Invalid activity");
+            }
+
+            if (activity.IsDisabled)
+            {
+                return Result.Fail("Activity is disabled");
+            }
+
+            if (!activity.Participants.Select(x => x.UserId).ContainsSubset(userIds))
+            {
+                return Result.Fail("Not a participant of this activity");
+            }
+
+            return Result.Ok();
         }
 
         public bool IsOwnerOf(int activityId, int userId)
         {
-            return _db.Activities.AsNoTracking().SingleOrDefault(x => x.Id == activityId)?.OwnerId == userId;
+            return _db.Activities.AsNoTracking()
+                       .Any(x => x.Id == activityId && x.OwnerId == userId);
         }
 
         public bool CanModifyTurn(int turnId, int userId)
         {
-            var turn = _db.Turns.AsNoTracking().SingleOrDefault(x => x.Id == turnId);
-            return turn?.UserId == userId || turn?.CreatorId == userId;
+            var turn = _db.Turns.AsNoTracking()
+                .Include(x => x.Activity)
+                .SingleOrDefault(x => x.Id == turnId);
+            return turn != null && !turn.Activity.IsDisabled && (turn.UserId == userId || turn.CreatorId == userId);
+        }
+
+        public bool CanModifyActivity(int activityId, int userId)
+        {
+            return _db.Activities.AsNoTracking()
+                .Any(x => x.Id == activityId && !x.IsDisabled && x.OwnerId == userId);
         }
 
         public bool CanModifyParticipant(int participantId, int userId)
         {
-            return _db.Participants.AsNoTracking().SingleOrDefault(x => x.Id == participantId)?.UserId == userId;
+            return _db.Participants.AsNoTracking()
+                       .SingleOrDefault(x => x.Id == participantId && !x.Activity.IsDisabled)?.UserId == userId;
         }
     }
 }

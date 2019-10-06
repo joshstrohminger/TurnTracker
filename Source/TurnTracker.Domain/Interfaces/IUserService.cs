@@ -12,5 +12,6 @@ namespace TurnTracker.Domain.Interfaces
         Result LogoutUser(int userId);
         Result EnsureSeedUsers();
         Result<User> SetDisplayName(int userId, string displayName);
+        Result SetShowDisabledActivities(int userId, bool show);
     }
 }

@@ -9,3 +9,27 @@ th {
 td:not(:last-child) {
   padding-right: 1em;
 }
+
+$fabSpacing: 1em;
+
+#bottom-fab-container {
+  position: fixed;
+  right: $fabSpacing;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  button {
+    margin-bottom: $fabSpacing;
+  }
+}
+
+tr.disabled {
+  opacity: 0.4;
+}
+
+#disabled-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1em;
+}

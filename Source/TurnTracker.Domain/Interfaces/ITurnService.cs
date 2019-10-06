@@ -20,5 +20,6 @@ namespace TurnTracker.Domain.Interfaces
         Result<int> AddActivity(int ownerId, string name, bool takeTurns, uint? periodCount = null, Unit? periodUnit = null);
         Result AddParticipants(int activityId, params int[] userIds);
         Turn GetTurn(int id);
+        Result SetActivityDisabled(int activityId, bool disabled);
     }
 }

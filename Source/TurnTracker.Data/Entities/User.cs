@@ -36,6 +36,8 @@ namespace TurnTracker.Data.Entities
         public byte[] PasswordSalt { get; set; }
         public string RefreshKey { get; set; }
 
+        public bool ShowDisabledActivities { get; set; }
+
         #region Navigation
 
         public List<Participant> Participants { get; set; }

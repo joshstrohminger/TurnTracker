@@ -19,7 +19,7 @@
           <a mat-button [routerLink]="'/'">Turn Tracker</a>
         </div>
         <div fxFlex fxLayout fxLayoutAlign="end">
-          <a mat-button [routerLink]="'/profile'" *ngIf="authService.isLoggedIn">{{authService.currentUser.displayName}}</a>
+          <a mat-button [routerLink]="'/profile'" *ngIf="authService.isLoggedIn">{{userService.currentUser.displayName}}</a>
           <a mat-button [routerLink]="'/login'" *ngIf="!authService.isLoggedIn">Login</a>
         </div>
       </mat-toolbar>

@@ -2,10 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { ActivityDetails } from '../models/ActivityDetails';
 import { switchMap } from 'rxjs/operators';
-import { HttpClient, HttpRequest } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Unit } from '../models/Unit';
 import { DateTime } from 'luxon';
-import { AuthService } from 'src/app/auth/auth.service';
 import { NewTurn } from '../models/NewTurn';
 import { MatDialog, MatTableDataSource } from '@angular/material';
 import { MessageService } from 'src/app/services/message.service';
@@ -18,6 +17,7 @@ import { Turn } from '../models/Turn';
 import { TurnDetailsDialog } from '../turn-details/turn-details.dialog';
 import { TurnDetailsDialogConfig } from '../turn-details/TurnDetailsDialogConfig';
 import { VerificationStatus } from '../models/Participant';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-activity',
@@ -52,7 +52,7 @@ export class ActivityComponent implements OnInit {
   constructor(
     private _route: ActivatedRoute,
     private _http: HttpClient,
-    private _authService: AuthService,
+    private _userService: UserService,
     private _messageService: MessageService,
     private _dialog: MatDialog) {
       this.turns.filterPredicate = (turn: Turn, filter: string) => {
@@ -62,9 +62,10 @@ export class ActivityComponent implements OnInit {
     }
 
   ngOnInit() {
-    if (this._authService.isLoggedIn) {
-      this.myUserId = this._authService.currentUser.id;
+    if (this._userService.currentUser) {
+      this.myUserId = this._userService.currentUser.id;
     }
+
     this._route.paramMap.pipe(
       switchMap((params: ParamMap) => params.get('id'))
     ).subscribe(id => {
@@ -97,7 +98,7 @@ export class ActivityComponent implements OnInit {
   }
 
   showTurnDetails(turn: Turn) {
-    const canModifyTurn = this.myUserId === turn.creatorId || this.myUserId === turn.userId;
+    const canModifyTurn = !this.activity.isDisabled && (this.myUserId === turn.creatorId || this.myUserId === turn.userId);
     const dialogRef = this._dialog.open(TurnDetailsDialog, {data: <TurnDetailsDialogConfig>{
       turn: turn,
       names: this.names,

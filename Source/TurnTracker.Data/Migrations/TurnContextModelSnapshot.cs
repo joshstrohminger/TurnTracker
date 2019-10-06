@@ -33,6 +33,8 @@ namespace TurnTracker.Data.Migrations
 
                     b.Property<bool>("HasDisabledTurns");
 
+                    b.Property<bool>("IsDisabled");
+
                     b.Property<DateTimeOffset>("ModifiedDate");
 
                     b.Property<string>("Name")
@@ -238,6 +240,8 @@ namespace TurnTracker.Data.Migrations
                     b.Property<string>("RefreshKey");
 
                     b.Property<int>("Role");
+
+                    b.Property<bool>("ShowDisabledActivities");
 
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()

@@ -9,5 +9,6 @@ namespace TurnTracker.Server.Models
         public int? CurrentTurnUserId { get; set; }
         public string CurrentTurnUserDisplayName { get; set; }
         public DateTimeOffset? Due { get; set; }
+        public bool IsDisabled { get; set; }
     }
 }

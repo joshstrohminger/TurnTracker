@@ -52,7 +52,8 @@ namespace TurnTracker.Data.Migrations
                     MobileNumberBeingVerified = table.Column<string>(nullable: true),
                     PasswordHash = table.Column<byte[]>(nullable: false),
                     PasswordSalt = table.Column<byte[]>(nullable: false),
-                    RefreshKey = table.Column<string>(nullable: true)
+                    RefreshKey = table.Column<string>(nullable: true),
+                    ShowDisabledActivities = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -68,6 +69,7 @@ namespace TurnTracker.Data.Migrations
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
                     Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),
+                    IsDisabled = table.Column<bool>(nullable: false),
                     Name = table.Column<string>(nullable: false),
                     Period = table.Column<long>(nullable: true),
                     PeriodUnit = table.Column<string>(nullable: true),

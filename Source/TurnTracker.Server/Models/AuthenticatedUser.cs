@@ -11,6 +11,7 @@ namespace TurnTracker.Server.Models
         public string RefreshToken { get; }
         public string AccessToken { get; }
         public Role Role { get; }
+        public bool ShowDisabledActivities { get; }
 
         public AuthenticatedUser(User user, string accessToken, string refreshToken)
         {
@@ -20,6 +21,7 @@ namespace TurnTracker.Server.Models
             RefreshToken = refreshToken;
             AccessToken = accessToken;
             Role = user.Role;
+            ShowDisabledActivities = user.ShowDisabledActivities;
         }
     }
 }

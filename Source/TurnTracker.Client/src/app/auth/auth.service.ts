@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, of, concat } from 'rxjs';
-import { map, first, defaultIfEmpty, catchError, filter, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, first, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { Credentials } from './login/Credentials';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { AuthenticatedUser } from './models/AuthenticatedUser';
 import { Profile } from './models/Profile';
 import { TokenInfo } from './models/TokenInfo';
+import { UserService } from '../services/user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,48 +16,30 @@ import { TokenInfo } from './models/TokenInfo';
 export class AuthService {
 
   public readonly refreshUrl = 'auth/refresh';
-  private readonly userKey = 'user';
-  private readonly accessTokenKey = 'access-token';
-  private readonly accessTokenExpirationKey = 'access-token-exp';
-  private readonly refreshTokenKey = 'refresh-token';
-  private readonly refreshTokenExpirationKey = 'refresh-token-exp';
+  private readonly _accessTokenKey = 'access-token';
+  private readonly _accessTokenExpirationKey = 'access-token-exp';
+  private readonly _refreshTokenKey = 'refresh-token';
+  private readonly _refreshTokenExpirationKey = 'refresh-token-exp';
 
   public get isLoggedIn() {
-    return !!this._currentUser;
+    return !!this._userService.currentUser;
   }
 
-  private _currentUser: AuthenticatedUser = null;
-  public get currentUser() {
-    return this._currentUser;
-  }
-
-  constructor(private router: Router, private route: ActivatedRoute, private http: HttpClient) {
-    const saved = localStorage.getItem(this.userKey);
-    if (saved) {
-      this._currentUser = JSON.parse(saved);
-    }
-  }
-
-  setCurrentUserDisplayName(displayName: string) {
-    const saved = localStorage.getItem(this.userKey);
-    if (saved) {
-      this._currentUser = JSON.parse(saved);
-      this._currentUser.displayName = displayName;
-      localStorage.setItem(this.userKey, JSON.stringify(this._currentUser));
-    }
-  }
+  constructor(
+    private _router: Router,
+    private _route: ActivatedRoute,
+    private _http: HttpClient,
+    private _userService: UserService) { }
 
   private saveUser(user?: AuthenticatedUser) {
     if (user) {
-      localStorage.setItem(this.userKey, JSON.stringify(user));
       this.saveAccessToken(user.accessToken);
       this.saveRefreshToken(user.refreshToken);
-      this._currentUser = user;
+      this._userService.currentUser = user;
     } else {
-      localStorage.removeItem(this.userKey);
       this.saveAccessToken();
       this.saveRefreshToken();
-      this._currentUser = null;
+      this._userService.currentUser = null;
     }
   }
 
@@ -64,17 +47,17 @@ export class AuthService {
     const options = {
       queryParams: url ? { redirectUrl: url } : {}
     };
-    this.router.navigateByUrl('/login', options);
+    this._router.navigateByUrl('/login', options);
   }
 
   login(credentials: Credentials): Observable<string> {
 
-    return this.http.post<AuthenticatedUser>('auth/login', credentials).pipe(
-      map(profile => {
-        this.saveUser(profile);
-        this.route.queryParams.pipe(first()).subscribe(params => {
+    return this._http.post<AuthenticatedUser>('auth/login', credentials).pipe(
+      map(user => {
+        this.saveUser(user);
+        this._route.queryParams.pipe(first()).subscribe(params => {
           const url = params && params.redirectUrl || '/activities';
-          this.router.navigateByUrl(url);
+          this._router.navigateByUrl(url);
         });
         return null as string;
       }), catchError((error: HttpErrorResponse) => {
@@ -82,13 +65,14 @@ export class AuthService {
           case 401:
             return of('Invalid credentials');
           default:
+            console.error('Error while logging in', error);
             return of('Unknown error');
         }
       }));
   }
 
   logout(): void {
-    this.http.post('auth/logout', null).subscribe(
+    this._http.post('auth/logout', null).subscribe(
       () => console.log('logged out successfully'),
       error => {
         console.error('failed to logout', error);
@@ -99,19 +83,19 @@ export class AuthService {
 
   logoutClientOnly(): void {
     this.saveUser();
-    this.router.navigateByUrl('/login');
+    this._router.navigateByUrl('/login');
   }
 
   getProfile(): Observable<Profile> {
-    return this.http.get<Profile>('profile');
+    return this._http.get<Profile>('profile');
   }
 
   getAccessToken(): TokenInfo {
-    return this.getToken(this.accessTokenKey, this.accessTokenExpirationKey);
+    return this.getToken(this._accessTokenKey, this._accessTokenExpirationKey);
   }
 
   getRefreshToken(): TokenInfo {
-    return this.getToken(this.refreshTokenKey, this.refreshTokenExpirationKey);
+    return this.getToken(this._refreshTokenKey, this._refreshTokenExpirationKey);
   }
 
   private getToken(tokenKey: string, expirationKey: string): TokenInfo {
@@ -124,11 +108,11 @@ export class AuthService {
   }
 
   saveAccessToken(accessToken?: string): boolean {
-    return this.saveToken(accessToken, this.accessTokenKey, this.accessTokenExpirationKey);
+    return this.saveToken(accessToken, this._accessTokenKey, this._accessTokenExpirationKey);
   }
 
   saveRefreshToken(refreshToken?: string): boolean {
-    return this.saveToken(refreshToken, this.refreshTokenKey, this.refreshTokenExpirationKey);
+    return this.saveToken(refreshToken, this._refreshTokenKey, this._refreshTokenExpirationKey);
   }
 
   private saveToken(token: string, tokenKey: string, expirationKey: string): boolean {

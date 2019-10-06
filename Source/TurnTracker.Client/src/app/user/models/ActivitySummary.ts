@@ -6,6 +6,7 @@ export class ActivitySummary {
   public currentTurnUserId?: number;
   public currentTurnUserDisplayName?: string;
   public due?: string;
+  public isDisabled: boolean;
 
   // Properties populated by the client and not the server
   public dueDate?: DateTime;

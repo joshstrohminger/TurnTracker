@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Server.Models;
@@ -25,7 +27,11 @@ namespace TurnTracker.Server.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var myId = User.GetId();
-            if(!_resourceAuthorizationService.AreParticipantsOf(turn.ActivityId, myId, turn.ForUserId)) return Forbid();
+            var authResult = _resourceAuthorizationService.CanTakeTurn(turn.ActivityId, myId, turn.ForUserId);
+            if (authResult.IsFailure)
+            {
+                return StatusCode(403, authResult.Error);
+            }
 
             var result = _turnService.TakeTurn(turn.ActivityId, myId, turn.ForUserId, turn.When);
             if (result.IsSuccess) return Json(result.Value);

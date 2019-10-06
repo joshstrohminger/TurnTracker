@@ -1,3 +1,6 @@
+<div *ngIf="anyDisabledActivities" id="disabled-toggle">
+  <mat-slide-toggle (change)="filterActivities($event.checked)" [checked]="me.showDisabledActivities">Show Disabled</mat-slide-toggle>
+</div>
 <table mat-table [dataSource]="activities" class="mat-elevation-z8" matSort>
   <ng-container matColumnDef="name">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Activity</th>
@@ -6,7 +9,7 @@
   <ng-container matColumnDef="currentTurnUserDisplayName">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Turn</th>
     <td mat-cell *matCellDef="let activity">
-      <span *ngIf="activity.currentTurnUserDisplayName">{{activity.currentTurnUserDisplayName}}</span>
+      <span *ngIf="activity.currentTurnUserDisplayName" [class.primary]="activity.currentTurnUserId === me.id">{{activity.currentTurnUserDisplayName}}</span>
     </td>
   </ng-container>
   <ng-container matColumnDef="dueDate">
@@ -17,5 +20,9 @@
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *matRowDef="let activity; columns: displayedColumns" (click)="viewDetails(activity)"></tr>
+  <tr mat-row *matRowDef="let activity; columns: displayedColumns" (click)="viewDetails(activity)" [class.disabled]="activity.isDisabled"></tr>
 </table>
+
+<div id="bottom-fab-container">
+  <button mat-fab color="primary" (click)="addActivity()" matTooltip="Add Activity" matTooltipPosition="before"><mat-icon>add</mat-icon></button>
+</div>

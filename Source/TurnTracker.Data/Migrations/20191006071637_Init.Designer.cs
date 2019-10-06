@@ -10,7 +10,7 @@ using TurnTracker.Data;
 namespace TurnTracker.Data.Migrations
 {
     [DbContext(typeof(TurnContext))]
-    [Migration("20190930054045_Init")]
+    [Migration("20191006071637_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,6 +34,8 @@ namespace TurnTracker.Data.Migrations
                     b.Property<DateTimeOffset?>("Due");
 
                     b.Property<bool>("HasDisabledTurns");
+
+                    b.Property<bool>("IsDisabled");
 
                     b.Property<DateTimeOffset>("ModifiedDate");
 
@@ -240,6 +242,8 @@ namespace TurnTracker.Data.Migrations
                     b.Property<string>("RefreshKey");
 
                     b.Property<int>("Role");
+
+                    b.Property<bool>("ShowDisabledActivities");
 
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()

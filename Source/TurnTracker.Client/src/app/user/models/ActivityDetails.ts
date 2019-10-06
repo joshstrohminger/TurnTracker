@@ -15,6 +15,7 @@ export class ActivityDetails {
     public currentTurnUserDisplayName?: string;
     public participants: Participant[];
     public turns: Turn[];
+    public isDisabled: boolean;
 
     // Properties populated by the client and not the server
     public dueDate?: DateTime;

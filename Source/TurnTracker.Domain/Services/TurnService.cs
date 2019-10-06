@@ -4,7 +4,6 @@ using System.Linq;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TurnTracker.Common;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Interfaces;
@@ -93,6 +92,29 @@ namespace TurnTracker.Domain.Services
                         var byUser = userIds[i / 2 % 2];
                         TakeTurn(activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
                     }
+
+                    // fourth activity, disabled
+                    activityIdResult = AddActivity(userIds[1], "Do the Dishes", true);
+                    if (activityIdResult.IsFailure)
+                    {
+                        return activityIdResult;
+                    }
+
+                    activityId = activityIdResult.Value;
+                    participantResult = AddParticipants(activityId, userIds);
+                    if (participantResult.IsFailure)
+                    {
+                        return participantResult;
+                    }
+
+                    for (var i = 1; i < 19; i++)
+                    {
+                        var forUser = userIds[i % 2];
+                        var byUser = userIds[i / 2 % 2];
+                        TakeTurn(activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
+                    }
+
+                    return SetActivityDisabled(activityId, true);
                 }
                 return Result.Ok();
             }
@@ -132,7 +154,9 @@ namespace TurnTracker.Domain.Services
                 .Where(x => x.UserId == userId)
                 .Select(x => x.Activity)
                 .Include(x => x.CurrentTurnUser)
-                .OrderByDescending(x => x.Due);
+                .OrderBy(x => x.IsDisabled)
+                .ThenByDescending(x => x.Due)
+                .ThenBy(x => x.Name);
         }
 
         private Activity GetActivity(int activityId, bool readOnly, bool includeTurns)
@@ -208,7 +232,6 @@ namespace TurnTracker.Domain.Services
                 {
                     turn.IsDisabled = disabled;
                     turn.ModifierId = byUserId;
-                    _db.Update(turn);
                     _db.SaveChanges();
                 }
 
@@ -216,6 +239,17 @@ namespace TurnTracker.Domain.Services
             }
 
             return Result.Fail<ActivityDetails>("Invalid turn id");
+        }
+
+        public Result SetActivityDisabled(int activityId, bool disabled)
+        {
+            var activity = _db.Activities.Find(activityId);
+            if (activity is null) return Result.Fail("Invalid activity");
+
+            activity.IsDisabled = disabled;
+            _db.SaveChanges();
+
+            return Result.Ok();
         }
 
         public Result<int> AddActivity(int ownerId, string name, bool takeTurns, uint? periodCount = null, Unit? periodUnit = null)

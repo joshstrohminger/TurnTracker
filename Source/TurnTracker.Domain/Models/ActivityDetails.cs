@@ -19,6 +19,7 @@ namespace TurnTracker.Domain.Models
         public string CurrentTurnUserDisplayName { get; }
         public List<ParticipantInfo> Participants { get; }
         public List<TurnInfo> Turns { get; }
+        public bool IsDisabled { get; }
 
         public static ActivityDetails Calculate(Activity activity, int userId)
         {
@@ -37,6 +38,7 @@ namespace TurnTracker.Domain.Models
             PeriodUnit = activity.PeriodUnit;
             PeriodCount = activity.PeriodCount;
             OwnerName = activity.Owner.DisplayName;
+            IsDisabled = activity.IsDisabled;
 
             if (calculate)
             {

@@ -1,4 +1,8 @@
 <div *ngIf="activity" id="activity-wrapper">
+  <div class="warn standalone" *ngIf="activity.isDisabled">
+    <h1>This activity is disabled</h1>
+    <span>No modifications can be made</span>
+  </div>
   <mat-card>
     <mat-card-header>
       <mat-card-title>{{activity.name}}</mat-card-title>
@@ -35,19 +39,19 @@
       <ng-container matColumnDef="sms">
         <th mat-header-cell *matHeaderCellDef class="center" [class.warn]="!mobileNumberVerified" matTooltipPosition="above" [matTooltip]="mobileNumberVerified ? null : 'unverified'">SMS</th>
         <td mat-cell *matCellDef="let note">
-          <mat-checkbox [(ngModel)]="note.sms" (change)="saveNotificationSetting(note)" [disabled]="busy || !mobileNumberVerified"></mat-checkbox>
+          <mat-checkbox [(ngModel)]="note.sms" (change)="saveNotificationSetting(note)" [disabled]="activity.isDisabled || busy || !mobileNumberVerified"></mat-checkbox>
         </td>
       </ng-container>
       <ng-container matColumnDef="email">
         <th mat-header-cell *matHeaderCellDef class="center" [class.warn]="!emailVerified" matTooltipPosition="above" [matTooltip]="emailVerified ? null : 'unverified'">E-Mail</th>
         <td mat-cell *matCellDef="let note">
-          <mat-checkbox [(ngModel)]="note.email" (change)="saveNotificationSetting(note)" [disabled]="busy || !emailVerified"></mat-checkbox>
+          <mat-checkbox [(ngModel)]="note.email" (change)="saveNotificationSetting(note)" [disabled]="activity.isDisabled || busy || !emailVerified"></mat-checkbox>
         </td>
       </ng-container>
       <ng-container matColumnDef="push">
         <th mat-header-cell *matHeaderCellDef class="center">Push</th>
         <td mat-cell *matCellDef="let note">
-          <mat-checkbox [(ngModel)]="note.push" (change)="saveNotificationSetting(note)" [disabled]="busy"></mat-checkbox>
+          <mat-checkbox [(ngModel)]="note.push" (change)="saveNotificationSetting(note)" [disabled]="activity.isDisabled || busy"></mat-checkbox>
         </td>
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="['type','sms','email','push']"></tr>
@@ -60,7 +64,7 @@
     </mat-expansion-panel-header>
     <div *ngIf="hasTurns; else loadingTurns">
       <div class="positioning-wrapper">
-        <mat-slide-toggle (change)="filterTurns($event.checked)" [disabled]="busy" id="disabled-toggle">Show Disabled</mat-slide-toggle>
+        <mat-slide-toggle *ngIf="activity.hasDisabledTurns" (change)="filterTurns($event.checked)" [disabled]="busy" id="disabled-toggle">Show Disabled</mat-slide-toggle>
         <table mat-table [dataSource]="turns" class="padded">
           <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef style="padding-left: 0.5em">Turn</th>
@@ -99,7 +103,7 @@
       </ng-template>
     </mat-menu>
   </mat-expansion-panel>
-  <div id="bottom-fab-container">
+  <div id="bottom-fab-container" *ngIf="!activity.isDisabled">
     <button mat-mini-fab color="accent" (click)="takeTurnWithOptions()" matTooltip="Take Turn With Options" matTooltipPosition="before" [disabled]="busy"><mat-icon>date_range</mat-icon></button>
     <button mat-fab color="primary" (click)="takeTurn()" matTooltip="Take Turn" matTooltipPosition="before" [disabled]="busy"><mat-icon>add</mat-icon></button>
   </div>

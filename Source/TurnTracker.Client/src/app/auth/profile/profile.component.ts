@@ -9,6 +9,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ImmediateErrorStateMatcher } from 'src/app/validators/ImmediateErrorStateMatcher';
 import { ParentErrorStateMatcher } from 'src/app/validators/ParentErrorStateMatcher';
 import { PasswordChange } from '../models/PasswordChange';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-profile',
@@ -36,7 +37,8 @@ export class ProfileComponent implements OnInit {
     private _authService: AuthService,
     private _messageService: MessageService,
     private _formBuilder: FormBuilder,
-    private _http: HttpClient) { }
+    private _http: HttpClient,
+    private _userService: UserService) { }
 
   ngOnInit() {
     this._authService.getProfile().subscribe(
@@ -78,7 +80,7 @@ export class ProfileComponent implements OnInit {
         this._messageService.success('Saved DisplayName');
         this.user = profile;
         this.displayNameControl = null;
-        this._authService.setCurrentUserDisplayName(this.user.displayName);
+        this._userService.currentUser.displayName = this.user.displayName;
       },
       error => {
         this._messageService.error('Failed to save DisplayName', error);
@@ -126,7 +128,7 @@ export class ProfileComponent implements OnInit {
             message = 'Invalid original password';
             break;
           default:
-            message = 'Failed to change password'
+            message = 'Failed to change password';
             break;
         }
 

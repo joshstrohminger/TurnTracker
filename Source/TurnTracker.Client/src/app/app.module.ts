@@ -47,8 +47,11 @@ import { TakeTurnDialog } from './user/take-turn/take-turn.dialog';
 import { NotificationPipe } from './user/notification.pipe';
 import { TimerComponent } from './user/timer/timer.component';
 import { TurnDetailsDialog } from './user/turn-details/turn-details.dialog';
+import { EditActivityComponent } from './user/edit-activity/edit-activity.component';
 
 const routes: Routes = [
+  { path: 'activity/add', component: EditActivityComponent, canActivate: [AuthGuard] },
+  { path: 'activity/:id/edit', component: EditActivityComponent, canActivate: [AuthGuard] },
   { path: 'activity/:id', component: ActivityComponent, canActivate: [AuthGuard] },
   { path: 'activities', component: ActivitiesComponent, canActivate: [AuthGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
@@ -71,7 +74,8 @@ const routes: Routes = [
     TakeTurnDialog,
     NotificationPipe,
     TimerComponent,
-    TurnDetailsDialog
+    TurnDetailsDialog,
+    EditActivityComponent
   ],
   entryComponents: [
     MatSpinner,

@@ -46,5 +46,30 @@ namespace TurnTracker.Server.Controllers
 
             return Json(details);
         }
+
+        [HttpDelete("{id}")]
+        public IActionResult DisableActivity(int id)
+        {
+            return SetActivityDisabled(id, true);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult EnableActivity(int id)
+        {
+            return SetActivityDisabled(id, false);
+        }
+
+        private IActionResult SetActivityDisabled(int id, bool disabled)
+        {
+            if (id <= 0) return BadRequest("ID must be greater than zero");
+
+            var myId = User.GetId();
+            if (!_resourceAuthorizationService.IsOwnerOf(id, myId)) return Forbid();
+
+            var result = _turnService.SetActivityDisabled(id, disabled);
+            if (result.IsSuccess) return Ok();
+
+            return StatusCode(500);
+        }
     }
 }

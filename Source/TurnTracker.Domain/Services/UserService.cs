@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using CSharpFunctionalExtensions;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +19,11 @@ namespace TurnTracker.Domain.Services
 {
     public class UserService : IUserService
     {
+        private const int SaltSize = 128 / 8;
+        private const int HashSize = 256 / 8;
+        private const int HashIterations = 10000;
+        private const KeyDerivationPrf HashAlgorithm = KeyDerivationPrf.HMACSHA256;
+
         private readonly TurnContext _db;
         private readonly AppSettings _appSettings;
 
@@ -33,27 +39,28 @@ namespace TurnTracker.Domain.Services
             {
                 if (!_db.Users.Any())
                 {
-                    var salt = GetRandomBytes();
-                    _db.Users.Add(new User
+                    var josh = new User
                     {
                         DisplayName = "Joshua",
                         Username = "josh",
                         Email = "josh@mail.com",
                         Role = Role.Admin,
-                        PasswordSalt = salt,
-                        PasswordHash = HashPassword(salt, "password"),
-                        MobileNumber = "+1 (888) 123-4567"
-                    });
-                    salt = GetRandomBytes();
-                    _db.Users.Add(new User
+                        MobileNumber = "+1 (888) 123-1337"
+                    };
+                    AssignNewPassword(josh, "password");
+
+                    var kelly = new User
                     {
                         DisplayName = "Kelly",
                         Username = "kelly",
                         Role = Role.User,
-                        PasswordSalt = salt,
-                        PasswordHash = HashPassword(salt, "password"),
-                        MobileNumber = "+1 (888) 123-4567"
-                    });
+                        MobileNumber = "+1 (666) 123-8008"
+                    };
+                    AssignNewPassword(kelly, "password");
+
+                    _db.Users.Add(josh);
+                    _db.Users.Add(kelly);
+
                     _db.SaveChanges();
                 }
             }
@@ -61,7 +68,6 @@ namespace TurnTracker.Domain.Services
             {
                 return Result.Fail(e.Message);
             }
-
 
             return Result.Ok();
         }
@@ -81,7 +87,7 @@ namespace TurnTracker.Domain.Services
             if (user == null)
                 return Result.Fail<(User, string, string)>("Invalid username");
 
-            if (!user.PasswordHash.SequenceEqual(HashPassword(user.PasswordSalt, password)))
+            if(VerifyPassword(user, password).IsFailure)
             {
                 return Result.Fail<(User, string, string)>("Invalid password");
             }
@@ -100,15 +106,13 @@ namespace TurnTracker.Domain.Services
             var user = _db.Users.SingleOrDefault(x => x.Id == userId);
             if (user is null) return Result.Fail("Invalid user");
 
-            if (!user.PasswordHash.SequenceEqual(HashPassword(user.PasswordSalt, oldPassword)))
+            if(VerifyPassword(user, oldPassword).IsFailure)
             {
                 return Result.Fail("Invalid password");
             }
 
             // authentication successful set the new password
-            var salt = GetRandomBytes();
-            user.PasswordSalt = salt;
-            user.PasswordHash = HashPassword(salt, newPassword);
+            AssignNewPassword(user, newPassword);
             _db.SaveChanges();
 
             return Result.Ok();
@@ -142,6 +146,20 @@ namespace TurnTracker.Domain.Services
             _db.SaveChanges();
 
             return Result.Ok(user);
+        }
+
+        public Result SetShowDisabledActivities(int userId, bool show)
+        {
+            var user = _db.Users.SingleOrDefault(x => x.Id == userId);
+            if (user is null)
+            {
+                return Result.Fail("Invalid user");
+            }
+
+            user.ShowDisabledActivities = show;
+            _db.SaveChanges();
+
+            return Result.Ok();
         }
 
         public Result<User> GetUser(int userId)
@@ -203,7 +221,7 @@ namespace TurnTracker.Domain.Services
         private byte[] GetRandomBytes(ushort length = 50)
         {
             var bytes = new byte[length];
-            using (var rng = new RNGCryptoServiceProvider())
+            using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetNonZeroBytes(bytes);
             }
@@ -211,14 +229,23 @@ namespace TurnTracker.Domain.Services
             return bytes;
         }
 
-        private static byte[] HashPassword(byte[] salt, string password)
-        {
-            if(salt is null || salt.Length == 0) throw new ArgumentNullException(nameof(salt));
 
-            using (var hasher = new HMACSHA256(salt))
-            {
-                return hasher.ComputeHash(Encoding.UTF8.GetBytes(password));
-            }
+        private void AssignNewPassword(User user, string password)
+        {
+            var salt = GetRandomBytes(SaltSize);
+            var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, HashIterations, HashSize);
+            user.PasswordSalt = salt;
+            user.PasswordHash = hash;
+        }
+
+        private Result VerifyPassword(User user, string password)
+        {
+            if (string.IsNullOrEmpty(password)) return Result.Fail("Invalid password");
+            var salt = user.PasswordSalt;
+            if (salt is null || salt.Length != SaltSize) return Result.Fail("Invalid salt");
+            if (user.PasswordHash is null || user.PasswordHash.Length != HashSize) return Result.Fail("Invalid hash");
+            var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, HashIterations, HashSize);
+            return user.PasswordHash.SequenceEqual(hash) ? Result.Ok() : Result.Fail("No match");
         }
     }
 }

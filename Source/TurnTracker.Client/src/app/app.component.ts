@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatSidenav } from '@angular/material';
+import { UserService } from './services/user.service';
 import { AuthService } from './auth/auth.service';
 
 @Component({
@@ -12,7 +13,7 @@ export class AppComponent {
 
   @ViewChild('sidenav', {static: true}) sidenav: MatSidenav;
 
-  constructor(router: Router, public authService: AuthService) {
+  constructor(router: Router, public userService: UserService, public authService: AuthService) {
     router.events.subscribe(event => {
       // close sidenav on routing
       this.sidenav.close();

@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -34,6 +35,7 @@ namespace TurnTracker.Server
             services.AddCors();
             services.AddMvc(options =>
             {
+                options.InputFormatters.Insert(0, new BoolBodyInputFormatter());
                 options.InputFormatters.Insert(0, new StringBodyInputFormatter());
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddResponseCompression();
