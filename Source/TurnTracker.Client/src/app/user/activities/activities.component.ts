@@ -42,7 +42,6 @@ export class ActivitiesComponent implements OnInit {
   ngOnInit() {
     this.me = this._userService.currentUser;
 
-
     this._http.get<ActivitySummary[]>('activities/participating')
       .subscribe(activities => {
         for (const activity of activities) {

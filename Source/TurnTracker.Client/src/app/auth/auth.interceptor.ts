@@ -36,12 +36,21 @@ export class AuthInterceptor implements HttpInterceptor {
           if (error instanceof AuthError) {
             console.log('rethrowing AuthError: ' + error.statusText);
             throw error;
-          } else if (error instanceof HttpErrorResponse && error.status === 401) {
-            console.log('invalid access token, refreshing');
-            return this.getAccessTokenUsingRefreshToken(next).pipe(
-              map(accessToken => this.modifyRequest(request, accessToken)),
-              mergeMap(secondRequest => next.handle(secondRequest))
-            );
+          } else if (error instanceof HttpErrorResponse) {
+            switch (error.status) {
+              case 401:
+                console.log('invalid access token, refreshing');
+                return this.getAccessTokenUsingRefreshToken(next).pipe(
+                  map(accessToken => this.modifyRequest(request, accessToken)),
+                  mergeMap(secondRequest => next.handle(secondRequest))
+                );
+              case 504:
+                const message = 'No connection';
+                console.error(message, error);
+                throw new AuthError(message);
+              default:
+                throw error;
+            }
           } else {
             throw error;
           }
@@ -93,10 +102,25 @@ export class AuthInterceptor implements HttpInterceptor {
           return accessToken;
         }),
       catchError(error => {
-        const message = 'failed to use refresh token';
-        console.error(message, error);
-        throw new AuthError(message);
+        const authError = this._toAuthError(error);
+        throw authError;
       })
     );
+  }
+
+  private _toAuthError(error: any): AuthError {
+    let message = 'Error';
+    if (error instanceof HttpErrorResponse) {
+      switch (error.status) {
+        case 504:
+          message = 'No connection';
+          break;
+        default:
+          message = error.statusText;
+          break;
+      }
+    }
+    console.error(message, error);
+    return new AuthError(message);
   }
 }
