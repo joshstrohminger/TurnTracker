@@ -11,6 +11,7 @@ export class ActivityDetails {
     public periodUnit?: Unit;
     public periodCount?: number;
     public ownerName: string;
+    public ownerId: number;
     public currentTurnUserId?: number;
     public currentTurnUserDisplayName?: string;
     public participants: Participant[];

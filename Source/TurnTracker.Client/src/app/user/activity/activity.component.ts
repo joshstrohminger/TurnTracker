@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, ParamMap } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { ActivityDetails } from '../models/ActivityDetails';
 import { switchMap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
@@ -51,6 +51,7 @@ export class ActivityComponent implements OnInit {
 
   constructor(
     private _route: ActivatedRoute,
+    private _router: Router,
     private _http: HttpClient,
     private _userService: UserService,
     private _messageService: MessageService,
@@ -95,6 +96,10 @@ export class ActivityComponent implements OnInit {
         this.takeTurnUnsafe(result);
       }
     });
+  }
+
+  editActivity() {
+    this._router.navigate(['/activity', this._activityId, 'edit']);
   }
 
   showTurnDetails(turn: Turn) {
