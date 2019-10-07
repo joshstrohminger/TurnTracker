@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { ActivityDetails } from '../models/ActivityDetails';
 import { switchMap } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Unit } from '../models/Unit';
 import { DateTime } from 'luxon';
 import { NewTurn } from '../models/NewTurn';
@@ -26,7 +26,7 @@ import { UserService } from 'src/app/services/user.service';
 })
 export class ActivityComponent implements OnInit {
 
-  private _activityId: string;
+  private _activityId: number;
   private _notificationPipe = new NotificationPipe();
   private _includeTurns = false;
   private _hasTurns = false;
@@ -63,16 +63,18 @@ export class ActivityComponent implements OnInit {
     }
 
   ngOnInit() {
-    if (this._userService.currentUser) {
-      this.myUserId = this._userService.currentUser.id;
+    this.myUserId = this._userService.currentUser.id;
+
+    const idParam = this._route.snapshot.paramMap.get('id');
+    const id = parseInt(idParam, 10);
+    if (isNaN(id) || id <= 0) {
+      this._messageService.error('Invalid activity ID');
+      this._router.navigateByUrl('/activities');
+      return;
     }
 
-    this._route.paramMap.pipe(
-      switchMap((params: ParamMap) => params.get('id'))
-    ).subscribe(id => {
-      this._activityId = id;
-      this.refreshActivity();
-    });
+    this._activityId = id;
+    this.refreshActivity();
   }
 
   filterTurns(includeDisabledTurns: boolean) {
@@ -134,7 +136,12 @@ export class ActivityComponent implements OnInit {
         this.updateActivity(updatedDetails);
       }, error => {
         this.busy = false;
-        this._messageService.error('Failed to take turn', error);
+        if (error instanceof HttpErrorResponse && error.status === 403) {
+          this._messageService.error('Not allowed to take turn');
+          this._router.navigateByUrl('/activities');
+        } else {
+          this._messageService.error('Failed to take turn', error);
+        }
       });
   }
 
@@ -152,7 +159,11 @@ export class ActivityComponent implements OnInit {
       this.updateActivity(updatedDetails);
     }, error => {
       this.busy = false;
-      this._messageService.error(`Failed to ${turn.isDisabled ? 'enable' : 'disable'} turn`, error);
+      if (error instanceof HttpErrorResponse && error.status === 403) {
+        this._messageService.error('Not allowed to modify turn');
+      } else {
+        this._messageService.error(`Failed to ${turn.isDisabled ? 'enable' : 'disable'} turn`, error);
+      }
     });
   }
 
@@ -179,7 +190,12 @@ export class ActivityComponent implements OnInit {
         this.updateActivity(activity);
       }, error => {
         this.busy = false;
-        this._messageService.error('Failed to get activity', error);
+        if (error instanceof HttpErrorResponse && error.status === 403) {
+          this._messageService.error('Not allowed to view activity');
+          this._router.navigateByUrl('/activities');
+        } else {
+          this._messageService.error('Failed to get activity', error);
+        }
       });
   }
 
