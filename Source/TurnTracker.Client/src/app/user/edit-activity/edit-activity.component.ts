@@ -1,27 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute, Router, ParamMap } from '@angular/router';
-import { switchMap, map } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'src/app/services/message.service';
-import { ActivityDetails } from '../models/ActivityDetails';
-import { Message } from '@angular/compiler/src/i18n/i18n_ast';
-import { inherits } from 'util';
-import { ActivitySummary } from '../models/ActivitySummary';
 import { AuthError } from 'src/app/auth/models/AuthError';
-
-enum ErrorType {
-  BadActivityId,
-  NotAllowedToEditActivity,
-  FailedToGetActivity,
-  FailedToSaveActivity
-}
-
-class EditError {
-  public message: string;
-  constructor(message: string) {
-    this.message = message;
-  }
-}
+import { EditableActivity } from '../models/EditableActivity';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { Unit } from '../models/Unit';
 
 @Component({
   selector: 'app-edit-activity',
@@ -31,11 +15,15 @@ class EditError {
 export class EditActivityComponent implements OnInit {
 
   private _activityId: number;
+  public editForm: FormGroup;
+  public unitValues = Object.keys(Unit).map(x => parseInt(x, 10)).filter(x => !isNaN(<any>x));
+  public units = Unit;
 
   constructor(
     private _http: HttpClient,
     private _route: ActivatedRoute,
     private _router: Router,
+    private _formBuilder: FormBuilder,
     private _messageService: MessageService) { }
 
   ngOnInit() {
@@ -54,9 +42,14 @@ export class EditActivityComponent implements OnInit {
 
     this._activityId = id;
 
-    this._http.get<ActivityDetails>(`activity/${id}`).subscribe(activity => {
-      console.log('activity', activity);
-      this._messageService.success('got activity details');
+    this._http.get<EditableActivity>(`activity/${id}/edit`).subscribe(activity => {
+      this.editForm = this._formBuilder.group({
+        name: [activity.name, [Validators.required]],
+        takeTurns: [activity.takeTurns],
+        periodCount: [{value: activity.periodCount, disabled: !!activity.periodUnit}],
+        periodUnit: [activity.periodUnit]
+      });
+
     },
     error => {
       if (error instanceof AuthError) {

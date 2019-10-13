@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,7 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using TurnTracker.Common;
 using TurnTracker.Data;
+using TurnTracker.Data.Entities;
 using TurnTracker.Domain;
 using TurnTracker.Domain.Authorization;
 using TurnTracker.Domain.Interfaces;
@@ -39,6 +43,13 @@ namespace TurnTracker.Server
                 options.InputFormatters.Insert(0, new StringBodyInputFormatter());
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddResponseCompression();
+
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
+                cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith("TurnTracker.")));
+            });
+            mapperConfig.AssertConfigurationIsValid();
+            services.AddSingleton(mapperConfig.CreateMapper());
 
             var appSettingsSection = _configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);

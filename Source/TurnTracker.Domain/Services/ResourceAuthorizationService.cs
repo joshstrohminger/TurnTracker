@@ -77,7 +77,7 @@ namespace TurnTracker.Domain.Services
         public bool CanModifyActivity(int activityId, int userId)
         {
             return _db.Activities.AsNoTracking()
-                .Any(x => x.Id == activityId && !x.IsDisabled && x.OwnerId == userId);
+                .Any(x => x.Id == activityId && x.OwnerId == userId);
         }
 
         public bool CanModifyParticipant(int participantId, int userId)

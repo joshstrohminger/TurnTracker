@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Server.Utilities;
@@ -45,6 +46,20 @@ namespace TurnTracker.Server.Controllers
             if (details is null) return BadRequest();
 
             return Json(details);
+        }
+
+        [HttpGet("{id}/edit")]
+        public IActionResult GetActivityForEdit(int id)
+        {
+            if (id <= 0) return BadRequest("ID must be greater than zero");
+
+            var myId = User.GetId();
+            if (!_resourceAuthorizationService.CanModifyActivity(id, myId)) return Forbid();
+
+            var activity = _turnService.GetActivityForEdit(id);
+            if (activity is null) return BadRequest();
+
+            return Json(activity);
         }
 
         [HttpDelete("{id}")]

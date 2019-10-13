@@ -21,5 +21,6 @@ namespace TurnTracker.Domain.Interfaces
         Result AddParticipants(int activityId, params int[] userIds);
         Turn GetTurn(int id);
         Result SetActivityDisabled(int activityId, bool disabled);
+        EditableActivity GetActivityForEdit(int id);
     }
 }

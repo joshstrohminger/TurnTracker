@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoMapper;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,11 +16,13 @@ namespace TurnTracker.Domain.Services
     {
         private readonly TurnContext _db;
         private readonly ILogger<TurnService> _logger;
+        private readonly IMapper _mapper;
 
-        public TurnService(TurnContext db, ILogger<TurnService> logger)
+        public TurnService(TurnContext db, ILogger<TurnService> logger, IMapper mapper)
         {
             _db = db;
             _logger = logger;
+            _mapper = mapper;
         }
 
         public Result EnsureSeedActivities()
@@ -135,6 +138,17 @@ namespace TurnTracker.Domain.Services
             return _db.Activities
                 .AsNoTracking()
                 .Where(x => x.OwnerId == userId);
+        }
+
+        public EditableActivity GetActivityForEdit(int id)
+        {
+            var activity = _db.Activities
+                .AsNoTracking()
+                .Include(x => x.Participants)
+                .ThenInclude(x => x.User)
+                .SingleOrDefault(x => x.Id == id);
+
+            return activity is null ? null : _mapper.Map<EditableActivity>(activity);
         }
 
         public Turn GetTurn(int id)
