@@ -25,6 +25,15 @@ export class TurnTrackerValidators {
     return null;
   }
 
+  static int: ValidatorFn = (control: AbstractControl): ValidationErrors => {
+    if (control && !Number.isInteger(control.value)) {
+      return {
+        'int': 'Value must be an integer'
+      };
+    }
+    return null;
+  }
+
   static minTrimmedLength(min: number): ValidatorFn {
     return (control: AbstractControl): ValidationErrors => {
       if (control) {

@@ -6,6 +6,7 @@ import { AuthError } from 'src/app/auth/models/AuthError';
 import { EditableActivity } from '../models/EditableActivity';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Unit } from '../models/Unit';
+import { TurnTrackerValidators } from 'src/app/validators/TurnTrackerValidators';
 
 @Component({
   selector: 'app-edit-activity',
@@ -18,6 +19,9 @@ export class EditActivityComponent implements OnInit {
   public editForm: FormGroup;
   public unitValues = Object.keys(Unit).map(x => parseInt(x, 10)).filter(x => !isNaN(<any>x));
   public units = Unit;
+  private countDigits = 3;
+  readonly countMin = 1;
+  readonly countMax = parseInt('9'.repeat(this.countDigits), 10);
 
   constructor(
     private _http: HttpClient,
@@ -46,10 +50,20 @@ export class EditActivityComponent implements OnInit {
       this.editForm = this._formBuilder.group({
         name: [activity.name, [Validators.required]],
         takeTurns: [activity.takeTurns],
-        periodCount: [{value: activity.periodCount, disabled: !!activity.periodUnit}],
+        periodCount: [{
+          value: activity.periodCount,
+          disabled: isNaN(activity.periodUnit)},
+        [Validators.required, Validators.pattern('[0-9]+'), Validators.min(this.countMin), Validators.max(this.countMax)]],
         periodUnit: [activity.periodUnit]
       });
-
+      this.editForm.controls.periodUnit.valueChanges.subscribe(value => {
+        const control = this.editForm.controls.periodCount;
+        if (isNaN(value)) {
+          control.disable();
+        } else {
+          control.enable();
+        }
+      });
     },
     error => {
       if (error instanceof AuthError) {
@@ -62,5 +76,27 @@ export class EditActivityComponent implements OnInit {
         this._messageService.error('Failed to get activity', error);
       }
     });
+  }
+
+  getPeriodCountErrorMessage(): string {
+    const control = this.editForm.controls.periodCount;
+
+    if (control.hasError('required')) {
+      return 'Required with unit';
+    }
+
+    if (control.hasError('pattern')) {
+      return 'Must be an integer';
+    }
+
+    if (control.hasError('min')) {
+      return `Min ${this.countMin}`;
+    }
+
+    if (control.hasError('max')) {
+      return `Max ${this.countMax}`;
+    }
+
+    return '';
   }
 }
