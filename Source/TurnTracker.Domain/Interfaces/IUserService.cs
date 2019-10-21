@@ -1,5 +1,7 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Collections.Generic;
+using CSharpFunctionalExtensions;
 using TurnTracker.Data.Entities;
+using TurnTracker.Domain.Models;
 
 namespace TurnTracker.Domain.Interfaces
 {
@@ -13,5 +15,6 @@ namespace TurnTracker.Domain.Interfaces
         Result EnsureSeedUsers();
         Result<User> SetDisplayName(int userId, string displayName);
         Result SetShowDisabledActivities(int userId, bool show);
+        Result<IEnumerable<UserInfo>> FindUsers(string filter);
     }
 }

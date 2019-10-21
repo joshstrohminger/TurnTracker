@@ -26,7 +26,8 @@ import {
   MatTableModule,
   MatSortModule,
   MatExpansionModule,
-  MatMenuModule} from '@angular/material';
+  MatMenuModule,
+  MatAutocompleteModule} from '@angular/material';
   import { BrowserModule } from '@angular/platform-browser';
   import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Routes, RouterModule } from '@angular/router';
@@ -88,6 +89,7 @@ const routes: Routes = [
     FlexLayoutModule,
     FormsModule,
     HttpClientModule,
+    MatAutocompleteModule,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,

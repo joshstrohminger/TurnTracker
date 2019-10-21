@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'src/app/services/message.service';
 import { AuthError } from 'src/app/auth/models/AuthError';
 import { EditableActivity } from '../models/EditableActivity';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormControl, FormArray } from '@angular/forms';
 import { Unit } from '../models/Unit';
-import { TurnTrackerValidators } from 'src/app/validators/TurnTrackerValidators';
+import { User } from '../models/User';
+import { UserService } from 'src/app/services/user.service';
+import { debounceTime, tap, switchMap, finalize, filter, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-edit-activity',
@@ -16,11 +18,15 @@ import { TurnTrackerValidators } from 'src/app/validators/TurnTrackerValidators'
 export class EditActivityComponent implements OnInit {
 
   private _activityId: number;
+  public readonly myId: number;
   public editForm: FormGroup;
   public unitValues = Object.keys(Unit).map(x => parseInt(x, 10)).filter(x => !isNaN(<any>x));
   public units = Unit;
   private countDigits = 3;
-  readonly countMin = 1;
+  public readonly countMin = 1;
+  public isLoading = false;
+  public availableUsers: User[] = [];
+  public participants: User[] = [];
   readonly countMax = parseInt('9'.repeat(this.countDigits), 10);
 
   constructor(
@@ -28,7 +34,10 @@ export class EditActivityComponent implements OnInit {
     private _route: ActivatedRoute,
     private _router: Router,
     private _formBuilder: FormBuilder,
-    private _messageService: MessageService) { }
+    private _messageService: MessageService,
+    userService: UserService) {
+      this.myId = userService.currentUser.id;
+    }
 
   ngOnInit() {
     const idParam = this._route.snapshot.paramMap.get('id');
@@ -54,8 +63,10 @@ export class EditActivityComponent implements OnInit {
           value: activity.periodCount,
           disabled: isNaN(activity.periodUnit)},
         [Validators.required, Validators.pattern('[0-9]+'), Validators.min(this.countMin), Validators.max(this.countMax)]],
-        periodUnit: [activity.periodUnit]
+        periodUnit: [activity.periodUnit],
+        searchControl: ['']
       });
+      this.participants = activity.participants;
       this.editForm.controls.periodUnit.valueChanges.subscribe(value => {
         const control = this.editForm.controls.periodCount;
         if (isNaN(value)) {
@@ -63,6 +74,32 @@ export class EditActivityComponent implements OnInit {
         } else {
           control.enable();
         }
+      });
+      this.editForm.controls.searchControl.valueChanges.pipe(
+        map(x => {
+          if (x && x.id) {
+            console.log('selected a user', x);
+            // don't add an existing user to the list of participants
+            if (!this.participants.find(p => p.id === x.id)) {
+              this.participants.push(x);
+            }
+            this.editForm.controls.searchControl.reset();
+            this.availableUsers = [];
+            return null;
+          }
+          return x;
+        }),
+        filter(x => x && x.trim && x.trim()),
+        debounceTime(500),
+        tap(() => {
+          this.availableUsers = [];
+          this.isLoading = true;
+        }),
+        switchMap(value => this._http.get<User[]>('users', {params: new HttpParams().set('filter', value)})
+          .pipe(finalize(() => this.isLoading = false)))
+      ).subscribe(users => {
+        // todo filter out user that are already participants
+        this.availableUsers = (users && users.filter(u => !this.participants.find(p => p.id === u.id))) || [];
       });
     },
     error => {
@@ -76,6 +113,18 @@ export class EditActivityComponent implements OnInit {
         this._messageService.error('Failed to get activity', error);
       }
     });
+  }
+
+  removeUser(user: User, index: number) {
+    if (user.id === this.myId) {
+      return;
+    }
+
+    this.participants.splice(index, 1);
+  }
+
+  displayUser(user?: User): string | undefined {
+    return user ? user.name : undefined;
   }
 
   getPeriodCountErrorMessage(): string {

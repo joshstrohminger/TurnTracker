@@ -12,6 +12,9 @@ namespace TurnTracker.Domain
                 .ForMember(x => x.Id, x => x.MapFrom(y => y.User.Id))
                 .ForMember(x => x.Name, x => x.MapFrom(y => y.User.DisplayName));
 
+            CreateMap<User, UserInfo>()
+                .ForMember(x => x.Name, x => x.MapFrom(y => y.DisplayName));
+
             CreateMap<Activity, EditableActivity>();
         }
     }

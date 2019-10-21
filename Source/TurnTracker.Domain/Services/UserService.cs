@@ -5,15 +5,18 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using AutoMapper;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Authorization;
 using TurnTracker.Domain.Interfaces;
+using TurnTracker.Domain.Models;
 
 namespace TurnTracker.Domain.Services
 {
@@ -26,10 +29,14 @@ namespace TurnTracker.Domain.Services
 
         private readonly TurnContext _db;
         private readonly AppSettings _appSettings;
+        private readonly IMapper _mapper;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(IOptions<AppSettings> appSettings, TurnContext db)
+        public UserService(IOptions<AppSettings> appSettings, TurnContext db, IMapper mapper, ILogger<UserService> logger)
         {
             _db = db;
+            _mapper = mapper;
+            _logger = logger;
             _appSettings = appSettings.Value;
         }
 
@@ -99,6 +106,24 @@ namespace TurnTracker.Domain.Services
             _db.SaveChanges();
 
             return Result.Ok((user, accessToken, refreshToken));
+        }
+
+        public Result<IEnumerable<UserInfo>> FindUsers(string filter)
+        {
+            try
+            {
+                var users = _db.Users
+                    .Where(x => x.DisplayName.Contains(filter))
+                    .ToList()
+                    .Select(x => _mapper.Map<UserInfo>(x));
+                return Result.Ok(users);
+            }
+            catch (Exception e)
+            {
+                const string message = "Failed to search for users";
+                _logger.LogError(e, message);
+                return Result.Fail<IEnumerable<UserInfo>>(message);
+            }
         }
 
         public Result ChangePassword(int userId, string oldPassword, string newPassword)

@@ -22,6 +22,23 @@
     </mat-form-field>
   </p>
   <p>
+    <mat-form-field class="full-width">
+      <input matInput placeholder="Search for users" [matAutocomplete]="auto" formControlName="searchControl">
+      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayUser" autoActiveFirstOption>
+        <mat-option *ngIf="isLoading" class="loading">Loading...</mat-option>
+        <ng-container *ngIf="!isLoading">
+          <mat-option *ngFor="let user of availableUsers" [value]="user">{{user.name}}</mat-option>
+        </ng-container>
+      </mat-autocomplete>
+    </mat-form-field>
+  </p>
+  <table id="participants">
+    <tr *ngFor="let user of participants; let i = index">
+      <td><button *ngIf="user.id !== myId" mat-icon-button color="warn" (click)="removeUser(user, i)"><mat-icon>close</mat-icon></button></td>
+      <td>{{user.name}}</td>
+    </tr>
+  </table>
+  <p>
     <button mat-raised-button type="submit" [disabled]="editForm.invalid">Save</button>
   </p>
 </form>
