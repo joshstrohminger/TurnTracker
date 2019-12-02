@@ -73,7 +73,7 @@ namespace TurnTracker.Domain.Services
             }
             catch (Exception e)
             {
-                return Result.Fail(e.Message);
+                return Result.Failure(e.Message);
             }
 
             return Result.Ok();
@@ -82,7 +82,7 @@ namespace TurnTracker.Domain.Services
         public Result LogoutUser(int userId)
         {
             var user = _db.Users.SingleOrDefault(x => x.Id == userId);
-            if (user is null) return Result.Fail("Invalid user");
+            if (user is null) return Result.Failure("Invalid user");
             user.RefreshKey = null;
             _db.SaveChanges();
             return Result.Ok();
@@ -92,11 +92,11 @@ namespace TurnTracker.Domain.Services
         {
             var user = _db.Users.SingleOrDefault(x => x.Username == username);
             if (user == null)
-                return Result.Fail<(User, string, string)>("Invalid username");
+                return Result.Failure<(User, string, string)>("Invalid username");
 
             if(VerifyPassword(user, password).IsFailure)
             {
-                return Result.Fail<(User, string, string)>("Invalid password");
+                return Result.Failure<(User, string, string)>("Invalid password");
             }
 
             // authentication successful so generate jwt refresh token
@@ -122,18 +122,18 @@ namespace TurnTracker.Domain.Services
             {
                 const string message = "Failed to search for users";
                 _logger.LogError(e, message);
-                return Result.Fail<IEnumerable<UserInfo>>(message);
+                return Result.Failure<IEnumerable<UserInfo>>(message);
             }
         }
 
         public Result ChangePassword(int userId, string oldPassword, string newPassword)
         {
             var user = _db.Users.SingleOrDefault(x => x.Id == userId);
-            if (user is null) return Result.Fail("Invalid user");
+            if (user is null) return Result.Failure("Invalid user");
 
             if(VerifyPassword(user, oldPassword).IsFailure)
             {
-                return Result.Fail("Invalid password");
+                return Result.Failure("Invalid password");
             }
 
             // authentication successful set the new password
@@ -148,7 +148,7 @@ namespace TurnTracker.Domain.Services
             var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Id == userId);
 
             if (user?.RefreshKey != refreshKey)
-                return Result.Fail<string>("Invalid refresh key or user");
+                return Result.Failure<string>("Invalid refresh key or user");
 
             var accessKey = GenerateAccessToken(user);
             return Result.Ok(accessKey);
@@ -158,13 +158,13 @@ namespace TurnTracker.Domain.Services
         {
             if (string.IsNullOrWhiteSpace(displayName))
             {
-                return Result.Fail<User>("DisplayName can't be null or empty");
+                return Result.Failure<User>("DisplayName can't be null or empty");
             }
 
             var user = _db.Users.SingleOrDefault(x => x.Id == userId);
             if (user is null)
             {
-                return Result.Fail<User>("Invalid user");
+                return Result.Failure<User>("Invalid user");
             }
 
             user.DisplayName = displayName.Trim();
@@ -178,7 +178,7 @@ namespace TurnTracker.Domain.Services
             var user = _db.Users.SingleOrDefault(x => x.Id == userId);
             if (user is null)
             {
-                return Result.Fail("Invalid user");
+                return Result.Failure("Invalid user");
             }
 
             user.ShowDisabledActivities = show;
@@ -192,7 +192,7 @@ namespace TurnTracker.Domain.Services
             var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Id == userId);
             if (user is null)
             {
-                return Result.Fail<User>("invalid user");
+                return Result.Failure<User>("invalid user");
             }
 
             return Result.Ok(user);
@@ -265,12 +265,12 @@ namespace TurnTracker.Domain.Services
 
         private Result VerifyPassword(User user, string password)
         {
-            if (string.IsNullOrEmpty(password)) return Result.Fail("Invalid password");
+            if (string.IsNullOrEmpty(password)) return Result.Failure("Invalid password");
             var salt = user.PasswordSalt;
-            if (salt is null || salt.Length != SaltSize) return Result.Fail("Invalid salt");
-            if (user.PasswordHash is null || user.PasswordHash.Length != HashSize) return Result.Fail("Invalid hash");
+            if (salt is null || salt.Length != SaltSize) return Result.Failure("Invalid salt");
+            if (user.PasswordHash is null || user.PasswordHash.Length != HashSize) return Result.Failure("Invalid hash");
             var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, HashIterations, HashSize);
-            return user.PasswordHash.SequenceEqual(hash) ? Result.Ok() : Result.Fail("No match");
+            return user.PasswordHash.SequenceEqual(hash) ? Result.Ok() : Result.Failure("No match");
         }
     }
 }

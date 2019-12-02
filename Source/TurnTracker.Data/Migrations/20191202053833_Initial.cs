@@ -1,10 +1,9 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace TurnTracker.Data.Migrations
 {
-    public partial class Init : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -32,7 +31,7 @@ namespace TurnTracker.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
                     Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),
@@ -65,7 +64,7 @@ namespace TurnTracker.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
                     Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),
@@ -102,7 +101,7 @@ namespace TurnTracker.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
                     Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),
@@ -134,7 +133,7 @@ namespace TurnTracker.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
                     Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),
@@ -179,7 +178,7 @@ namespace TurnTracker.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     CreatedDate = table.Column<DateTimeOffset>(nullable: false),
                     ModifiedDate = table.Column<DateTimeOffset>(nullable: false),
                     Timestamp = table.Column<byte[]>(rowVersion: true, nullable: true),

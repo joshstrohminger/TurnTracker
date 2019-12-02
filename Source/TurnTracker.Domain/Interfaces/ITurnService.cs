@@ -22,5 +22,6 @@ namespace TurnTracker.Domain.Interfaces
         Turn GetTurn(int id);
         Result SetActivityDisabled(int activityId, bool disabled);
         EditableActivity GetActivityForEdit(int id);
+        Result<Activity> SaveActivity(EditableActivity activity);
     }
 }

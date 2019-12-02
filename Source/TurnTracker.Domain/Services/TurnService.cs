@@ -124,7 +124,7 @@ namespace TurnTracker.Domain.Services
             catch (Exception e)
             {
                 _logger.LogError(e, "Failed to seed activities");
-                return Result.Fail(e.Message);
+                return Result.Failure(e.Message);
             }
         }
 
@@ -151,6 +151,11 @@ namespace TurnTracker.Domain.Services
             return activity is null ? null : _mapper.Map<EditableActivity>(activity);
         }
 
+        public Result<Activity> SaveActivity(EditableActivity activity)
+        {
+            throw new NotImplementedException();
+        }
+
         public Turn GetTurn(int id)
         {
             return _db.Turns
@@ -166,8 +171,8 @@ namespace TurnTracker.Domain.Services
             return _db.Participants
                 .AsNoTracking()
                 .Where(x => x.UserId == userId)
+                .Include(x => x.Activity.CurrentTurnUser)
                 .Select(x => x.Activity)
-                .Include(x => x.CurrentTurnUser)
                 .OrderBy(x => x.IsDisabled)
                 .ThenByDescending(x => x.Due)
                 .ThenBy(x => x.Name);
@@ -221,7 +226,7 @@ namespace TurnTracker.Domain.Services
                 var activity = GetActivity(activityId, false, true);
                 if (activity == null)
                 {
-                    return Result.Fail<ActivityDetails>("no such activity");
+                    return Result.Failure<ActivityDetails>("no such activity");
                 }
 
                 var details = ActivityDetails.Calculate(activity, byUserId);
@@ -233,7 +238,7 @@ namespace TurnTracker.Domain.Services
             catch (Exception e)
             {
                 _logger.LogError(e, "Failed to take turn");
-                return Result.Fail<ActivityDetails>(e.Message);
+                return Result.Failure<ActivityDetails>(e.Message);
             }
         }
 
@@ -252,13 +257,13 @@ namespace TurnTracker.Domain.Services
                 return Result.Ok(GetActivityDetails(turn.ActivityId, byUserId));
             }
 
-            return Result.Fail<ActivityDetails>("Invalid turn id");
+            return Result.Failure<ActivityDetails>("Invalid turn id");
         }
 
         public Result SetActivityDisabled(int activityId, bool disabled)
         {
             var activity = _db.Activities.Find(activityId);
-            if (activity is null) return Result.Fail("Invalid activity");
+            if (activity is null) return Result.Failure("Invalid activity");
 
             activity.IsDisabled = disabled;
             _db.SaveChanges();
@@ -281,7 +286,7 @@ namespace TurnTracker.Domain.Services
                 }
                 else if (periodCount.Value == 0)
                 {
-                    return Result.Fail<int>("invalid period count");
+                    return Result.Failure<int>("invalid period count");
                 }
                 else
                 {
@@ -303,7 +308,7 @@ namespace TurnTracker.Domain.Services
                             period = TimeSpan.FromDays(365.25);
                             break;
                         default:
-                            return Result.Fail<int>("invalid period unit");
+                            return Result.Failure<int>("invalid period unit");
                     }
                 }
 
@@ -323,7 +328,7 @@ namespace TurnTracker.Domain.Services
             catch (Exception e)
             {
                 _logger.LogError(e, "Failed to add activity");
-                return Result.Fail<int>(e.Message);
+                return Result.Failure<int>(e.Message);
             }
         }
 
@@ -331,7 +336,7 @@ namespace TurnTracker.Domain.Services
         {
             if (userIds is null || userIds.Length == 0)
             {
-                return Result.Fail("missing user ids");
+                return Result.Failure("missing user ids");
             }
 
             try
@@ -351,7 +356,7 @@ namespace TurnTracker.Domain.Services
             catch (Exception e)
             {
                 _logger.LogError(e, $"Failed to add users {string.Join(',', userIds)} to activity {activityId}");
-                return Result.Fail(e.Message);
+                return Result.Failure(e.Message);
             }
         }
     }

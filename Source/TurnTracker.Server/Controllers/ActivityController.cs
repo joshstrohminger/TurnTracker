@@ -1,7 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Domain.Interfaces;
+using TurnTracker.Domain.Models;
 using TurnTracker.Server.Utilities;
 
 namespace TurnTracker.Server.Controllers
@@ -60,6 +62,18 @@ namespace TurnTracker.Server.Controllers
             if (activity is null) return BadRequest();
 
             return Json(activity);
+        }
+
+        [HttpPut("save")]
+        public IActionResult SaveActivity([FromBody] EditableActivity activity)
+        {
+            var myId = User.GetId();
+            if (activity.Id > 0 && !_resourceAuthorizationService.IsOwnerOf(activity.Id, myId)) return Forbid();
+
+            var savedActivityResult = _turnService.SaveActivity(activity);
+            if (savedActivityResult.IsSuccess) return Json(savedActivityResult.Value);
+            throw new NotImplementedException();
+
         }
 
         [HttpDelete("{id}")]

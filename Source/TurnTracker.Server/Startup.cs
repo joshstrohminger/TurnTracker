@@ -1,7 +1,5 @@
 using System;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -10,10 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using TurnTracker.Common;
 using TurnTracker.Data;
-using TurnTracker.Data.Entities;
 using TurnTracker.Domain;
 using TurnTracker.Domain.Authorization;
 using TurnTracker.Domain.Interfaces;
@@ -24,10 +21,10 @@ namespace TurnTracker.Server
 {
     public class Startup
     {
-        private readonly IHostingEnvironment _env;
+        private readonly IWebHostEnvironment _env;
         private readonly IConfiguration _configuration;
 
-        public Startup(IConfiguration configuration, IHostingEnvironment env)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             _env = env;
             _configuration = configuration;
@@ -41,7 +38,7 @@ namespace TurnTracker.Server
             {
                 options.InputFormatters.Insert(0, new BoolBodyInputFormatter());
                 options.InputFormatters.Insert(0, new StringBodyInputFormatter());
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddResponseCompression();
 
             var mapperConfig = new MapperConfiguration(cfg =>
@@ -96,21 +93,19 @@ namespace TurnTracker.Server
                 .GetRequiredService<IServiceScopeFactory>()
                 .CreateScope())
             {
-                using (var context = serviceScope.ServiceProvider.GetService<TurnContext>())
+                using var context = serviceScope.ServiceProvider.GetService<TurnContext>();
+                context.Database.Migrate();
+
+                var result = serviceScope.ServiceProvider.GetService<IUserService>().EnsureSeedUsers();
+                if (result.IsFailure)
                 {
-                    context.Database.Migrate();
+                    throw new Exception($"Failed to seed users: {result.Error}");
+                }
 
-                    var result = serviceScope.ServiceProvider.GetService<IUserService>().EnsureSeedUsers();
-                    if (result.IsFailure)
-                    {
-                        throw new Exception($"Failed to seed users: {result.Error}");
-                    }
-
-                    result = serviceScope.ServiceProvider.GetService<ITurnService>().EnsureSeedActivities();
-                    if (result.IsFailure)
-                    {
-                        throw new Exception($"Failed to seed activities: {result.Error}");
-                    }
+                result = serviceScope.ServiceProvider.GetService<ITurnService>().EnsureSeedActivities();
+                if (result.IsFailure)
+                {
+                    throw new Exception($"Failed to seed activities: {result.Error}");
                 }
             }
 
@@ -124,16 +119,18 @@ namespace TurnTracker.Server
                 app.UseHttpsRedirection();
             }
 
-            app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials());
+            //app.UseCors(x => x
+            //    .AllowAnyOrigin()
+            //    .AllowAnyMethod()
+            //    .AllowAnyHeader()
+            //    .AllowCredentials());
             app.UseResponseCompression();
             app.UseDefaultFiles();
             app.UseStaticFiles();
+            app.UseRouting();
             app.UseAuthentication();
-            app.UseMvc();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
         }
     }
 }
