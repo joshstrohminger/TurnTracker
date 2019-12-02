@@ -39,6 +39,6 @@
     </tr>
   </table>
   <p>
-    <button mat-raised-button type="submit" [disabled]="editForm.invalid">Save</button>
+    <button mat-raised-button type="submit" [disabled]="editForm.invalid" (click)="saveActivity()">Save</button>
   </p>
 </form>

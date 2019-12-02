@@ -9,6 +9,9 @@ import { Unit } from '../models/Unit';
 import { User } from '../models/User';
 import { UserService } from 'src/app/services/user.service';
 import { debounceTime, tap, switchMap, finalize, filter, map } from 'rxjs/operators';
+import { of, Observable } from 'rxjs';
+import { ActivityDetails } from '../models/ActivityDetails';
+import { TurnTrackerValidators } from 'src/app/validators/TurnTrackerValidators';
 
 @Component({
   selector: 'app-edit-activity',
@@ -19,6 +22,7 @@ export class EditActivityComponent implements OnInit {
 
   private _activityId: number;
   public readonly myId: number;
+  public readonly myName: string;
   public editForm: FormGroup;
   public unitValues = Object.keys(Unit).map(x => parseInt(x, 10)).filter(x => !isNaN(<any>x));
   public units = Unit;
@@ -36,28 +40,42 @@ export class EditActivityComponent implements OnInit {
     private _formBuilder: FormBuilder,
     private _messageService: MessageService,
     userService: UserService) {
-      this.myId = userService.currentUser.id;
+      const me = userService.currentUser;
+      this.myId = me.id;
+      this.myName = me.displayName;
     }
 
   ngOnInit() {
+    let getActivity: Observable<EditableActivity>;
     const idParam = this._route.snapshot.paramMap.get('id');
     if (idParam === null) {
-      this._messageService.info('must be adding');
-      return;
+      this._activityId = 0;
+      getActivity = of(<EditableActivity>{
+        id: 0,
+        isDisabled: false,
+        name: '',
+        periodCount: null,
+        periodUnit: null,
+        takeTurns: true,
+        participants: [<User>{
+          id: this.myId,
+          name: this.myName
+        }]
+      });
+    } else {
+      const id = parseInt(idParam, 10);
+      if (idParam !== null && (isNaN(id) || id <= 0)) {
+        this._messageService.error('Invalid activity ID');
+        this._router.navigateByUrl('/activities');
+        return;
+      }
+      this._activityId = id;
+      getActivity = this._http.get<EditableActivity>(`activity/${id}/edit`);
     }
 
-    const id = parseInt(idParam, 10);
-    if (isNaN(id) || id <= 0) {
-      this._messageService.error('Invalid activity ID');
-      this._router.navigateByUrl('/activities');
-      return;
-    }
-
-    this._activityId = id;
-
-    this._http.get<EditableActivity>(`activity/${id}/edit`).subscribe(activity => {
+    getActivity.subscribe(activity => {
       this.editForm = this._formBuilder.group({
-        name: [activity.name, [Validators.required]],
+        name: [activity.name, [Validators.required, TurnTrackerValidators.whitespace]],
         takeTurns: [activity.takeTurns],
         periodCount: [{
           value: activity.periodCount,
@@ -147,5 +165,23 @@ export class EditActivityComponent implements OnInit {
     }
 
     return '';
+  }
+
+  saveActivity() {
+    this._http.post<ActivityDetails>('activity/save', <EditableActivity>{
+      id: this._activityId,
+      name: this.editForm.value.name,
+      periodCount: this.editForm.value.periodCount,
+      periodUnit: this.editForm.value.periodUnit,
+      takeTurns: this.editForm.value.takeTurns,
+      participants: this.participants
+    }).subscribe(activity => {
+      this._messageService.success(`Saved activity`);
+      this._router.navigate(['/activity', activity.id]);
+    },
+    error => {
+      const message = error && error.error || 'unknown';
+      this._messageService.error(`Error saving activity, ${message}`, error);
+    });
   }
 }

@@ -65,8 +65,18 @@ namespace TurnTracker.Domain.Services
                     };
                     AssignNewPassword(kelly, "password");
 
+                    var matt = new User
+                    {
+                        DisplayName = "Matt",
+                        Username = "matt",
+                        Role = Role.User,
+                        MobileNumber = "+1 (333) 123-4311"
+                    };
+                    AssignNewPassword(matt, "password");
+
                     _db.Users.Add(josh);
                     _db.Users.Add(kelly);
+                    _db.Users.Add(matt);
 
                     _db.SaveChanges();
                 }

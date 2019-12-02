@@ -5,6 +5,7 @@ using AutoMapper;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TurnTracker.Common;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Interfaces;
@@ -31,22 +32,15 @@ namespace TurnTracker.Domain.Services
             {
                 if (!_db.Activities.Any())
                 {
-                    var userIds = _db.Users.Select(x => x.Id).ToArray();
+                    var userIds = _db.Users.Take(2).Select(x => x.Id).ToArray();
 
                     // first activity
-                    var activityIdResult = AddActivity(userIds[0], "Clean Litterbox", true, 2, Unit.Day);
-                    if (activityIdResult.IsFailure)
+                    var activityResult = SaveActivity(new EditableActivity { Name = "Clean Litterbox", TakeTurns = true, PeriodCount = 2, PeriodUnit = Unit.Day, Participants = userIds.Select(id => new UserInfo { Id = id }).ToList() }, userIds[0]);
+                    if (activityResult.IsFailure)
                     {
-                        return activityIdResult;
+                        return activityResult;
                     }
-
-                    var activityId = activityIdResult.Value;
-                    var participantResult = AddParticipants(activityId, userIds);
-                    if (participantResult.IsFailure)
-                    {
-                        return participantResult;
-                    }
-
+                    var activityId = activityResult.Value;
                     for(var i = 1; i < 8; i++)
                     {
                         var forUser = userIds[i % 2];
@@ -55,19 +49,12 @@ namespace TurnTracker.Domain.Services
                     }
 
                     // second activity
-                    activityIdResult = AddActivity(userIds[1], "Flea Meds", true, 1, Unit.Month);
-                    if (activityIdResult.IsFailure)
+                    activityResult = SaveActivity(new EditableActivity { Name = "Flea Meds", TakeTurns = true, PeriodCount = 1, PeriodUnit = Unit.Month, Participants = userIds.Select(id => new UserInfo { Id = id }).ToList() }, userIds[1]);
+                    if (activityResult.IsFailure)
                     {
-                        return activityIdResult;
+                        return activityResult;
                     }
-
-                    activityId = activityIdResult.Value;
-                    participantResult = AddParticipants(activityId, userIds);
-                    if (participantResult.IsFailure)
-                    {
-                        return participantResult;
-                    }
-
+                    activityId = activityResult.Value;
                     for (var i = 1; i < 25; i++)
                     {
                         var forUser = userIds[i % 2];
@@ -76,19 +63,12 @@ namespace TurnTracker.Domain.Services
                     }
 
                     // third activity
-                    activityIdResult = AddActivity(userIds[0], "Take Out the Trash", false);
-                    if (activityIdResult.IsFailure)
+                    activityResult = SaveActivity(new EditableActivity { Name = "Take Out the Trash", TakeTurns = false, Participants = userIds.Select(id => new UserInfo { Id = id }).ToList()}, userIds[0]);
+                    if (activityResult.IsFailure)
                     {
-                        return activityIdResult;
+                        return activityResult;
                     }
-
-                    activityId = activityIdResult.Value;
-                    participantResult = AddParticipants(activityId, userIds);
-                    if (participantResult.IsFailure)
-                    {
-                        return participantResult;
-                    }
-
+                    activityId = activityResult.Value;
                     for (var i = 1; i < 37; i++)
                     {
                         var forUser = userIds[i % 2];
@@ -97,19 +77,12 @@ namespace TurnTracker.Domain.Services
                     }
 
                     // fourth activity, disabled
-                    activityIdResult = AddActivity(userIds[1], "Do the Dishes", true);
-                    if (activityIdResult.IsFailure)
+                    activityResult = SaveActivity(new EditableActivity{Name = "Do the Dishes", TakeTurns = true, Participants = userIds.Select(id => new UserInfo{Id = id}).ToList()}, userIds[1]);
+                    if (activityResult.IsFailure)
                     {
-                        return activityIdResult;
+                        return activityResult;
                     }
-
-                    activityId = activityIdResult.Value;
-                    participantResult = AddParticipants(activityId, userIds);
-                    if (participantResult.IsFailure)
-                    {
-                        return participantResult;
-                    }
-
+                    activityId = activityResult.Value;
                     for (var i = 1; i < 19; i++)
                     {
                         var forUser = userIds[i % 2];
@@ -151,9 +124,113 @@ namespace TurnTracker.Domain.Services
             return activity is null ? null : _mapper.Map<EditableActivity>(activity);
         }
 
-        public Result<Activity> SaveActivity(EditableActivity activity)
+        public Result<int, ValidityError> SaveActivity(EditableActivity activity, int ownerId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (activity is null)
+                {
+                    return ValidityError.ForInvalidObject<int>("no activity provided");
+                }
+
+                if (string.IsNullOrWhiteSpace(activity.Name))
+                {
+                    return ValidityError.ForInvalidObject<int>("empty name");
+                }
+
+                TimeSpan? period = null;
+                if (!activity.PeriodUnit.HasValue)
+                {
+                    activity.PeriodCount = null;
+                }
+                else if (!activity.PeriodCount.HasValue)
+                {
+                    activity.PeriodUnit = null;
+                }
+                else if (activity.PeriodCount.Value == 0)
+                {
+                    return ValidityError.ForInvalidObject<int>("invalid period count");
+                }
+                else
+                {
+                    switch (activity.PeriodUnit.Value)
+                    {
+                        case Unit.Hour:
+                            period = TimeSpan.FromHours(activity.PeriodCount.Value);
+                            break;
+                        case Unit.Day:
+                            period = TimeSpan.FromDays(activity.PeriodCount.Value);
+                            break;
+                        case Unit.Week:
+                            period = TimeSpan.FromDays(7 * activity.PeriodCount.Value);
+                            break;
+                        case Unit.Month:
+                            period = TimeSpan.FromDays(365.25 / 12);
+                            break;
+                        case Unit.Year:
+                            period = TimeSpan.FromDays(365.25);
+                            break;
+                        default:
+                            return ValidityError.ForInvalidObject<int>("invalid period unit");
+                    }
+                }
+
+                activity.Participants ??= new List<UserInfo>();
+
+                if (activity.Id < 0)
+                {
+                    return ValidityError.ForInvalidObject<int>("invalid ID");
+                }
+
+                var add = false;
+                Activity activityToUpdate;
+                if (activity.Id == 0)
+                {
+                    add = true;
+                    activityToUpdate = new Activity();
+                }
+                else
+                {
+                    activityToUpdate = GetActivity(activity.Id, false, false);
+                    if (activityToUpdate is null)
+                    {
+                        return ValidityError.ForInvalidObject<int>("invalid ID");
+                    }
+
+                    if (activityToUpdate.IsDisabled)
+                    {
+                        return ValidityError.ForInvalidObject<int>("activity is disabled");
+                    }
+                }
+
+                activityToUpdate.OwnerId = ownerId;
+                activityToUpdate.Name = activity.Name;
+                activityToUpdate.PeriodCount = activity.PeriodCount;
+                activityToUpdate.PeriodUnit = activity.PeriodUnit;
+                activityToUpdate.Period = period;
+                activityToUpdate.TakeTurns = activity.TakeTurns;
+                activityToUpdate.Participants = activity.Participants.Select(p => p.Id).Append(ownerId).Distinct()
+                    .Select(id => new Participant {UserId = id}).ToList();
+
+                if (add)
+                {
+                    _db.Activities.Add(activityToUpdate);
+                }
+                else
+                {
+                    _db.Activities.Update(activityToUpdate);
+                }
+
+                _db.SaveChanges();
+                
+                return Result.Ok<int, ValidityError>(activityToUpdate.Id);
+            }
+            catch (Exception e)
+            {
+                var message = $"Failed to save activity '{activity?.Id}'";
+                _logger.LogError(e, message);
+                return ValidityError.ForInvalidObject<int>(message);
+            }
         }
 
         public Turn GetTurn(int id)
@@ -269,95 +346,6 @@ namespace TurnTracker.Domain.Services
             _db.SaveChanges();
 
             return Result.Ok();
-        }
-
-        public Result<int> AddActivity(int ownerId, string name, bool takeTurns, uint? periodCount = null, Unit? periodUnit = null)
-        {
-            try
-            {
-                TimeSpan? period = null;
-                if (!periodUnit.HasValue)
-                {
-                    periodCount = null;
-                }
-                else if (!periodCount.HasValue)
-                {
-                    periodUnit = null;
-                }
-                else if (periodCount.Value == 0)
-                {
-                    return Result.Failure<int>("invalid period count");
-                }
-                else
-                {
-                    switch (periodUnit.Value)
-                    {
-                        case Unit.Hour:
-                            period = TimeSpan.FromHours(periodCount.Value);
-                            break;
-                        case Unit.Day:
-                            period = TimeSpan.FromDays(periodCount.Value);
-                            break;
-                        case Unit.Week:
-                            period = TimeSpan.FromDays(7 * periodCount.Value);
-                            break;
-                        case Unit.Month:
-                            period = TimeSpan.FromDays(365.25 / 12);
-                            break;
-                        case Unit.Year:
-                            period = TimeSpan.FromDays(365.25);
-                            break;
-                        default:
-                            return Result.Failure<int>("invalid period unit");
-                    }
-                }
-
-                var activity = new Activity
-                {
-                    OwnerId = ownerId,
-                    Name = name,
-                    PeriodCount = periodCount,
-                    PeriodUnit = periodUnit,
-                    Period = period,
-                    TakeTurns = takeTurns
-                };
-                _db.Activities.Add(activity);
-                _db.SaveChanges();
-                return Result.Ok(activity.Id);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to add activity");
-                return Result.Failure<int>(e.Message);
-            }
-        }
-
-        public Result AddParticipants(int activityId, params int[] userIds)
-        {
-            if (userIds is null || userIds.Length == 0)
-            {
-                return Result.Failure("missing user ids");
-            }
-
-            try
-            {
-                foreach (var userId in userIds)
-                {
-                    _db.Participants.Add(new Participant
-                    {
-                        ActivityId = activityId,
-                        UserId = userId
-                    });
-                }
-
-                _db.SaveChanges();
-                return Result.Ok();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Failed to add users {string.Join(',', userIds)} to activity {activityId}");
-                return Result.Failure(e.Message);
-            }
         }
     }
 }

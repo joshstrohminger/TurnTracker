@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Domain.Interfaces;
@@ -64,16 +63,19 @@ namespace TurnTracker.Server.Controllers
             return Json(activity);
         }
 
-        [HttpPut("save")]
+        [HttpPost("save")]
         public IActionResult SaveActivity([FromBody] EditableActivity activity)
         {
             var myId = User.GetId();
             if (activity.Id > 0 && !_resourceAuthorizationService.IsOwnerOf(activity.Id, myId)) return Forbid();
 
-            var savedActivityResult = _turnService.SaveActivity(activity);
-            if (savedActivityResult.IsSuccess) return Json(savedActivityResult.Value);
-            throw new NotImplementedException();
+            var activityResult = _turnService.SaveActivity(activity, myId)
+                .Map(activityId => _turnService.GetActivityDetailsShallow(activityId, myId));
+            if (activityResult.IsSuccess) return Json(activityResult.Value);
 
+            if (activityResult.Error.Invalid) return BadRequest(activityResult.Error.Message);
+
+            return StatusCode(500);
         }
 
         [HttpDelete("{id}")]
