@@ -104,6 +104,14 @@ export class ActivityComponent implements OnInit {
     this._router.navigate(['/activity', this._activityId, 'edit']);
   }
 
+  toggleDisableActivity() {
+    alert('not implimented');
+  }
+
+  deleteActivity() {
+    alert('not implimented');
+  }
+
   showTurnDetails(turn: Turn) {
     const canModifyTurn = !this.activity.isDisabled && (this.myUserId === turn.creatorId || this.myUserId === turn.userId);
     const dialogRef = this._dialog.open(TurnDetailsDialog, {data: <TurnDetailsDialogConfig>{

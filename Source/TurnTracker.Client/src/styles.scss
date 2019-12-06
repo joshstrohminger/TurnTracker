@@ -51,6 +51,7 @@ html, body {
 $primary: mat-color($dark-primary);
 $accent: mat-color($dark-accent);
 $warn: mat-color($dark-warn);
+$foreground: map-get($dark-theme, foreground);
 
 .accent {
   color: $accent !important;
@@ -66,6 +67,10 @@ $warn: mat-color($dark-warn);
 
 label {
   color: $accent;
+}
+
+.secondary {
+  color: mat-color($foreground, secondary-text);
 }
 
 .dark-backdrop {

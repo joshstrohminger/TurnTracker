@@ -10,7 +10,12 @@
         <span *ngIf="activity.periodCount && activity.periodUnit; else noPeriod">{{activity.periodCount}} {{units[activity.periodUnit]}}{{activity.periodCount > 1 ? 's' : ''}}</span>
         <ng-template #noPeriod>indefinite</ng-template>
       </mat-card-subtitle>
-      <button mat-icon-button *ngIf="activity.ownerId === myUserId" id="edit-activity-button" [disabled]="busy" (click)="editActivity()"><mat-icon>edit</mat-icon></button>
+      <button mat-icon-button id="edit-menu" *ngIf="activity.ownerId === myUserId; else ownerName" [disabled]="busy" [matMenuTriggerFor]="editMenu" [matMenuTriggerData]="{isDisabled: activity.isDisabled}" aria-label="Edit">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <ng-template #ownerName>
+        <span id="activity-owner"><label class="secondary">Owner:</label>{{activity.ownerName}}</span>
+      </ng-template>
     </mat-card-header>
     <mat-card-content>
       <app-timer *ngIf="activity.dueDate" [due]="activity.dueDate"></app-timer>
@@ -100,6 +105,31 @@
         <button mat-menu-item (click)="showTurnDetails(turn)" [disabled]="busy">
           <mat-icon>info</mat-icon>
           <span>Details</span>
+        </button>
+      </ng-template>
+    </mat-menu>
+    <mat-menu #editMenu="matMenu">
+      <ng-template matMenuContent let-isDisabled="isDisabled">
+        <button mat-menu-item *ngIf="!isDisabled" [disabled]="busy" (click)="editActivity()">
+          <mat-icon>edit</mat-icon>
+          <span>Edit</span>
+        </button>
+        <ng-container *ngIf="isDisabled; then enableItem else disableItem"></ng-container>
+        <ng-template #disableItem>
+          <button mat-menu-item [disabled]="busy" (click)="toggleDisableActivity()">
+            <mat-icon>cancel</mat-icon>
+            <span>Disable</span>
+          </button>
+        </ng-template>
+        <ng-template #enableItem>
+          <button mat-menu-item [disabled]="busy" (click)="toggleDisableActivity()">
+            <mat-icon>check</mat-icon>
+            <span>Enable</span>
+          </button>
+        </ng-template>
+        <button mat-menu-item [disabled]="busy" (click)="deleteActivity()">
+          <mat-icon>delete</mat-icon>
+          <span>Delete</span>
         </button>
       </ng-template>
     </mat-menu>

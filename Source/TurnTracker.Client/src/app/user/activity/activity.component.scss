@@ -55,7 +55,16 @@ mat-progress-spinner {
   text-align: center;
 }
 
-#edit-activity-button {
+#activity-owner {
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  label {
+    margin-inline-end: 0.5em;
+  }
+}
+
+#edit-menu {
   position: absolute;
   top: 0;
   right: 0;
