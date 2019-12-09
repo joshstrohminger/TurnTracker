@@ -1,0 +1,9 @@
+<h2 mat-dialog-title>Delete Activity</h2>
+<mat-dialog-content>
+  <p>Are you sure you want to delete activity {{activity.name}}?</p>
+  <p class="warn">This cannot be undone!</p>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Close</button>
+  <button mat-button color="warn" [mat-dialog-close]="true">Delete Activity</button>
+</mat-dialog-actions>

@@ -102,5 +102,19 @@ namespace TurnTracker.Server.Controllers
 
             return StatusCode(500);
         }
+
+        [HttpPost("{id}/delete")]
+        public IActionResult DeleteActivity(int id)
+        {
+            if (id <= 0) return BadRequest("ID must be greater than zero");
+
+            var myId = User.GetId();
+            if (!_resourceAuthorizationService.IsOwnerOf(id, myId)) return Forbid();
+
+            var result = _turnService.DeleteActivity(id);
+            if (result.IsSuccess) return Ok();
+
+            return StatusCode(500);
+        }
     }
 }

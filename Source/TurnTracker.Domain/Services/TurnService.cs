@@ -347,5 +347,16 @@ namespace TurnTracker.Domain.Services
 
             return Result.Ok(GetActivityDetails(activityId, byUserId));
         }
+
+        public Result DeleteActivity(int activityId)
+        {
+            var activity = _db.Activities.Find(activityId);
+            if (activity is null) return Result.Failure<ActivityDetails>("Invalid activity");
+
+            _db.Remove(activity);
+            _db.SaveChanges();
+
+            return Result.Ok();
+        }
     }
 }

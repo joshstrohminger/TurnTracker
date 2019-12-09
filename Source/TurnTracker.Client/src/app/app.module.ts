@@ -49,6 +49,7 @@ import { NotificationPipe } from './user/notification.pipe';
 import { TimerComponent } from './user/timer/timer.component';
 import { TurnDetailsDialog } from './user/turn-details/turn-details.dialog';
 import { EditActivityComponent } from './user/edit-activity/edit-activity.component';
+import { DeleteActivityDialog } from './user/delete-activity/delete-activity.dialog';
 
 const routes: Routes = [
   { path: 'activity/add', component: EditActivityComponent, canActivate: [AuthGuard] },
@@ -76,12 +77,14 @@ const routes: Routes = [
     NotificationPipe,
     TimerComponent,
     TurnDetailsDialog,
-    EditActivityComponent
+    EditActivityComponent,
+    DeleteActivityDialog
   ],
   entryComponents: [
     MatSpinner,
     TakeTurnDialog,
-    TurnDetailsDialog
+    TurnDetailsDialog,
+    DeleteActivityDialog
   ],
   imports: [
     BrowserAnimationsModule,

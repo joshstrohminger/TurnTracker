@@ -18,6 +18,7 @@ import { TurnDetailsDialog } from '../turn-details/turn-details.dialog';
 import { TurnDetailsDialogConfig } from '../turn-details/TurnDetailsDialogConfig';
 import { VerificationStatus } from '../models/Participant';
 import { UserService } from 'src/app/services/user.service';
+import { DeleteActivityDialog } from '../delete-activity/delete-activity.dialog';
 
 @Component({
   selector: 'app-activity',
@@ -105,7 +106,29 @@ export class ActivityComponent implements OnInit {
   }
 
   deleteActivity() {
-    alert('not implimented');
+    const dialogRef = this._dialog.open(DeleteActivityDialog, {data: this.activity});
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        if (this.busy) {
+          return;
+        }
+        this.busy = true;
+        this._http.post(`activity/${this._activityId}/delete`, null).subscribe(
+          () => {
+            this.busy = false;
+            this._messageService.success(`Deleted activity ${this.activity.name}`);
+            this._router.navigateByUrl('/activities');
+          }, error => {
+            this.busy = false;
+            if (error instanceof HttpErrorResponse && error.status === 403) {
+              this._messageService.error('Not allowed to delete activity');
+            } else {
+              this._messageService.error(`Failed to delete activity`, error);
+            }
+          }
+        );
+      }
+    });
   }
 
   showTurnDetails(turn: Turn) {
@@ -149,7 +172,7 @@ export class ActivityComponent implements OnInit {
       });
   }
 
-  public toggleTurnDisabled(turn: Turn) {
+  private toggleTurnDisabled(turn: Turn) {
     if (this.busy) {
       return;
     }
