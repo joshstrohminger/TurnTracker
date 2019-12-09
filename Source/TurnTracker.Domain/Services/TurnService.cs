@@ -90,7 +90,7 @@ namespace TurnTracker.Domain.Services
                         TakeTurn(activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
                     }
 
-                    return SetActivityDisabled(activityId, true);
+                    return SetActivityDisabled(activityId, userIds[1], true);
                 }
                 return Result.Ok();
             }
@@ -337,15 +337,15 @@ namespace TurnTracker.Domain.Services
             return Result.Failure<ActivityDetails>("Invalid turn id");
         }
 
-        public Result SetActivityDisabled(int activityId, bool disabled)
+        public Result<ActivityDetails> SetActivityDisabled(int activityId, int byUserId, bool disabled)
         {
             var activity = _db.Activities.Find(activityId);
-            if (activity is null) return Result.Failure("Invalid activity");
+            if (activity is null) return Result.Failure<ActivityDetails>("Invalid activity");
 
             activity.IsDisabled = disabled;
             _db.SaveChanges();
 
-            return Result.Ok();
+            return Result.Ok(GetActivityDetails(activityId, byUserId));
         }
     }
 }

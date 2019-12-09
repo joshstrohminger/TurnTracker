@@ -116,13 +116,13 @@
         </button>
         <ng-container *ngIf="isDisabled; then enableItem else disableItem"></ng-container>
         <ng-template #disableItem>
-          <button mat-menu-item [disabled]="busy" (click)="toggleDisableActivity()">
+          <button mat-menu-item [disabled]="busy" (click)="toggleActivityDisabled()">
             <mat-icon>cancel</mat-icon>
             <span>Disable</span>
           </button>
         </ng-template>
         <ng-template #enableItem>
-          <button mat-menu-item [disabled]="busy" (click)="toggleDisableActivity()">
+          <button mat-menu-item [disabled]="busy" (click)="toggleActivityDisabled()">
             <mat-icon>check</mat-icon>
             <span>Enable</span>
           </button>

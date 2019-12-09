@@ -104,10 +104,6 @@ export class ActivityComponent implements OnInit {
     this._router.navigate(['/activity', this._activityId, 'edit']);
   }
 
-  toggleDisableActivity() {
-    alert('not implimented');
-  }
-
   deleteActivity() {
     alert('not implimented');
   }
@@ -153,7 +149,7 @@ export class ActivityComponent implements OnInit {
       });
   }
 
-  private toggleTurnDisabled(turn: Turn) {
+  public toggleTurnDisabled(turn: Turn) {
     if (this.busy) {
       return;
     }
@@ -171,6 +167,28 @@ export class ActivityComponent implements OnInit {
         this._messageService.error('Not allowed to modify turn');
       } else {
         this._messageService.error(`Failed to ${turn.isDisabled ? 'enable' : 'disable'} turn`, error);
+      }
+    });
+  }
+
+  public toggleActivityDisabled() {
+    if (this.busy) {
+      return;
+    }
+    this.busy = true;
+    const url = `activity/${this._activityId}`;
+    const request = this.activity.isDisabled ? this._http.put<ActivityDetails>(url, null) : this._http.delete<ActivityDetails>(url);
+    request.subscribe(updatedDetails => {
+      this._messageService.success(`${this.activity.isDisabled ? 'Enabled' : 'Disabled'} activity`);
+      this.busy = false;
+      this._includeTurns = true;
+      this.updateActivity(updatedDetails);
+    }, error => {
+      this.busy = false;
+      if (error instanceof HttpErrorResponse && error.status === 403) {
+        this._messageService.error('Not allowed to modify activity');
+      } else {
+        this._messageService.error(`Failed to ${this.activity.isDisabled ? 'enable' : 'disable'} activity`, error);
       }
     });
   }

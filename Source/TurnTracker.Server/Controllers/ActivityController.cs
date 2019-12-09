@@ -97,8 +97,8 @@ namespace TurnTracker.Server.Controllers
             var myId = User.GetId();
             if (!_resourceAuthorizationService.IsOwnerOf(id, myId)) return Forbid();
 
-            var result = _turnService.SetActivityDisabled(id, disabled);
-            if (result.IsSuccess) return Ok();
+            var result = _turnService.SetActivityDisabled(id, myId, disabled);
+            if (result.IsSuccess) return Json(result.Value);
 
             return StatusCode(500);
         }
