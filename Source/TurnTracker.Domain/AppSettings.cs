@@ -25,6 +25,7 @@ namespace TurnTracker.Domain
         public TimeSpan RefreshTokenExpiration { get; set; }
         public TimeSpan EmailVerificationExpiration { get; set; }
         public TimeSpan MobileNumberVerificationExpiration { get; set; }
+        public string DefaultPassword { get; set; }
 
         #endregion Properties
 
@@ -32,15 +33,12 @@ namespace TurnTracker.Domain
 
         public byte[] GetSecretBytes()
         {
-            switch(SecretEncoding)
+            return SecretEncoding switch
             {
-                case SecretEncodingType.Base64:
-                    return Convert.FromBase64String(Secret);
-                case SecretEncodingType.UTF8:
-                    return Encoding.UTF8.GetBytes(Secret);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(SecretEncoding));
-            }
+                SecretEncodingType.Base64 => Convert.FromBase64String(Secret),
+                SecretEncodingType.UTF8 => Encoding.UTF8.GetBytes(Secret),
+                _ => throw new ArgumentOutOfRangeException(nameof(SecretEncoding))
+            };
         }
 
         #endregion Methods

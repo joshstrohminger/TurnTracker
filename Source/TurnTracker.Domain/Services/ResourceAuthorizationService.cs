@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
 using TurnTracker.Common;
@@ -35,7 +34,7 @@ namespace TurnTracker.Domain.Services
         {
             if (userIds is null || userIds.Length == 0)
             {
-                return Result.Fail("Invalid user IDs");
+                return Result.Failure("Invalid user IDs");
             }
 
             var activity = _db.Activities.AsNoTracking()
@@ -44,17 +43,17 @@ namespace TurnTracker.Domain.Services
 
             if (activity is null)
             {
-                return Result.Fail("Invalid activity");
+                return Result.Failure("Invalid activity");
             }
 
             if (activity.IsDisabled)
             {
-                return Result.Fail("Activity is disabled");
+                return Result.Failure("Activity is disabled");
             }
 
             if (!activity.Participants.Select(x => x.UserId).ContainsSubset(userIds))
             {
-                return Result.Fail("Not a participant of this activity");
+                return Result.Failure("Not a participant of this activity");
             }
 
             return Result.Ok();

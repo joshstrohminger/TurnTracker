@@ -72,7 +72,7 @@ namespace TurnTracker.Domain.Services
             catch (Exception e)
             {
                 _logger.LogError(e, "Failed to update notification settings");
-                return Result.Fail(e.Message);
+                return Result.Failure(e.Message);
             }
         }
 
