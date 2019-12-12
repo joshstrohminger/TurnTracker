@@ -55,7 +55,7 @@ namespace TurnTracker.Server
             services.Configure<AppSettings>(appSettingsSection);
             var appSettings = appSettingsSection.Get<AppSettings>();
 
-            services.AddDbContext<TurnContext>(options => options.UseSqlServer(appSettings.DatabaseConnection));
+            services.AddDbContext<TurnContext>(options => options.UseSqlServer(_configuration.GetConnectionString("SQL")));
 
             services.AddAuthorization(x =>
             {

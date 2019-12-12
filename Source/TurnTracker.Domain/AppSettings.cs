@@ -19,7 +19,6 @@ namespace TurnTracker.Domain
 
         public string Secret { get; set; }
         public SecretEncodingType SecretEncoding { get; set; }
-        public string DatabaseConnection { get; set; }
         public TimeSpan AccessTokenExpiration { get; set; }
         public TimeSpan InviteTokenExpiration { get; set; }
         public TimeSpan RefreshTokenExpiration { get; set; }
