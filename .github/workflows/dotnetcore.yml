@@ -13,8 +13,10 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: '13.x'
-    - name: Install Dependencies
+    - name: Install npm Dependencies
       run: npm install
+    - name: Install angular CLI
+      run: npm install -g @angular/cli
     - name: Build with npm
       working-directory: Source/TurnTracker.Client
       run: npm run-script build
