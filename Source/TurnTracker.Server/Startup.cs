@@ -10,7 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using TurnTracker.Common;
 using TurnTracker.Data;
 using TurnTracker.Domain;
 using TurnTracker.Domain.Authorization;
@@ -77,7 +79,7 @@ namespace TurnTracker.Server
                         ValidateIssuer = false,
                         ValidateAudience = false,
                         ValidateLifetime = true,
-                        ClockSkew = TimeSpan.Zero
+                        ClockSkew = appSettings.JwtClockSkew
                     };
                 });
 
@@ -88,7 +90,7 @@ namespace TurnTracker.Server
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IOptions<AppSettings> appSettings, ILogger<Startup> logger)
         {
             using (var serviceScope = app.ApplicationServices
                 .GetRequiredService<IServiceScopeFactory>()
@@ -97,16 +99,20 @@ namespace TurnTracker.Server
                 using var context = serviceScope.ServiceProvider.GetService<TurnContext>();
                 context.Database.Migrate();
 
-                var result = serviceScope.ServiceProvider.GetService<IUserService>().EnsureSeedUsers();
-                if (result.IsFailure)
+                if (appSettings.Value.Seed)
                 {
-                    throw new Exception($"Failed to seed users: {result.Error}");
-                }
+                    logger.LogInformation("Seeding database");
+                    var result = serviceScope.ServiceProvider.GetRequiredService<IUserService>().EnsureSeedUsers();
+                    if (result.IsFailure)
+                    {
+                        throw new Exception($"Failed to seed users: {result.Error}");
+                    }
 
-                result = serviceScope.ServiceProvider.GetService<ITurnService>().EnsureSeedActivities();
-                if (result.IsFailure)
-                {
-                    throw new Exception($"Failed to seed activities: {result.Error}");
+                    result = serviceScope.ServiceProvider.GetRequiredService<ITurnService>().EnsureSeedActivities();
+                    if (result.IsFailure)
+                    {
+                        throw new Exception($"Failed to seed activities: {result.Error}");
+                    }
                 }
             }
 
@@ -133,8 +139,7 @@ namespace TurnTracker.Server
             app.UseAuthorization();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
 
-            var logger = app.ApplicationServices.GetRequiredService<ILogger<Startup>>();
-            logger.LogInformation("Started");
+            logger.LogInformation($"Started version '{AppHelper.Version}'");
         }
     }
 }

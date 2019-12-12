@@ -24,7 +24,6 @@ namespace TurnTracker.Domain.Services
     {
         private const int SaltSize = 128 / 8;
         private const int HashSize = 256 / 8;
-        private const int HashIterations = 10000;
         private const KeyDerivationPrf HashAlgorithm = KeyDerivationPrf.HMACSHA256;
 
         private readonly TurnContext _db;
@@ -46,33 +45,31 @@ namespace TurnTracker.Domain.Services
             {
                 if (!_db.Users.Any())
                 {
+                    _logger.LogInformation("Seeding");
                     var josh = new User
                     {
                         DisplayName = "Joshua",
                         Username = "josh",
                         Email = "josh@mail.com",
-                        Role = Role.Admin,
-                        MobileNumber = "+1 (888) 123-1337"
+                        Role = Role.Admin
                     };
-                    AssignNewPassword(josh, "password");
+                    AssignNewPassword(josh, _appSettings.DefaultPassword);
 
                     var kelly = new User
                     {
                         DisplayName = "Kelly",
                         Username = "kelly",
-                        Role = Role.User,
-                        MobileNumber = "+1 (666) 123-8008"
+                        Role = Role.User
                     };
-                    AssignNewPassword(kelly, "password");
+                    AssignNewPassword(kelly, _appSettings.DefaultPassword);
 
                     var matt = new User
                     {
                         DisplayName = "Matt",
                         Username = "matt",
-                        Role = Role.User,
-                        MobileNumber = "+1 (333) 123-4311"
+                        Role = Role.User
                     };
-                    AssignNewPassword(matt, "password");
+                    AssignNewPassword(matt, _appSettings.DefaultPassword);
 
                     _db.Users.Add(josh);
                     _db.Users.Add(kelly);
@@ -268,7 +265,7 @@ namespace TurnTracker.Domain.Services
         private void AssignNewPassword(User user, string password)
         {
             var salt = GetRandomBytes(SaltSize);
-            var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, HashIterations, HashSize);
+            var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, _appSettings.HashIterations, HashSize);
             user.PasswordSalt = salt;
             user.PasswordHash = hash;
         }
@@ -279,7 +276,7 @@ namespace TurnTracker.Domain.Services
             var salt = user.PasswordSalt;
             if (salt is null || salt.Length != SaltSize) return Result.Failure("Invalid salt");
             if (user.PasswordHash is null || user.PasswordHash.Length != HashSize) return Result.Failure("Invalid hash");
-            var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, HashIterations, HashSize);
+            var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, _appSettings.HashIterations, HashSize);
             return user.PasswordHash.SequenceEqual(hash) ? Result.Ok() : Result.Failure("No match");
         }
     }

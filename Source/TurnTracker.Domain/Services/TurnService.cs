@@ -30,6 +30,7 @@ namespace TurnTracker.Domain.Services
         {
             try
             {
+                _logger.LogInformation("Seeding");
                 if (!_db.Activities.Any())
                 {
                     var userIds = _db.Users.Take(2).Select(x => x.Id).ToArray();
