@@ -1,14 +1,15 @@
 {
   "name": "turntracker-client",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Turn Tracker",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve --open",
+    "ng": "node_modules/.bin/ng",
+    "start": "node_modules/.bin/ng serve --open",
     "start-server": "http-server -p 8080 -c-1 ../TurnTracker.Server/wwwroot --ssl --key ../TurnTracker.Server/localhost.key --cert ../TurnTracker.Server/localhost.crt -o",
-    "build": "ng build --prod",
-    "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
+    "build": "node src/environments/setBuildDate.js && node_modules/.bin/ng build --prod",
+    "test": "node_modules/.bin/ng test",
+    "lint": "node_modules/.bin/ng lint",
+    "e2e": "node_modules/.bin/ng e2e"
   },
   "private": true,
   "dependencies": {

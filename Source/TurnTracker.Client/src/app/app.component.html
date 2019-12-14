@@ -16,7 +16,7 @@
         </button>
         <span class="menu-spacer"></span>
         <div>
-          <a mat-button [routerLink]="'/'">Turn Tracker</a>
+          <a mat-button [routerLink]="'/'">{{appName}}</a>
         </div>
         <div fxFlex fxLayout fxLayoutAlign="end">
           <a mat-button [routerLink]="'/profile'" *ngIf="authService.isLoggedIn">{{userService.currentUser.displayName}}</a>
