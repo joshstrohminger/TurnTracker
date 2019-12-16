@@ -1,10 +1,5 @@
 @import 'app.component.shared-spacing.scss';
 
-#sidenav .logo {
-  height: 32px;
-  object-fit: contain;
-}
-
 #page {
   height: 100vh;
 }
@@ -18,4 +13,17 @@
   padding: $mainPadding;
   overflow: auto;
   position: relative;
+}
+
+#sidenav {
+  img {
+    height: 1.5em;
+    object-fit: contain;
+  }
+  span {
+    padding-left: 0.5em;
+    @media only screen and (max-width: 200px) {
+      display: none;
+    }
+  }
 }
