@@ -26,4 +26,9 @@
       display: none;
     }
   }
+  a:last-of-type {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
 }
