@@ -4,7 +4,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using AutoMapper;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
@@ -15,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Authorization;
+using TurnTracker.Domain.Configuration;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Domain.Models;
 

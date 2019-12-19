@@ -1,7 +1,7 @@
 ﻿using System;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
-using TurnTracker.Domain;
+using TurnTracker.Domain.Configuration;
 
 namespace TurnTracker.Server.Models
 {

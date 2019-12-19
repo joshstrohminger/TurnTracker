@@ -18,5 +18,12 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit() {
     this.me = this._userService.currentUser;
+
+    if (this.me.enablePushNotifications) {
+      this._http.get('notification/push/publickey', {responseType: 'text'}).subscribe(
+        publicKey => console.log('public key', publicKey),
+        error => console.error('failed to get public key', error)
+      );
+    }
   }
 }
