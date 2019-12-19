@@ -51,7 +51,8 @@ namespace TurnTracker.Domain.Services
                         DisplayName = "Joshua",
                         Username = "josh",
                         Email = "josh@mail.com",
-                        Role = Role.Admin
+                        Role = Role.Admin,
+                        EnablePushNotifications = true
                     };
                     AssignNewPassword(josh, _appSettings.DefaultPassword);
 
@@ -189,6 +190,20 @@ namespace TurnTracker.Domain.Services
             }
 
             user.ShowDisabledActivities = show;
+            _db.SaveChanges();
+
+            return Result.Ok();
+        }
+
+        public Result SetEnablePushNotifications(int userId, bool enable)
+        {
+            var user = _db.Users.SingleOrDefault(x => x.Id == userId);
+            if (user is null)
+            {
+                return Result.Failure("Invalid user");
+            }
+
+            user.EnablePushNotifications = enable;
             _db.SaveChanges();
 
             return Result.Ok();
