@@ -53,7 +53,7 @@ export class ObservableUser implements IUser {
   }
 
   private _propertyChanged = new Subject<UserPropertyChange>();
-  public get propertyChanged(): Observable<UserPropertyChange> {
+  public get propertyChanged$(): Observable<UserPropertyChange> {
     return this._propertyChanged.asObservable();
   }
 

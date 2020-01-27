@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { IUser } from '../auth/models/IUser';
 import { ObservableUser } from '../auth/models/ObservableUser';
 import { UserPropertyChange } from '../auth/models/UserPropertyChange';
-import { of, Observable } from 'rxjs';
+import { of, Observable, BehaviorSubject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from './message.service';
 
@@ -12,6 +12,11 @@ import { MessageService } from './message.service';
 export class UserService {
 
   private readonly _userKey = 'user';
+
+  private readonly _userSubject = new BehaviorSubject<ObservableUser>(null);
+  public get currentUser$() {
+    return this._userSubject.asObservable();
+  }
 
   private _currentUser: ObservableUser;
   public get currentUser(): IUser {
@@ -24,10 +29,11 @@ export class UserService {
 
     if (user) {
       this._currentUser = new ObservableUser(user);
-      this._currentUser.propertyChanged.subscribe(change => this._persistUser(change));
+      this._currentUser.propertyChanged$.subscribe(change => this._persistUser(change));
     } else {
       this._currentUser = null;
     }
+    this._userSubject.next(this._currentUser);
     this._persistUser(new UserPropertyChange(this._currentUser));
   }
 
@@ -35,8 +41,7 @@ export class UserService {
     const saved = localStorage.getItem(this._userKey);
     if (saved) {
       const user = JSON.parse(saved);
-      this._currentUser = new ObservableUser(user);
-      this._currentUser.propertyChanged.subscribe(change => this._persistUser(change));
+      this.currentUser = user;
     }
   }
 
