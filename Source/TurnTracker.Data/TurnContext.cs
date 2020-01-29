@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using TurnTracker.Data.Entities;
+using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 
 namespace TurnTracker.Data
 {
@@ -17,6 +21,7 @@ namespace TurnTracker.Data
         public DbSet<Turn> Turns { get; set; }
         public DbSet<Setting> Settings { get; set; }
         public DbSet<NotificationSetting> NotificationSettings { get; set; }
+        public DbSet<PushSubscriptionDevice> PushSubscriptionDevices { get; set; }
 
         public override int SaveChanges()
         {
@@ -59,15 +64,20 @@ namespace TurnTracker.Data
 
             modelBuilder.Entity<Activity>()
                 .Property(x => x.PeriodUnit)
-                .HasConversion(
-                    v => v.ToString(),
-                    s => Enum.Parse<Unit>(s));
+                .HasConversion<string>();
 
             modelBuilder.Entity<Activity>()
                 .Property(x => x.Period)
                 .HasConversion(
                     v => v.Value.Ticks,
                     t => TimeSpan.FromTicks(t));
+
+            modelBuilder.Entity<PushSubscriptionDevice>()
+                .HasKey(x => new {x.UserId, x.Endpoint});
+
+            modelBuilder.Entity<PushSubscriptionDevice>()
+                .Property(x => x.Keys)
+                .HasJsonConversion();
         }
     }
 }

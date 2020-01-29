@@ -16,12 +16,10 @@ export class AppComponent {
   @ViewChild('sidenav', {static: true}) sidenav: MatSidenav;
   appName = environment.appName;
 
-  constructor(router: Router, public userService: UserService, public authService: AuthService, pushService: PushService) {
+  constructor(router: Router, public userService: UserService, public authService: AuthService, push: PushService) {
     router.events.subscribe(event => {
       // close sidenav on routing
       this.sidenav.close();
     });
-    pushService.start();
-    pushService.refresh();
   }
 }

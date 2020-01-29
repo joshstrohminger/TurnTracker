@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Lib.Net.Http.WebPush;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Models;
 
@@ -16,6 +17,14 @@ namespace TurnTracker.Domain
                 .ForMember(x => x.Name, x => x.MapFrom(y => y.DisplayName));
 
             CreateMap<Activity, EditableActivity>();
+
+            CreateMap<PushSubscription, PushSubscriptionDevice>()
+                .ForMember(x => x.UserId, o => o.Ignore())
+                .ForMember(x => x.User, o => o.Ignore())
+                .ForMember(x => x.CreatedDate, o => o.Ignore())
+                .ForMember(x => x.ModifiedDate, o => o.Ignore())
+                .ForMember(x => x.Timestamp, o => o.Ignore())
+                .ReverseMap();
         }
     }
 }

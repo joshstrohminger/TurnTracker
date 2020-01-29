@@ -4,17 +4,15 @@ import { UserService } from './user.service';
 import { HttpClient } from '@angular/common/http';
 import { SwPush } from '@angular/service-worker';
 import { IUser } from '../auth/models/IUser';
-import { combineLatest, Subject, from, EMPTY, of } from 'rxjs';
-import { mergeMap, filter, startWith, switchMap } from 'rxjs/operators';
+import { combineLatest, from, EMPTY, of, Observable } from 'rxjs';
+import { filter, startWith, switchMap } from 'rxjs/operators';
 import { UserPropertyChange } from '../auth/models/UserPropertyChange';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PushService {
-  private _started = false;
   private _user: IUser;
-  private _recheck = new Subject<void>();
 
   private _sub: PushSubscription;
   public get PushEnabled() {
@@ -27,51 +25,71 @@ export class PushService {
     private _userService: UserService,
     private _messageService: MessageService
   ) {
-    console.log('push constructed');
+    this.start();
   }
 
-  public start() {
-    if (this._started) {
-      return;
-    }
-    this._started = true;
+  private start() {
     console.log('push started', this._swPush.isEnabled);
 
     combineLatest([
+      this._http.get('notification/push/publickey', {responseType: 'text'}),
       this._swPush.subscription,
       this._userService.currentUser$.pipe(
         switchMap(user => (user
           ? user.propertyChanged$.pipe(filter(change => change.propertyName === 'enablePushNotifications'))
           : EMPTY)
           .pipe(startWith(new UserPropertyChange(user, 'user')))
-      )),
-      this._http.get('notification/push/publickey', {responseType: 'text'}),
-      this._recheck.asObservable()])
-    .subscribe(([subscription, userChange, serverPublicKey]) => {
-      console.log('push updated', subscription, userChange, serverPublicKey);
+      ))])
+    .subscribe(([serverPublicKey, subscription, userChange]) => {
+      console.log('push updated', subscription, serverPublicKey, userChange);
       this._sub = subscription;
       this._user = userChange.user;
-      if (this._user) {
-        if (this._user.enablePushNotifications && !this._sub) {
-          console.log('requesting push permission');
-          from(this._swPush.requestSubscription({serverPublicKey})).subscribe(
-            requestedSubscription => console.log('sub', JSON.stringify(requestedSubscription, null, 2)),
-            error => this._messageService.error('Failed to request push notification permission', error)
-          );
-        } else if (!this._user.enablePushNotifications && this._sub) {
-          console.log('cancelling push permission');
-          from(this._swPush.unsubscribe()).subscribe(
-            () => {},
-            error => this._messageService.error('Failed to cancel push notifications', error)
-          );
-        } else {
-          console.log('no change');
-        }
-      }
+      this.checkSubscription(serverPublicKey);
     });
   }
 
-  public refresh() {
-    this._recheck.next();
+  private checkSubscription(serverPublicKey: string) {
+    if (!this._user) {
+      return;
+    } else if (this._user.enablePushNotifications) {
+      this.requestPermission(serverPublicKey);
+    } else if (!this._user.enablePushNotifications && this._sub) {
+      this.cancelPermission(this._sub);
+    } else {
+      console.log('no change');
+    }
+  }
+
+  private cancelPermission(sub: PushSubscription) {
+    console.log('cancelling push permission');
+
+    this._http.post('notification/push/unsubscribe', sub.toJSON()).pipe(
+      switchMap(() => from(this._swPush.unsubscribe()))
+    ).subscribe(
+      () => this._messageService.success('Unsubscribed from push notifications on this device'),
+      error => this._messageService.error('Failed to unsubscribe from push notifications on this device', error));
+  }
+
+  private requestPermission(serverPublicKey: string) {
+    let sub$: Observable<PushSubscription>;
+    let request = false;
+    if (this._sub) {
+      console.log('saving push subscription');
+      sub$ = of(this._sub);
+    } else {
+      console.log('requesting push permission');
+      request = true;
+      sub$ = from(this._swPush.requestSubscription({ serverPublicKey }));
+    }
+
+    sub$.pipe(
+      switchMap(sub => this._http.post('notification/push/subscribe', sub.toJSON()))
+    ).subscribe(
+      () => {
+        if (request) {
+          this._messageService.success('Subscribed to push notifications on this device');
+        }
+      },
+      error => this._messageService.error('Failed to subscribe to push notifications on this device', error));
   }
 }

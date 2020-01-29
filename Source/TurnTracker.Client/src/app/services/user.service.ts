@@ -33,6 +33,7 @@ export class UserService {
     } else {
       this._currentUser = null;
     }
+    console.log('next user', this._currentUser);
     this._userSubject.next(this._currentUser);
     this._persistUser(new UserPropertyChange(this._currentUser));
   }
@@ -42,6 +43,8 @@ export class UserService {
     if (saved) {
       const user = JSON.parse(saved);
       this.currentUser = user;
+    } else {
+      this.currentUser = null;
     }
   }
 

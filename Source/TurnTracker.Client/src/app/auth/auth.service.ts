@@ -32,6 +32,7 @@ export class AuthService {
     private _userService: UserService) { }
 
   private saveUser(user?: AuthenticatedUser) {
+    console.log('saving user', user);
     if (user) {
       this.saveAccessToken(user.accessToken);
       this.saveRefreshToken(user.refreshToken);
