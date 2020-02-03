@@ -50,6 +50,7 @@ import { TimerComponent } from './user/timer/timer.component';
 import { TurnDetailsDialog } from './user/turn-details/turn-details.dialog';
 import { EditActivityComponent } from './user/edit-activity/edit-activity.component';
 import { DeleteActivityDialog } from './user/delete-activity/delete-activity.dialog';
+import { SettingsComponent } from './user/settings/settings.component';
 
 const routes: Routes = [
   { path: 'activity/add', component: EditActivityComponent, canActivate: [AuthGuard] },
@@ -57,6 +58,7 @@ const routes: Routes = [
   { path: 'activity/:id', component: ActivityComponent, canActivate: [AuthGuard] },
   { path: 'activities', component: ActivitiesComponent, canActivate: [AuthGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
+  { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
   { path: 'about', component: AboutComponent },
   { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
   { path: '', redirectTo: '/activities', pathMatch: 'full' },
@@ -78,7 +80,8 @@ const routes: Routes = [
     TimerComponent,
     TurnDetailsDialog,
     EditActivityComponent,
-    DeleteActivityDialog
+    DeleteActivityDialog,
+    SettingsComponent
   ],
   entryComponents: [
     MatSpinner,

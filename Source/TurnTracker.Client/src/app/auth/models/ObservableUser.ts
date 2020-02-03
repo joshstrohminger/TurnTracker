@@ -41,8 +41,19 @@ export class ObservableUser implements IUser {
     }
   }
 
+  private _enablePushNotifications: boolean;
+  public get enablePushNotifications() {
+    return this._enablePushNotifications;
+  }
+  public set enablePushNotifications(enablePushNotifications: boolean) {
+    if (this._enablePushNotifications !== enablePushNotifications) {
+      this._enablePushNotifications = enablePushNotifications;
+      this._changed('enablePushNotifications');
+    }
+  }
+
   private _propertyChanged = new Subject<UserPropertyChange>();
-  public get propertyChanged(): Observable<UserPropertyChange> {
+  public get propertyChanged$(): Observable<UserPropertyChange> {
     return this._propertyChanged.asObservable();
   }
 
@@ -56,6 +67,7 @@ export class ObservableUser implements IUser {
     this._displayName = user.displayName;
     this._role = user.role;
     this._showDisabledActivities = user.showDisabledActivities;
+    this._enablePushNotifications = user.enablePushNotifications;
   }
 
   private _changed(propertyName: string) {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace TurnTracker.Domain
+namespace TurnTracker.Domain.Configuration
 {
     public class AppSettings
     {
@@ -28,6 +28,7 @@ namespace TurnTracker.Domain
         public int HashIterations { get; set; }
         public bool Seed { get; set; }
         public TimeSpan JwtClockSkew { get; set; }
+        public PushNotificationSettings PushNotifications { get; set; }
 
         #endregion Properties
 

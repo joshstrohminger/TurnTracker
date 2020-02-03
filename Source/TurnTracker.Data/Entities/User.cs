@@ -37,6 +37,7 @@ namespace TurnTracker.Data.Entities
         public string RefreshKey { get; set; }
 
         public bool ShowDisabledActivities { get; set; }
+        public bool EnablePushNotifications { get; set; }
 
         #region Navigation
 

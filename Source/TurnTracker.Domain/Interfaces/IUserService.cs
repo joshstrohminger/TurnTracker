@@ -15,6 +15,7 @@ namespace TurnTracker.Domain.Interfaces
         Result EnsureSeedUsers();
         Result<User> SetDisplayName(int userId, string displayName);
         Result SetShowDisabledActivities(int userId, bool show);
+        Result SetEnablePushNotifications(int userId, bool enable);
         Result<IEnumerable<UserInfo>> FindUsers(string filter);
     }
 }

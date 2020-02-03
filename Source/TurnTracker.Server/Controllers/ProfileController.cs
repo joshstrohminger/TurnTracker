@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using TurnTracker.Domain;
+using TurnTracker.Domain.Configuration;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Server.Models;
 using TurnTracker.Server.Utilities;

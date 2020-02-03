@@ -27,5 +27,17 @@ namespace TurnTracker.Server.Controllers
 
             return Ok();
         }
+
+        [HttpPut("[action]")]
+        public IActionResult EnablePushNotifications([FromBody] bool enable)
+        {
+            var myId = User.GetId();
+            if (_userService.SetEnablePushNotifications(myId, enable).IsFailure)
+            {
+                return BadRequest();
+            }
+
+            return Ok();
+        }
     }
 }
