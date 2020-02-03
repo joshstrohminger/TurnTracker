@@ -29,7 +29,13 @@ export class AuthService {
     private _router: Router,
     private _route: ActivatedRoute,
     private _http: HttpClient,
-    private _userService: UserService) { }
+    private _userService: UserService) {
+      if (this.isLoggedIn) {
+        if (!this.getAccessToken().isValid || !this.getRefreshToken().isValid ) {
+          this.logoutClientOnly();
+        }
+      }
+    }
 
   private saveUser(user?: AuthenticatedUser) {
     console.log('saving user', user);

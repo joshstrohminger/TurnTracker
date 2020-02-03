@@ -18,6 +18,9 @@ export class PushService {
   public get PushEnabled() {
     return !!this._sub;
   }
+  public get Sub() {
+    return this._sub;
+  }
 
   constructor(
     private _swPush: SwPush,
@@ -83,7 +86,10 @@ export class PushService {
     }
 
     sub$.pipe(
-      switchMap(sub => this._http.post('notification/push/subscribe', sub.toJSON()))
+      switchMap(sub => {
+        console.log('sending subscription to server');
+        return this._http.post('notification/push/subscribe', sub.toJSON());
+    })
     ).subscribe(
       () => {
         if (request) {
