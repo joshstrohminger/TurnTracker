@@ -5,6 +5,7 @@ using Lib.Net.Http.WebPush;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -13,11 +14,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 using TurnTracker.Common;
 using TurnTracker.Data;
 using TurnTracker.Domain.Authorization;
 using TurnTracker.Domain.Configuration;
 using TurnTracker.Domain.Interfaces;
+using TurnTracker.Domain.Models;
 using TurnTracker.Domain.Services;
 using TurnTracker.Server.Utilities;
 
@@ -91,10 +94,12 @@ namespace TurnTracker.Server
             services.AddScoped<IPushSubscriptionService, PushSubscriptionService>();
             services.AddScoped<IPushNotificationService, PushNotificationService>();
             services.AddHttpClient<PushServiceClient>();
+
+            services.AddSingleton<ServerFeatureAccessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IOptions<AppSettings> appSettings, ILogger<Startup> logger)
+        public void Configure(IApplicationBuilder app, IOptions<AppSettings> appSettings, ILogger<Startup> logger, ServerFeatureAccessor serverFeatures)
         {
             using (var serviceScope = app.ApplicationServices
                 .GetRequiredService<IServiceScopeFactory>()
@@ -118,6 +123,26 @@ namespace TurnTracker.Server
                         throw new Exception($"Failed to seed activities: {result.Error}");
                     }
                 }
+            }
+
+            var addresses = app.ServerFeatures.Get<IServerAddressesFeature>().Addresses;
+            foreach (var address in addresses)
+            {
+                var x = new Uri(address);
+                logger.LogInformation($"Listening on address: {address}");
+            }
+
+            var uri = addresses
+                .Select(x => new Uri(x))
+                .FirstOrDefault(x => x.Scheme.Equals("https", StringComparison.InvariantCultureIgnoreCase));
+            if (uri is null)
+            {
+                logger.LogError("Failed to find server URL");
+            }
+            else
+            {
+                serverFeatures.Url = $"https://{uri.Host}";
+                logger.LogInformation($"Using server URL: {serverFeatures.Url}");
             }
 
             if (_env.IsDevelopment())
