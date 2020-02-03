@@ -1,12 +1,11 @@
-﻿using System;
-using System.Linq;
-using AutoMapper;
+﻿using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using Lib.Net.Http.WebPush;
-using Microsoft.Extensions.Logging;
-using TurnTracker.Data;
-using TurnTracker.Data.Entities;
+using Lib.Net.Http.WebPush.Authentication;
+using Microsoft.Extensions.Options;
+using TurnTracker.Domain.Configuration;
 using TurnTracker.Domain.Interfaces;
+using TurnTracker.Domain.Models;
 
 namespace TurnTracker.Domain.Services
 {
@@ -14,91 +13,71 @@ namespace TurnTracker.Domain.Services
     {
         #region Fields
 
-        private readonly TurnContext _db;
-        private readonly IMapper _mapper;
-        private readonly ILogger<PushNotificationService> _logger;
+        private readonly PushServiceClient _client;
+        private readonly IPushSubscriptionService _pushService;
 
         #endregion Fields
 
         #region Ctor
 
-        public PushNotificationService(TurnContext db, IMapper mapper, ILogger<PushNotificationService> logger)
+        public PushNotificationService(PushServiceClient client, IPushSubscriptionService pushService, IOptions<AppSettings> appSettings)
         {
-            _db = db;
-            _mapper = mapper;
-            _logger = logger;
+            _pushService = pushService;
+            _client = client;
+            var config = appSettings.Value.PushNotifications;
+            _client.DefaultAuthentication = new VapidAuthentication(config.PublicKey, config.PrivateKey)
+            {
+                //todo fill in the actual URL
+                Subject = "https://localhost:5001"
+            };
         }
 
         #endregion Ctor
 
         #region Public
 
-        public Result SaveSubscription(int userId, PushSubscription sub)
+        public async Task<Result> SendToOneDeviceAsync(int userId, string title, string message, string endpoint)
         {
-            try
-            {
-                if (_db.PushSubscriptionDevices.Find(userId, sub.Endpoint) is null)
-                {
-                    var device = _mapper.Map<PushSubscriptionDevice>(sub);
-                    device.UserId = userId;
-                    _db.PushSubscriptionDevices.Add(device);
-                    _db.SaveChanges();
-                }
-
-                return Result.Success();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Failed to save sub for user {userId}");
-                return Result.Failure("Failed to save subscription");
-            }
-        }
-
-        public Result RemoveSubscription(int userId, PushSubscription sub)
-        {
-            try
-            {
-                var device = _db.PushSubscriptionDevices.Find(userId, sub.Endpoint);
-                if (device != null)
-                {
-                    _db.PushSubscriptionDevices.Remove(device);
-                    _db.SaveChanges();
-                }
-                return Result.Success();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Failed to delete sub for user {userId}");
-                return Result.Failure("Failed to delete subscription");
-            }
-        }
-
-        public Result SendToOneDevice(int userId, string message, string endpoint)
-        {
-            var sub = _db.PushSubscriptionDevices.Find(userId, endpoint);
+            var sub = _pushService.Get(userId, endpoint);
             if (sub is null)
             {
                 return Result.Failure("Couldn't find device subscription");
             }
 
-            return Send(sub, message);
+            var pushMessage = BuildMessage(title, message);
+
+            await _client.RequestPushMessageDeliveryAsync(sub, pushMessage);
+
+            return Result.Success();
         }
 
-        public Result SendToAllDevices(int userId, string message)
+        public async Task<Result> SendToAllDevicesAsync(int userId, string title, string message)
         {
-            return Result.Combine(
-                _db.PushSubscriptionDevices
-                    .Where(x => x.UserId == userId)
-                    .Select(sub => Send(sub, message)));
+            var sent = false;
+            var pushMessage = BuildMessage(title, message);
+
+            foreach (var sub in _pushService.Get(userId))
+            {
+                sent = true;
+                await _client.RequestPushMessageDeliveryAsync(sub, pushMessage);
+            }
+
+            return Result.SuccessIf(sent, "No subscriptions found");
         }
 
         #endregion Public
 
         #region Private
 
-        private Result Send(PushSubscriptionDevice sub, string message)
+        private PushMessage BuildMessage(string title, string message, params AngularPushNotification.NotificationAction[] actions)
         {
-            return Result.Failure("not implemented");
+            return new AngularPushNotification
+            {
+                Title = title,
+                Body = message,
+                Icon = "assets/icons/icon-96x96.png",
+                Actions = actions
+            }.ToPushMessage();
         }
 
         #endregion Private

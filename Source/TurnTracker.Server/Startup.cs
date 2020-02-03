@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using AutoMapper;
+using Lib.Net.Http.WebPush;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -87,7 +88,9 @@ namespace TurnTracker.Server
             services.AddScoped<ITurnService, TurnService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IResourceAuthorizationService, ResourceAuthorizationService>();
+            services.AddScoped<IPushSubscriptionService, PushSubscriptionService>();
             services.AddScoped<IPushNotificationService, PushNotificationService>();
+            services.AddHttpClient<PushServiceClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
