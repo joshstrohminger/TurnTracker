@@ -4,7 +4,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using AutoMapper;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
@@ -15,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Authorization;
+using TurnTracker.Domain.Configuration;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Domain.Models;
 
@@ -51,7 +51,8 @@ namespace TurnTracker.Domain.Services
                         DisplayName = "Joshua",
                         Username = "josh",
                         Email = "josh@mail.com",
-                        Role = Role.Admin
+                        Role = Role.Admin,
+                        EnablePushNotifications = true
                     };
                     AssignNewPassword(josh, _appSettings.DefaultPassword);
 
@@ -189,6 +190,20 @@ namespace TurnTracker.Domain.Services
             }
 
             user.ShowDisabledActivities = show;
+            _db.SaveChanges();
+
+            return Result.Ok();
+        }
+
+        public Result SetEnablePushNotifications(int userId, bool enable)
+        {
+            var user = _db.Users.SingleOrDefault(x => x.Id == userId);
+            if (user is null)
+            {
+                return Result.Failure("Invalid user");
+            }
+
+            user.EnablePushNotifications = enable;
             _db.SaveChanges();
 
             return Result.Ok();

@@ -1,0 +1,48 @@
+name: Azure Deploy
+
+on:
+  push:
+    branches:    
+      - master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+      
+    - name: Setup node and npm
+      uses: actions/setup-node@v1
+      with:
+        node-version: '13.x'
+
+    - name: Install npm Dependencies
+      working-directory: Source/TurnTracker.Client
+      run: npm install
+      
+    - name: Install angular CLI
+      run: npm install -g @angular/cli
+      
+    - name: Build with npm
+      working-directory: Source/TurnTracker.Client
+      run: npm run-script build
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.100
+
+    - name: Build with dotnet
+      run: dotnet build --configuration Release
+      
+    - name: Publish
+      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp 
+
+    - name: 'Run Azure webapp deploy action using publish profile credentials'
+      uses: azure/webapps-deploy@v1
+      with: 
+        app-name: TurnTracker
+        publish-profile: ${{ secrets.azureWebAppPublishProfile }}
+        package: ${{env.DOTNET_ROOT}}/myapp 

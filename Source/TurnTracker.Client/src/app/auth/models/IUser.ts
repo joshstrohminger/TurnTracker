@@ -6,4 +6,5 @@ export interface IUser {
   displayName: string;
   role: Role;
   showDisabledActivities: boolean;
+  enablePushNotifications: boolean;
 }

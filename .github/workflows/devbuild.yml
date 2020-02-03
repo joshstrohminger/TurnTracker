@@ -1,9 +1,9 @@
-name: .NET Core
+name: Dev Build
 
 on:
   push:
     branches:    
-      - master
+      - develop
 
 jobs:
   build:
@@ -38,11 +38,4 @@ jobs:
       run: dotnet build --configuration Release
       
     - name: Publish
-      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp 
-
-    - name: 'Run Azure webapp deploy action using publish profile credentials'
-      uses: azure/webapps-deploy@v1
-      with: 
-        app-name: TurnTracker
-        publish-profile: ${{ secrets.azureWebAppPublishProfile }}
-        package: ${{env.DOTNET_ROOT}}/myapp 
+      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp

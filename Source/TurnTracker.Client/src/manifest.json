@@ -1,11 +1,14 @@
 {
-  "name": "turntracker-client",
-  "short_name": "turntracker-client",
-  "theme_color": "#1976d2",
-  "background_color": "#fafafa",
+  "name": "Turn Tracker",
+  "short_name": "TT",
+  "theme_color": "#009688",
+  "background_color": "#2E3032",
   "display": "standalone",
+  "lang": "en-US",
   "scope": "/",
   "start_url": "/",
+  "description": "Track turns for activities among a group of users.",
+  "categories": ["utilities"],
   "icons": [
     {
       "src": "assets/icons/icon-72x72.png",

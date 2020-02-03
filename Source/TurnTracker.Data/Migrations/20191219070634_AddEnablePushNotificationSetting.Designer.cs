@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TurnTracker.Data;
 
 namespace TurnTracker.Data.Migrations
 {
     [DbContext(typeof(TurnContext))]
-    partial class TurnContextModelSnapshot : ModelSnapshot
+    [Migration("20191219070634_AddEnablePushNotificationSetting")]
+    partial class AddEnablePushNotificationSetting
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -157,33 +159,6 @@ namespace TurnTracker.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Participants");
-                });
-
-            modelBuilder.Entity("TurnTracker.Data.Entities.PushSubscriptionDevice", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Endpoint")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTimeOffset>("CreatedDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Keys")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("ModifiedDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<byte[]>("Timestamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("UserId", "Endpoint");
-
-                    b.ToTable("PushSubscriptionDevices");
                 });
 
             modelBuilder.Entity("TurnTracker.Data.Entities.Setting", b =>
@@ -391,15 +366,6 @@ namespace TurnTracker.Data.Migrations
                         .WithMany("Participants")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("TurnTracker.Data.Entities.PushSubscriptionDevice", b =>
-                {
-                    b.HasOne("TurnTracker.Data.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

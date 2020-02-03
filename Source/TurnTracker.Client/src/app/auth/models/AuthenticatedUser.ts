@@ -9,4 +9,5 @@ export class AuthenticatedUser implements IUser {
   public accessToken: string;
   public role: Role;
   public showDisabledActivities: boolean;
+  public enablePushNotifications: boolean;
 }

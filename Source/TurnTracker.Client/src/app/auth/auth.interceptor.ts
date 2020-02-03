@@ -24,7 +24,8 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
-    if (request.url.endsWith('/login')) {
+    if (request.url.endsWith('/login') || request.url.endsWith('/publickey')) {
+      console.log(`sending anonymous request for ${request.url}`);
       return next.handle(this.modifyRequest(request));
     }
 
@@ -34,12 +35,12 @@ export class AuthInterceptor implements HttpInterceptor {
       mergeMap(preppedRequest => next.handle(preppedRequest).pipe(
         catchError(error => {
           if (error instanceof AuthError) {
-            console.log('rethrowing AuthError: ' + error.statusText);
+            console.log(`rethrowing AuthError for '${request.url}': ${error.statusText}`);
             throw error;
           } else if (error instanceof HttpErrorResponse) {
             switch (error.status) {
               case 401:
-                console.log('invalid access token, refreshing');
+                console.log(`invalid access token for '${request.url}', refreshing`);
                 return this.getAccessTokenUsingRefreshToken(next).pipe(
                   map(accessToken => this.modifyRequest(request, accessToken)),
                   mergeMap(secondRequest => next.handle(secondRequest))
@@ -58,7 +59,11 @@ export class AuthInterceptor implements HttpInterceptor {
       )),
       catchError(error => {
         if (error instanceof AuthError) {
-          this._messageService.error(`Logged out: ${error.statusText}`, error);
+          console.error(`Failed URL: ${request.url}`);
+          if (error.statusText !== 'missing refresh token') {
+            const errorMessage = `Logged out: ${error.statusText}`;
+            this._messageService.error(errorMessage, error);
+          }
           this._authService.logoutClientOnly();
         }
         throw error;
