@@ -6,7 +6,9 @@
     "ng": "node_modules/.bin/ng",
     "start": "node_modules/.bin/ng serve --open",
     "start-server": "http-server -p 8080 -c-1 ../TurnTracker.Server/wwwroot --ssl --key ../TurnTracker.Server/localhost.key --cert ../TurnTracker.Server/localhost.crt -o",
-    "build": "node src/environments/setBuildDate.js && node_modules/.bin/ng build --prod",
+    "update-build-date": "node src/environments/setBuildDate.js",
+    "build-prod": "node_modules/.bin/ng build --prod",
+    "build": "npm run-script update-build-date && npm run-script build-prod",
     "test": "node_modules/.bin/ng test",
     "lint": "node_modules/.bin/ng lint",
     "e2e": "node_modules/.bin/ng e2e"
