@@ -1,6 +1,6 @@
 {
   "name": "turntracker-client",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Turn Tracker",
   "scripts": {
     "ng": "node_modules/.bin/ng",
