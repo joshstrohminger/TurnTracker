@@ -34,6 +34,11 @@ export class PushService {
   private start() {
     console.log('push started', this._swPush.isEnabled);
 
+    this._swPush.notificationClicks.subscribe(
+      ({action, notification}) => {
+          this.handleNotificationClick(action, notification);
+      });
+
     combineLatest([
       this._http.get('notification/push/publickey', {responseType: 'text'}),
       this._swPush.subscription,
@@ -97,5 +102,12 @@ export class PushService {
         }
       },
       error => this._messageService.error('Failed to subscribe to push notifications on this device', error));
+  }
+
+  private handleNotificationClick(action: string, notification: NotificationOptions & {
+    title: string;
+}) {
+    console.log('action clicked', action, notification);
+//    window.open(notification.data.url, "_blank");
   }
 }

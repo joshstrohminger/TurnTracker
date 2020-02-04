@@ -31,7 +31,7 @@ namespace TurnTracker.Domain.Models
 
         public string Icon { get; set; }
 
-        public IList<int> Vibrate { get; set; } = new List<int>();
+        public string Badge { get; set; }
 
         public IDictionary<string, object> Data { get; set; }
 

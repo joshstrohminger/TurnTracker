@@ -43,7 +43,7 @@ namespace TurnTracker.Domain.Services
                 return Result.Failure("Couldn't find device subscription");
             }
 
-            var pushMessage = BuildMessage(title, message);
+            var pushMessage = BuildMessage(title, message, new AngularPushNotification.NotificationAction("test-action", "Test2"));
 
             await _client.RequestPushMessageDeliveryAsync(sub, pushMessage);
 
@@ -74,7 +74,8 @@ namespace TurnTracker.Domain.Services
             {
                 Title = title,
                 Body = message,
-                Icon = "assets/icons/icon-96x96.png",
+                Icon = "assets/icons/icon-128x128.png",
+                Badge = "assets/icons/icon-72x72.png",
                 Actions = actions
             }.ToPushMessage();
         }
