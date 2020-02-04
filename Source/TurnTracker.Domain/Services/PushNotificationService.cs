@@ -20,14 +20,14 @@ namespace TurnTracker.Domain.Services
 
         #region Ctor
 
-        public PushNotificationService(PushServiceClient client, IPushSubscriptionService pushService, IOptions<AppSettings> appSettings, ServerFeatureAccessor serverFeatures)
+        public PushNotificationService(PushServiceClient client, IPushSubscriptionService pushService, IOptions<AppSettings> appSettings)
         {
             _pushService = pushService;
             _client = client;
             var config = appSettings.Value.PushNotifications;
             _client.DefaultAuthentication = new VapidAuthentication(config.PublicKey, config.PrivateKey)
             {
-                Subject = serverFeatures.Url
+                Subject = config.ServerUrl
             };
         }
 
