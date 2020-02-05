@@ -61,17 +61,17 @@ namespace TurnTracker.Server.Controllers
         public async Task<IActionResult> TestOne([FromBody] PushSubscription sub)
         {
             var result = await _pushNotificationService.SendToOneDeviceAsync(User.GetId(), "Test Notification",
-                "This is a test notification to just this device", sub.Endpoint);
+                "This is a test notification to just this device", sub.Endpoint, "test one");
             if (result.IsSuccess) return Ok();
 
             return StatusCode(500);
         }
         
         [HttpPost("test/all")]
-        public async Task<IActionResult> TestAll()
+        public IActionResult TestAll()
         {
-            var result = await _pushNotificationService.SendToAllDevicesAsync(User.GetId(), "Test Notification",
-                "This is a test notification to all your devices");
+            var result = _pushNotificationService.SendToAllDevices(User.GetId(), "Test Notification",
+                "This is a test notification to all your devices", _options.Value.PushNotifications.ServerUrl, "test all");
             if (result.IsSuccess) return Ok();
 
             return StatusCode(500);

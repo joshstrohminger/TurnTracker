@@ -293,6 +293,8 @@ namespace TurnTracker.Domain.Services
         {
             try
             {
+                var now = DateTimeOffset.Now;
+
                 _db.Turns.Add(new Turn
                 {
                     ActivityId = activityId,
@@ -305,6 +307,13 @@ namespace TurnTracker.Domain.Services
                 if (activity == null)
                 {
                     return Result.Failure<ActivityDetails>("no such activity");
+                }
+
+                foreach(var notificationSetting in activity.Participants
+                    .SelectMany(x => x.NotificationSettings)
+                    .Where(x => x.Type == NotificationType.OverdueMine || x.Type == NotificationType.OverdueAnybody))
+                {
+                    notificationSetting.NextCheck = now;
                 }
 
                 var details = ActivityDetails.Calculate(activity, byUserId);

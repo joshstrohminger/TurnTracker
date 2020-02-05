@@ -59,7 +59,7 @@ namespace TurnTracker.Server.Controllers
             return Ok();
         }
 
-        [Authorize(Policy = nameof(PolicyType.Refresh))]
+        [Authorize(Policy = nameof(PolicyType.CanRefreshSession))]
         [HttpPost("[action]")]
         public IActionResult Refresh()
         {

@@ -22,6 +22,7 @@ namespace TurnTracker.Domain.Configuration
         public TimeSpan AccessTokenExpiration { get; set; }
         public TimeSpan InviteTokenExpiration { get; set; }
         public TimeSpan RefreshTokenExpiration { get; set; }
+        public TimeSpan ActivityStatusCheckPeriod { get; set; }
         public TimeSpan EmailVerificationExpiration { get; set; }
         public TimeSpan MobileNumberVerificationExpiration { get; set; }
         public string DefaultPassword { get; set; }

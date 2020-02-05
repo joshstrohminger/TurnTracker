@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TurnTracker.Data.Entities
 {
@@ -19,6 +20,8 @@ namespace TurnTracker.Data.Entities
         public bool Sms { get; set; }
         public bool Email { get; set; }
         public bool Push { get; set; }
+
+        public DateTimeOffset NextCheck { get; set; }
 
         public int ParticipantId { get; set; }
         public Participant Participant { get; set; }

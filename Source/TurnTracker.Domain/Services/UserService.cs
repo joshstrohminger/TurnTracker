@@ -232,6 +232,13 @@ namespace TurnTracker.Domain.Services
             return (GenerateToken(user, TokenType.Refresh, _appSettings.RefreshTokenExpiration, claim), refreshKey);
         }
 
+        public string GenerateNotificationActionToken(Participant participant, string action, TimeSpan expiration)
+        {
+            var actionClaim = new Claim(nameof(ClaimType.NotificationAction), action);
+            var participantClaim = new Claim(nameof(ClaimType.ParticipantId), participant.Id.ToString());
+            return GenerateToken(participant.User, TokenType.Notification, expiration, actionClaim, participantClaim);
+        }
+
         private string GenerateToken(User user, TokenType tokenType, TimeSpan expiration, params Claim[] additionalClaims)
         {
             IEnumerable<Claim> claims = new[]

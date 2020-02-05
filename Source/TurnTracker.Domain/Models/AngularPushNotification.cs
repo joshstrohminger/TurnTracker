@@ -33,6 +33,12 @@ namespace TurnTracker.Domain.Models
 
         public string Badge { get; set; }
 
+        public bool Renotify { get; set; }
+
+        public bool RequireInteraction { get; set; }
+
+        public string Tag { get; set; }
+
         public IDictionary<string, object> Data { get; set; }
 
         public IList<NotificationAction> Actions { get; set; } = new List<NotificationAction>();

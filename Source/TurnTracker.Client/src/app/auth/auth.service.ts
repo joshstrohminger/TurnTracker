@@ -9,6 +9,7 @@ import { AuthenticatedUser } from './models/AuthenticatedUser';
 import { Profile } from './models/Profile';
 import { TokenInfo } from './models/TokenInfo';
 import { UserService } from '../services/user.service';
+import { MessageService } from '../services/message.service';
 
 @Injectable({
   providedIn: 'root'
@@ -29,9 +30,11 @@ export class AuthService {
     private _router: Router,
     private _route: ActivatedRoute,
     private _http: HttpClient,
-    private _userService: UserService) {
+    private _userService: UserService,
+    messageService: MessageService) {
       if (this.isLoggedIn) {
-        if (!this.getAccessToken().isValid || !this.getRefreshToken().isValid ) {
+        if (!this.getRefreshToken().isValid ) {
+          messageService.error('session expired');
           this.logoutClientOnly();
         }
       }
