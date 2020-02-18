@@ -56,18 +56,6 @@ namespace TurnTracker.Domain.Models
                     return info;
                 }).ToList();
 
-                if (activity.Period.HasValue)
-                {
-                    if (Turns.Count == 0)
-                    {
-                        Due = DateTimeOffset.Now;
-                    }
-                    else
-                    {
-                        Due = Turns[0].Occurred + activity.Period.Value;
-                    }
-                }
-
                 var mostTurnsTaken = counts.Values.Max(x => x.Count);
 
                 Participants = counts.Values
@@ -78,6 +66,19 @@ namespace TurnTracker.Domain.Models
                     .ToList();
 
                 HasDisabledTurns = Participants.Any(x => x.HasDisabledTurns);
+
+                if (activity.Period.HasValue)
+                {
+                    var mostRecentTurn = Turns.FirstOrDefault(turn => !turn.IsDisabled);
+                    if (mostRecentTurn is null)
+                    {
+                        Due = DateTimeOffset.Now;
+                    }
+                    else
+                    {
+                        Due = mostRecentTurn.Occurred + activity.Period.Value;
+                    }
+                }
 
                 if (activity.TakeTurns && Participants.Count > 0)
                 {

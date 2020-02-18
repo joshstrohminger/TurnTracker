@@ -392,7 +392,16 @@ namespace TurnTracker.Domain.Services
                 {
                     turn.IsDisabled = disabled;
                     turn.ModifierId = byUserId;
+
+                    var activity = GetActivity(turn.ActivityId, false, true);
+                    if (activity == null)
+                    {
+                        return Result.Failure<ActivityDetails>("no such activity");
+                    }
+                    var details = ActivityDetails.Calculate(activity, byUserId);
+
                     _db.SaveChanges();
+                    return Result.Success(details);
                 }
 
                 return Result.Ok(GetActivityDetails(turn.ActivityId, byUserId));

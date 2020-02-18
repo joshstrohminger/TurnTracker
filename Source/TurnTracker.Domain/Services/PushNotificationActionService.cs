@@ -35,12 +35,12 @@ namespace TurnTracker.Domain.Services
 
         #region Public
 
-        public async Task<Result> ActAsync(int userId, int participantId, string action)
+        public async Task<Result> ActAsync(int userId, int participantId, string action, DateTimeOffset clientTime)
         {
             switch (action)
             {
                 case "dismiss":
-                    return await DismissAsync(participantId);
+                    return await DismissAsync(participantId, clientTime);
                 default:
                     var message = $"Invalid action notification {action} for user {userId} participant {participantId}";
                     _logger.LogError(message);
@@ -52,7 +52,7 @@ namespace TurnTracker.Domain.Services
 
         #region Priviate
 
-        private async Task<Result> DismissAsync(int participantId)
+        private async Task<Result> DismissAsync(int participantId, DateTimeOffset clientTime)
         {
             var participant = await _db.Participants
                 .Include(x => x.Activity)
@@ -70,9 +70,9 @@ namespace TurnTracker.Domain.Services
             var now = DateTimeOffset.Now;
             if (participant.Activity.Due <= now)
             {
-                _logger.LogInformation($"Dismissing notification for user {participant.UserId}, participant {participant.Id}, activity {participant.ActivityId}, for {_defaultDismissTime}");
-                var nextCheck = now.Add(_defaultDismissTime);
-
+                var nextCheck = clientTime.Date.AddDays(1).Add(_defaultDismissTime);
+                _logger.LogInformation($"Dismissing notification for user {participant.UserId}, participant {participant.Id}, activity {participant.ActivityId}, from {clientTime} to {nextCheck}");
+                
                 foreach (var notificationSetting in participant.NotificationSettings.Where(x =>
                     x.Type == NotificationType.OverdueAnybody || x.Type == NotificationType.OverdueMine))
                 {
