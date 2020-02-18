@@ -1,7 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using Lib.Net.Http.WebPush;
 using Lib.Net.Http.WebPush.Authentication;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TurnTracker.Domain.Configuration;
 using TurnTracker.Domain.Interfaces;
@@ -15,27 +18,31 @@ namespace TurnTracker.Domain.Services
 
         private readonly PushServiceClient _client;
         private readonly IPushSubscriptionService _pushService;
+        private readonly string _serverUrl;
+        private readonly ILogger<PushNotificationService> _logger;
 
         #endregion Fields
 
         #region Ctor
 
-        public PushNotificationService(PushServiceClient client, IPushSubscriptionService pushService, IOptions<AppSettings> appSettings)
+        public PushNotificationService(PushServiceClient client, IPushSubscriptionService pushService, IOptions<AppSettings> appSettings, ILogger<PushNotificationService> logger)
         {
             _pushService = pushService;
+            _logger = logger;
             _client = client;
             var config = appSettings.Value.PushNotifications;
             _client.DefaultAuthentication = new VapidAuthentication(config.PublicKey, config.PrivateKey)
             {
                 Subject = config.ServerUrl
             };
+            _serverUrl = config.ServerUrl;
         }
 
         #endregion Ctor
 
         #region Public
 
-        public async Task<Result> SendToOneDeviceAsync(int userId, string title, string message, string endpoint)
+        public async Task<Result> SendToOneDeviceAsync(int userId, string title, string message, string endpoint, string groupKey)
         {
             var sub = _pushService.Get(userId, endpoint);
             if (sub is null)
@@ -43,22 +50,28 @@ namespace TurnTracker.Domain.Services
                 return Result.Failure("Couldn't find device subscription");
             }
 
-            var pushMessage = BuildMessage(title, message, new AngularPushNotification.NotificationAction("test-action", "Test2"));
+            var notification = BuildMessage(title, message, _serverUrl, title);
 
-            await _client.RequestPushMessageDeliveryAsync(sub, pushMessage);
+            await _client.RequestPushMessageDeliveryAsync(sub, notification.ToPushMessage());
 
             return Result.Success();
         }
 
-        public async Task<Result> SendToAllDevicesAsync(int userId, string title, string message)
+        public Result SendToAllDevices(int userId, string title, string message, string url, string groupKey, params PushAction[] actions)
         {
             var sent = false;
-            var pushMessage = BuildMessage(title, message);
+            var notification = BuildMessage(title, message, url, groupKey);
+            foreach (var action in actions)
+            {
+                action.ApplyToNotification(notification);
+            }
 
             foreach (var sub in _pushService.Get(userId))
             {
+                _logger.LogInformation($"sending push message to {sub.Endpoint}");
+
+                _client.RequestPushMessageDeliveryAsync(sub, notification.ToPushMessage());
                 sent = true;
-                await _client.RequestPushMessageDeliveryAsync(sub, pushMessage);
             }
 
             return Result.SuccessIf(sent, "No subscriptions found");
@@ -68,7 +81,7 @@ namespace TurnTracker.Domain.Services
 
         #region Private
 
-        private PushMessage BuildMessage(string title, string message, params AngularPushNotification.NotificationAction[] actions)
+        private static AngularPushNotification BuildMessage(string title, string message, string url, string groupKey, params AngularPushNotification.NotificationAction[] actions)
         {
             return new AngularPushNotification
             {
@@ -76,8 +89,15 @@ namespace TurnTracker.Domain.Services
                 Body = message,
                 Icon = "assets/icons/icon-128x128.png",
                 Badge = "assets/icons/icon-72x72.png",
-                Actions = actions
-            }.ToPushMessage();
+                Renotify = true,
+                RequireInteraction = true,
+                Tag = groupKey,
+                Actions = actions.ToList(),
+                Data = new Dictionary<string, object>
+                {
+                    ["url"] = url
+                }
+            };
         }
 
         #endregion Private

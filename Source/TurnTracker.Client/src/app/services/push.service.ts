@@ -7,6 +7,7 @@ import { IUser } from '../auth/models/IUser';
 import { combineLatest, from, EMPTY, of, Observable } from 'rxjs';
 import { filter, startWith, switchMap } from 'rxjs/operators';
 import { UserPropertyChange } from '../auth/models/UserPropertyChange';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -26,7 +27,8 @@ export class PushService {
     private _swPush: SwPush,
     private _http: HttpClient,
     private _userService: UserService,
-    private _messageService: MessageService
+    private _messageService: MessageService,
+    private _router: Router
   ) {
     this.start();
   }
@@ -108,6 +110,13 @@ export class PushService {
     title: string;
 }) {
     console.log('action clicked', action, notification);
-//    window.open(notification.data.url, "_blank");
+    let url = window.location.origin;
+    switch (action) {
+      case 'about':
+        url += '/about';
+        break;
+    }
+    console.log(`not opening url: ${url}`);
+    //window.open(url);
   }
 }

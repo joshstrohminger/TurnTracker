@@ -3,6 +3,8 @@
     public enum ClaimType
     {
         TokenType,
-        RefreshKey
+        RefreshKey,
+        NotificationAction,
+        ParticipantId
     }
 }

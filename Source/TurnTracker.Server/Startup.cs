@@ -17,6 +17,7 @@ using TurnTracker.Common;
 using TurnTracker.Data;
 using TurnTracker.Domain.Authorization;
 using TurnTracker.Domain.Configuration;
+using TurnTracker.Domain.HostedServices;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Domain.Services;
 using TurnTracker.Server.Utilities;
@@ -60,7 +61,12 @@ namespace TurnTracker.Server
 
             services.AddAuthorization(x =>
             {
-                x.AddPolicy(nameof(PolicyType.Refresh), policy => policy.RequireClaim(nameof(ClaimType.RefreshKey)));
+                x.AddPolicy(nameof(PolicyType.CanRefreshSession),
+                    policy => policy.RequireClaim(nameof(ClaimType.RefreshKey)));
+                x.AddPolicy(nameof(PolicyType.CanActOnNotification),
+                    policy => policy
+                        .RequireClaim(nameof(ClaimType.NotificationAction))
+                        .RequireClaim(nameof(ClaimType.ParticipantId)));
             });
 
             // configure jwt authentication
@@ -90,7 +96,9 @@ namespace TurnTracker.Server
             services.AddScoped<IResourceAuthorizationService, ResourceAuthorizationService>();
             services.AddScoped<IPushSubscriptionService, PushSubscriptionService>();
             services.AddScoped<IPushNotificationService, PushNotificationService>();
+            services.AddScoped<IPushNotificationActionService, PushNotificationActionService>();
             services.AddHttpClient<PushServiceClient>();
+            services.AddHostedService<ActivityStatusChecker>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

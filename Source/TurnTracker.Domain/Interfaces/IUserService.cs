@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CSharpFunctionalExtensions;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Models;
@@ -17,5 +18,6 @@ namespace TurnTracker.Domain.Interfaces
         Result SetShowDisabledActivities(int userId, bool show);
         Result SetEnablePushNotifications(int userId, bool enable);
         Result<IEnumerable<UserInfo>> FindUsers(string filter);
+        string GenerateNotificationActionToken(Participant participant, string action, TimeSpan expiration);
     }
 }

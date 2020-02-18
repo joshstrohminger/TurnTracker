@@ -2,6 +2,7 @@
 {
     public enum PolicyType
     {
-        Refresh
+        CanRefreshSession,
+        CanActOnNotification
     }
 }

@@ -4,6 +4,7 @@
     {
         Refresh,
         Invite,
-        Access
+        Access,
+        Notification
     }
 }

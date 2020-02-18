@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using AutoMapper;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TurnTracker.Common;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
+using TurnTracker.Domain.Configuration;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Domain.Models;
 
@@ -18,12 +21,16 @@ namespace TurnTracker.Domain.Services
         private readonly TurnContext _db;
         private readonly ILogger<TurnService> _logger;
         private readonly IMapper _mapper;
+        private readonly IPushNotificationService _pushNotificationService;
+        private readonly IOptions<AppSettings> _appSettings;
 
-        public TurnService(TurnContext db, ILogger<TurnService> logger, IMapper mapper)
+        public TurnService(TurnContext db, ILogger<TurnService> logger, IMapper mapper, IPushNotificationService pushNotificationService, IOptions<AppSettings> appSettings)
         {
             _db = db;
             _logger = logger;
             _mapper = mapper;
+            _pushNotificationService = pushNotificationService;
+            _appSettings = appSettings;
         }
 
         public Result EnsureSeedActivities()
@@ -293,6 +300,8 @@ namespace TurnTracker.Domain.Services
         {
             try
             {
+                var now = DateTimeOffset.Now;
+
                 _db.Turns.Add(new Turn
                 {
                     ActivityId = activityId,
@@ -308,6 +317,60 @@ namespace TurnTracker.Domain.Services
                 }
 
                 var details = ActivityDetails.Calculate(activity, byUserId);
+                
+                var turnTaker = _db.Users.Find(forUserId);
+                FormattableString fs = $"{turnTaker.DisplayName} took a turn.";
+                var myTurnBuilder = new StringBuilder().AppendFormattable(fs);
+                var otherTurnBuilder = new StringBuilder().AppendFormattable(fs);
+                if (details.CurrentTurnUserId.HasValue)
+                {
+                    otherTurnBuilder.AppendFormattable($" It's {details.CurrentTurnUserDisplayName}'s turn.");
+                    myTurnBuilder.AppendFormattable($" It's your turn.");
+                }
+                if (details.Due.HasValue)
+                {
+                    fs = $" Due in {(details.Due.Value - now).ToDisplayString()}.";
+                    otherTurnBuilder.AppendFormattable(fs);
+                    myTurnBuilder.AppendFormattable(fs);
+                }
+
+                var myTurnMessage = myTurnBuilder.ToString();
+                var otherTurnMessage = otherTurnBuilder.ToString();
+                var url = $"{_appSettings.Value.PushNotifications.ServerUrl}/api/activity/{activityId}";
+
+                foreach (var notificationSettingGroup in activity.Participants.SelectMany(x => x.NotificationSettings).GroupBy(x => x.Type))
+                {
+                    switch (notificationSettingGroup.Key)
+                    {
+                        case NotificationType.OverdueAnybody:
+                        case NotificationType.OverdueMine:
+                            foreach (var notificationSetting in notificationSettingGroup)
+                            {
+                                notificationSetting.NextCheck = now;
+                            }
+                            break;
+                        case NotificationType.TurnTakenAnybody:
+                            foreach (var notificationSetting in notificationSettingGroup.Where(n => n.Push))
+                            {
+                                _pushNotificationService.SendToAllDevices(notificationSetting.Participant.UserId,
+                                    activity.Name, otherTurnMessage, url, activityId.ToString());
+                            }
+                            break;
+                        case NotificationType.TurnTakenMine:
+                            if (details.CurrentTurnUserId.HasValue)
+                            {
+                                foreach (var notificationSetting in notificationSettingGroup
+                                    .Where(p => p.Push && p.Participant.UserId == details.CurrentTurnUserId))
+                                {
+                                    _pushNotificationService.SendToAllDevices(notificationSetting.Participant.UserId,
+                                        activity.Name, myTurnMessage, url, activityId.ToString());
+                                }
+                            }
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(NotificationSetting.Type));
+                    }
+                }
 
                 _db.SaveChanges();
 
@@ -329,7 +392,16 @@ namespace TurnTracker.Domain.Services
                 {
                     turn.IsDisabled = disabled;
                     turn.ModifierId = byUserId;
+
+                    var activity = GetActivity(turn.ActivityId, false, true);
+                    if (activity == null)
+                    {
+                        return Result.Failure<ActivityDetails>("no such activity");
+                    }
+                    var details = ActivityDetails.Calculate(activity, byUserId);
+
                     _db.SaveChanges();
+                    return Result.Success(details);
                 }
 
                 return Result.Ok(GetActivityDetails(turn.ActivityId, byUserId));
