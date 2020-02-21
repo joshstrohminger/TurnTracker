@@ -10,4 +10,5 @@ export class AuthenticatedUser implements IUser {
   public role: Role;
   public showDisabledActivities: boolean;
   public enablePushNotifications: boolean;
+  public snoozeHours: number;
 }

@@ -42,6 +42,7 @@ namespace TurnTracker.Server
             services.AddMvc(options =>
             {
                 options.InputFormatters.Insert(0, new BoolBodyInputFormatter());
+                options.InputFormatters.Insert(0, new ByteBodyInputFormatter());
                 options.InputFormatters.Insert(0, new StringBodyInputFormatter());
             }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddResponseCompression();

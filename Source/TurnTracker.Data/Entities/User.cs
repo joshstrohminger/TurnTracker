@@ -38,6 +38,7 @@ namespace TurnTracker.Data.Entities
 
         public bool ShowDisabledActivities { get; set; }
         public bool EnablePushNotifications { get; set; }
+        public byte SnoozeHours { get; set; }
 
         #region Navigation
 

@@ -19,5 +19,6 @@ namespace TurnTracker.Domain.Interfaces
         Result SetEnablePushNotifications(int userId, bool enable);
         Result<IEnumerable<UserInfo>> FindUsers(string filter);
         string GenerateNotificationActionToken(Participant participant, string action, TimeSpan expiration);
+        Result SetSnoozeHours(int userId, byte hours);
     }
 }

@@ -209,6 +209,25 @@ namespace TurnTracker.Domain.Services
             return Result.Ok();
         }
 
+        public Result SetSnoozeHours(int userId, byte hours)
+        {
+            if (hours == 0)
+            {
+                return Result.Failure("Hours can't be zero");
+            }
+
+            var user = _db.Users.SingleOrDefault(x => x.Id == userId);
+            if (user is null)
+            {
+                return Result.Failure("Invalid user");
+            }
+
+            user.SnoozeHours = hours;
+            _db.SaveChanges();
+
+            return Result.Ok();
+        }
+
         public Result<User> GetUser(int userId)
         {
             var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Id == userId);

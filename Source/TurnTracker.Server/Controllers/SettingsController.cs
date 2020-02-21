@@ -39,5 +39,17 @@ namespace TurnTracker.Server.Controllers
 
             return Ok();
         }
+
+        [HttpPut("[action]")]
+        public IActionResult SnoozeHours([FromBody] byte hours)
+        {
+            var myId = User.GetId();
+            if (_userService.SetSnoozeHours(myId, hours).IsFailure)
+            {
+                return BadRequest();
+            }
+
+            return Ok();
+        }
     }
 }

@@ -44,6 +44,7 @@ namespace TurnTracker.Domain.HostedServices
                     .Include(activity => activity.Participants)
                     .ThenInclude(participant => participant.NotificationSettings)
                     .Include(activity => activity.Participants)
+                    .ThenInclude(participant => participant.User)
                     .Where(activity => activity.Participants
                         .Any(participant => participant.NotificationSettings
                             .Any(x => x.Push && x.NextCheck <= now &&
@@ -68,7 +69,7 @@ namespace TurnTracker.Domain.HostedServices
                         var overdueTime = (now - activity.Due.Value).ToDisplayString();
                         var notMyTurnMessage =
                             $"It's {activity.CurrentTurnUser.DisplayName}'s turn. Overdue by {overdueTime}.";
-                        var url = $"{serverUrl}/activity/{activity.Id}";
+                        var viewUrl = $"{serverUrl}/activity/{activity.Id}";
                         foreach (var participant in activity.Participants)
                         {
                             // ReSharper disable once PossibleInvalidOperationException
@@ -81,13 +82,17 @@ namespace TurnTracker.Domain.HostedServices
                             if (pushNotificationSetting is null) continue;
 
                             const string dismissAction = "dismiss";
+                            const string snoozeAction = "snooze";
                             var message = myTurn ? $"It's your turn. Overdue by {overdueTime}." : notMyTurnMessage;
-                            var token = userService.GenerateNotificationActionToken(participant, dismissAction,
+                            var dismissToken = userService.GenerateNotificationActionToken(participant, dismissAction,
                                 _appSettings.Value.PushNotifications.DefaultExpiration);
+                            var snoozeToken = userService.GenerateNotificationActionToken(participant, snoozeAction,
+                                _appSettings.Value.PushNotifications.DefaultExpiration);
+                            var actionUrl = $"{serverUrl}/api/notification/push/act";
                             if (pushNotificationService.SendToAllDevices(participant.UserId, activity.Name, message,
-                                    url, activity.Id.ToString(),
-                                    new PushAction(dismissAction, "Dismiss", $"{serverUrl}/api/notification/push/act",
-                                        token))
+                                    viewUrl, activity.Id.ToString(),
+                                    new PushAction(dismissAction, "Dismiss", actionUrl, dismissToken),
+                                    new PushAction(snoozeAction, $"{participant.User.SnoozeHours} Hour{(participant.User.SnoozeHours == 1 ? "" : "s")}", actionUrl, snoozeToken))
                                 .IsSuccess)
                             {
                                 // keep track of the notification that we sent
