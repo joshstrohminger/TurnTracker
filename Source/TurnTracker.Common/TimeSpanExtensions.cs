@@ -2,10 +2,13 @@
 
 namespace TurnTracker.Common
 {
+
     public static class TimeSpanExtensions
     {
         public const double DaysPerYear = 365.25;
         public const double DaysPerMonth = DaysPerYear / 12;
+
+        public static string Plural(this int number) => number == 1 ? "" : "s";
 
         public static string ToDisplayString(this TimeSpan time)
         {
@@ -13,31 +16,31 @@ namespace TurnTracker.Common
             {
                 var years = ExtractYears(ref time);
                 var months = ExtractMonths(ref time);
-                return $"{years}y {months}m {time.TotalDays:0}";
+                return $"{years} year{years.Plural()} {months} month{months.Plural()} {time.Days} day{time.Days.Plural()}";
             }
 
             if (time.TotalDays >= DaysPerMonth)
             {
                 var months = ExtractMonths(ref time);
-                return $"{months}m {time.Days}d";
+                return $"{months} month{months.Plural()} {time.Days} day{time.Days.Plural()}";
             }
 
             if (time.TotalDays >= 1)
             {
-                return time.ToString(@"d\d\ h\h");
+                return $"{time.Days} day{time.Days.Plural()} {time.Hours} hour{time.Hours.Plural()}";
             }
 
             if (time.TotalHours >= 1)
             {
-                return time.ToString(@"h\h\ m\m");
+                return $"{time.Hours} hour{time.Hours.Plural()} {time.Minutes} minute{time.Minutes.Plural()}";
             }
 
             if (time.TotalMinutes >= 1)
             {
-                return time.ToString(@"m\m\ s\s");
+                return $"{time.Minutes} minute{time.Minutes.Plural()} {time.Seconds} second{time.Seconds.Plural()}";
             }
 
-            return time.ToString(@"s\s");
+            return $"{time.Seconds} second{time.Seconds.Plural()}";
         }
 
         private static int ExtractYears(ref TimeSpan time)
