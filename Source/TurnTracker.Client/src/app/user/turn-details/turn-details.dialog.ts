@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { Turn } from '../models/Turn';
-import { MAT_DIALOG_DATA } from '@angular/material';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TurnDetailsDialogConfig } from './TurnDetailsDialogConfig';
 
 @Component({
