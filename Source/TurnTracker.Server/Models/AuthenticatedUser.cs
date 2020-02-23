@@ -13,6 +13,7 @@ namespace TurnTracker.Server.Models
         public Role Role { get; }
         public bool ShowDisabledActivities { get; }
         public bool EnablePushNotifications { get; }
+        public byte SnoozeHours { get; }
 
         public AuthenticatedUser(User user, string accessToken, string refreshToken)
         {
@@ -24,6 +25,7 @@ namespace TurnTracker.Server.Models
             Role = user.Role;
             ShowDisabledActivities = user.ShowDisabledActivities;
             EnablePushNotifications = user.EnablePushNotifications;
+            SnoozeHours = user.SnoozeHours;
         }
     }
 }

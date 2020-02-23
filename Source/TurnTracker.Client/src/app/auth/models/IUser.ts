@@ -7,4 +7,5 @@ export interface IUser {
   role: Role;
   showDisabledActivities: boolean;
   enablePushNotifications: boolean;
+  snoozeHours: number;
 }

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using TurnTracker.Common;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Authorization;
@@ -27,7 +28,7 @@ namespace TurnTracker.Domain.Services
         private const KeyDerivationPrf HashAlgorithm = KeyDerivationPrf.HMACSHA256;
 
         private readonly TurnContext _db;
-        private readonly AppSettings _appSettings;
+        private readonly IOptions<AppSettings> _appSettings;
         private readonly IMapper _mapper;
         private readonly ILogger<UserService> _logger;
 
@@ -36,45 +37,36 @@ namespace TurnTracker.Domain.Services
             _db = db;
             _mapper = mapper;
             _logger = logger;
-            _appSettings = appSettings.Value;
+            _appSettings = appSettings;
         }
 
-        public Result EnsureSeedUsers()
+        public Result EnsureDefaultUsers()
         {
             try
             {
                 if (!_db.Users.Any())
                 {
                     _logger.LogInformation("Seeding");
-                    var josh = new User
+                    foreach (var user in _appSettings.Value.DefaultAdmins
+                        .EmptyIfNull()
+                        .Select(username => new User
+                        {
+                            DisplayName = username,
+                            Username = username,
+                            Role = Role.Admin
+                        })
+                        .Concat(_appSettings.Value.DefaultUsers
+                            .EmptyIfNull()
+                            .Select(username => new User
+                        {
+                            DisplayName = username,
+                            Username = username,
+                            Role = Role.User
+                        })))
                     {
-                        DisplayName = "Joshua",
-                        Username = "josh",
-                        Email = "josh@mail.com",
-                        Role = Role.Admin,
-                        EnablePushNotifications = true
-                    };
-                    AssignNewPassword(josh, _appSettings.DefaultPassword);
-
-                    var kelly = new User
-                    {
-                        DisplayName = "Kelly",
-                        Username = "kelly",
-                        Role = Role.User
-                    };
-                    AssignNewPassword(kelly, _appSettings.DefaultPassword);
-
-                    var matt = new User
-                    {
-                        DisplayName = "Matt",
-                        Username = "matt",
-                        Role = Role.User
-                    };
-                    AssignNewPassword(matt, _appSettings.DefaultPassword);
-
-                    _db.Users.Add(josh);
-                    _db.Users.Add(kelly);
-                    _db.Users.Add(matt);
+                        AssignNewPassword(user, _appSettings.Value.DefaultPassword);
+                        _db.Users.Add(user);
+                    }
 
                     _db.SaveChanges();
                 }
@@ -209,6 +201,25 @@ namespace TurnTracker.Domain.Services
             return Result.Ok();
         }
 
+        public Result SetSnoozeHours(int userId, byte hours)
+        {
+            if (hours == 0)
+            {
+                return Result.Failure("Hours can't be zero");
+            }
+
+            var user = _db.Users.SingleOrDefault(x => x.Id == userId);
+            if (user is null)
+            {
+                return Result.Failure("Invalid user");
+            }
+
+            user.SnoozeHours = hours;
+            _db.SaveChanges();
+
+            return Result.Ok();
+        }
+
         public Result<User> GetUser(int userId)
         {
             var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Id == userId);
@@ -222,14 +233,14 @@ namespace TurnTracker.Domain.Services
 
         private string GenerateAccessToken(User user)
         {
-            return GenerateToken(user, TokenType.Access, _appSettings.AccessTokenExpiration);
+            return GenerateToken(user, TokenType.Access, _appSettings.Value.AccessTokenExpiration);
         }
 
         private (string refreshToken, string refreshKey) GenerateRefreshToken(User user)
         {
             var refreshKey = GetRandomKey();
             var claim = new Claim(nameof(ClaimType.RefreshKey), refreshKey);
-            return (GenerateToken(user, TokenType.Refresh, _appSettings.RefreshTokenExpiration, claim), refreshKey);
+            return (GenerateToken(user, TokenType.Refresh, _appSettings.Value.RefreshTokenExpiration, claim), refreshKey);
         }
 
         public string GenerateNotificationActionToken(Participant participant, string action, TimeSpan expiration)
@@ -255,7 +266,7 @@ namespace TurnTracker.Domain.Services
             }
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = _appSettings.GetSecretBytes();
+            var key = _appSettings.Value.GetSecretBytes();
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
@@ -287,7 +298,7 @@ namespace TurnTracker.Domain.Services
         private void AssignNewPassword(User user, string password)
         {
             var salt = GetRandomBytes(SaltSize);
-            var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, _appSettings.HashIterations, HashSize);
+            var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, _appSettings.Value.HashIterations, HashSize);
             user.PasswordSalt = salt;
             user.PasswordHash = hash;
         }
@@ -298,7 +309,7 @@ namespace TurnTracker.Domain.Services
             var salt = user.PasswordSalt;
             if (salt is null || salt.Length != SaltSize) return Result.Failure("Invalid salt");
             if (user.PasswordHash is null || user.PasswordHash.Length != HashSize) return Result.Failure("Invalid hash");
-            var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, _appSettings.HashIterations, HashSize);
+            var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, _appSettings.Value.HashIterations, HashSize);
             return user.PasswordHash.SequenceEqual(hash) ? Result.Ok() : Result.Failure("No match");
         }
     }

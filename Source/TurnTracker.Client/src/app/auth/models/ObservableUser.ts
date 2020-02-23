@@ -52,6 +52,17 @@ export class ObservableUser implements IUser {
     }
   }
 
+  private _snoozeHours: number;
+  public get snoozeHours() {
+    return this._snoozeHours;
+  }
+  public set snoozeHours(snoozeHours: number) {
+    if (this._snoozeHours !== snoozeHours) {
+      this._snoozeHours = snoozeHours;
+      this._changed('snoozeHours');
+    }
+  }
+
   private _propertyChanged = new Subject<UserPropertyChange>();
   public get propertyChanged$(): Observable<UserPropertyChange> {
     return this._propertyChanged.asObservable();
@@ -68,6 +79,7 @@ export class ObservableUser implements IUser {
     this._role = user.role;
     this._showDisabledActivities = user.showDisabledActivities;
     this._enablePushNotifications = user.enablePushNotifications;
+    this._snoozeHours = user.snoozeHours;
   }
 
   private _changed(propertyName: string) {

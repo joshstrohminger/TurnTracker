@@ -40,7 +40,9 @@ namespace TurnTracker.Domain.Services
             switch (action)
             {
                 case "dismiss":
-                    return await DismissAsync(participantId, clientTime);
+                    return await SnoozeOrDismissAsync(participantId, clientTime, true);
+                case "snooze":
+                    return await SnoozeOrDismissAsync(participantId, clientTime, false);
                 default:
                     var message = $"Invalid action notification {action} for user {userId} participant {participantId}";
                     _logger.LogError(message);
@@ -50,10 +52,12 @@ namespace TurnTracker.Domain.Services
 
         #endregion Public
 
-        #region Priviate
+        #region Private
 
-        private async Task<Result> DismissAsync(int participantId, DateTimeOffset clientTime)
+        private async Task<Result> SnoozeOrDismissAsync(int participantId, DateTimeOffset clientTime, bool dismiss)
         {
+            var typeName = dismiss ? "dismiss" : "snooze";
+
             var participant = await _db.Participants
                 .Include(x => x.Activity)
                 .Include(x => x.User)
@@ -70,8 +74,10 @@ namespace TurnTracker.Domain.Services
             var now = DateTimeOffset.Now;
             if (participant.Activity.Due <= now)
             {
-                var nextCheck = clientTime.Date.AddDays(1).Add(_defaultDismissTime);
-                _logger.LogInformation($"Dismissing notification for user {participant.UserId}, participant {participant.Id}, activity {participant.ActivityId}, from {clientTime} to {nextCheck}");
+                var nextCheck = dismiss
+                    ? clientTime.Date.AddDays(clientTime.TimeOfDay >= _defaultDismissTime ? 1 : 0).Add(_defaultDismissTime)
+                    : clientTime.AddHours(Math.Max((byte) 1, participant.User.SnoozeHours));
+                _logger.LogInformation($"Fulfilling {typeName} notification for user {participant.UserId}, participant {participant.Id}, activity {participant.ActivityId}, from {clientTime} to {nextCheck}");
                 
                 foreach (var notificationSetting in participant.NotificationSettings.Where(x =>
                     x.Type == NotificationType.OverdueAnybody || x.Type == NotificationType.OverdueMine))
@@ -83,7 +89,7 @@ namespace TurnTracker.Domain.Services
             }
             else
             {
-                _logger.LogInformation($"Ignoring dismissal of notification for user {participant.UserId}, participant {participant.Id}, activity {participant.ActivityId}");
+                _logger.LogInformation($"Ignoring {typeName} notification for user {participant.UserId}, participant {participant.Id}, activity {participant.ActivityId}");
             }
 
             return Result.Success();

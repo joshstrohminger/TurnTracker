@@ -26,6 +26,8 @@ namespace TurnTracker.Domain.Configuration
         public TimeSpan EmailVerificationExpiration { get; set; }
         public TimeSpan MobileNumberVerificationExpiration { get; set; }
         public string DefaultPassword { get; set; }
+        public string[] DefaultAdmins { get; set; }
+        public string[] DefaultUsers { get; set; }
         public int HashIterations { get; set; }
         public bool Seed { get; set; }
         public TimeSpan JwtClockSkew { get; set; }

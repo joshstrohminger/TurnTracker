@@ -54,6 +54,8 @@ export class UserService {
         return this._saveShowDisabledActivities();
       case 'enablePushNotifications':
         return this._saveEnablePushNotifications();
+      case 'snoozeHours':
+        return this._saveSnoozeHours();
       default:
         // other properties are saved through other means, but we still need to update the current user
         return of(true);
@@ -71,7 +73,8 @@ export class UserService {
                 role: this._currentUser.role,
                 showDisabledActivities: this._currentUser.showDisabledActivities,
                 enablePushNotifications: this._currentUser.enablePushNotifications,
-                username: this._currentUser.username
+                username: this._currentUser.username,
+                snoozeHours: this._currentUser.snoozeHours
               };
               const json = JSON.stringify(user);
               localStorage.setItem(this._userKey, json);
@@ -94,5 +97,9 @@ export class UserService {
 
   private _saveEnablePushNotifications(): Observable<Object> {
     return this._http.put(`settings/EnablePushNotifications`, this._currentUser.enablePushNotifications);
+  }
+
+  private _saveSnoozeHours(): Observable<Object> {
+    return this._http.put(`settings/SnoozeHours`, this._currentUser.snoozeHours);
   }
 }

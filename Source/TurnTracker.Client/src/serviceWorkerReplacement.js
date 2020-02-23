@@ -1,8 +1,6 @@
 notification.close();
 
 var postUrl = notification.data['post-' + action];
-var url = notification.data['view-' + action] || notification.data.url;
-
 if (postUrl) {
   console.log(`NotificationIntercept found post url: ${postUrl}`);
   var headers = new Headers();
@@ -18,7 +16,10 @@ if (postUrl) {
     this.debugger.log(err, 'NotificationIntercept.postError');
   }
   return;
-} else if (url) {
+}
+
+var url = notification.data['view-' + action] || notification.data.url;
+if (url) {
   console.log(`NotificationIntercept found view url: ${url}`);
   var found = false;
   var allClients = this.scope.clients;

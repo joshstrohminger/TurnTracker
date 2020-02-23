@@ -1,12 +1,19 @@
-<mat-card>
+<mat-card *ngIf="settingsForm" [formGroup]="settingsForm">
   <mat-card-header>
     <mat-card-title>Settings</mat-card-title>
   </mat-card-header>
   <mat-card-content>
     <section>
-      <mat-slide-toggle (change)="me.enablePushNotifications = $event.checked" [checked]="me.enablePushNotifications">Push Notifications</mat-slide-toggle>
+      <mat-slide-toggle formControlName="push">Push Notifications</mat-slide-toggle>
       <button class="test" mat-flat-button color="primary" (click)="sendTestMessageToThisDevice()" [disabled]="!pushService.PushEnabled || !me.enablePushNotifications">Test This Device</button>
       <button class="test" mat-flat-button color="accent" (click)="sendTestMessageToAllDevices()" [disabled]="!pushService.PushEnabled || !me.enablePushNotifications">Test All Devices</button>
+    </section>
+    <section>
+      <mat-form-field>
+        <mat-label>Snooze Hours</mat-label>
+        <input matInput type="number" min="1" max="255" step="1" required formControlName="snoozeHours" [errorStateMatcher]="immediateErrors">
+        <mat-error>Must be between 1 and 255</mat-error>
+      </mat-form-field>
     </section>
   </mat-card-content>
 </mat-card>
