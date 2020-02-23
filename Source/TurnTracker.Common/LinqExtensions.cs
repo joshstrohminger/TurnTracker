@@ -6,6 +6,11 @@ namespace TurnTracker.Common
 {
     public static class LinqExtensions
     {
+        public static IEnumerable<TSource> EmptyIfNull<TSource>(this IEnumerable<TSource> source)
+        {
+            return source ?? Enumerable.Empty<TSource>();
+        }
+
         public static IEnumerable<TSource> Tap<TSource>(this IEnumerable<TSource> source, Action<TSource> tap)
         {
             if(source is null) throw new ArgumentNullException(nameof(source));

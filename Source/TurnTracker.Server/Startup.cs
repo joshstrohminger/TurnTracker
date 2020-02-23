@@ -112,16 +112,15 @@ namespace TurnTracker.Server
                 using var context = serviceScope.ServiceProvider.GetService<TurnContext>();
                 context.Database.Migrate();
 
+                var userResult = serviceScope.ServiceProvider.GetRequiredService<IUserService>().EnsureDefaultUsers();
+                if (userResult.IsFailure)
+                {
+                    throw new Exception($"Failed to ensure default users: {userResult.Error}");
+                }
+
                 if (appSettings.Value.Seed)
                 {
-                    logger.LogInformation("Seeding database");
-                    var result = serviceScope.ServiceProvider.GetRequiredService<IUserService>().EnsureSeedUsers();
-                    if (result.IsFailure)
-                    {
-                        throw new Exception($"Failed to seed users: {result.Error}");
-                    }
-
-                    result = serviceScope.ServiceProvider.GetRequiredService<ITurnService>().EnsureSeedActivities();
+                    var result = serviceScope.ServiceProvider.GetRequiredService<ITurnService>().EnsureSeedActivities();
                     if (result.IsFailure)
                     {
                         throw new Exception($"Failed to seed activities: {result.Error}");

@@ -40,7 +40,7 @@ namespace TurnTracker.Domain.Services
                 _logger.LogInformation("Seeding");
                 if (!_db.Activities.Any())
                 {
-                    var userIds = _db.Users.Take(2).Select(x => x.Id).ToArray();
+                    var userIds = _db.Users.OrderBy(x => x.Id).Take(2).Select(x => x.Id).ToArray();
 
                     // first activity
                     var activityResult = SaveActivity(new EditableActivity { Name = "Clean Litterbox", TakeTurns = true, PeriodCount = 2, PeriodUnit = Unit.Day, Participants = userIds.Select(id => new UserInfo { Id = id }).ToList() }, userIds[0]);

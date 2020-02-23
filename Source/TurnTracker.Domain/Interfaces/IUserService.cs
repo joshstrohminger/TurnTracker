@@ -13,7 +13,7 @@ namespace TurnTracker.Domain.Interfaces
         Result<string> RefreshUser(int userId, string refreshKey);
         Result<User> GetUser(int userId);
         Result LogoutUser(int userId);
-        Result EnsureSeedUsers();
+        Result EnsureDefaultUsers();
         Result<User> SetDisplayName(int userId, string displayName);
         Result SetShowDisabledActivities(int userId, bool show);
         Result SetEnablePushNotifications(int userId, bool enable);
