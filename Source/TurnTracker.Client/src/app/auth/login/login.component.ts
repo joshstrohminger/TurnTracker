@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Credentials } from './Credentials';
 import { AuthService } from '../auth.service';
 import { Overlay } from '@angular/cdk/overlay';
-import { MatSpinner } from '@angular/material';
+import { MatSpinner } from '@angular/material/progress-spinner';
 import { ComponentPortal } from '@angular/cdk/portal';
 
 @Component({

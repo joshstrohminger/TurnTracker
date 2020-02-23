@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatSidenav } from '@angular/material';
+import { MatSidenav } from '@angular/material/sidenav';
 import { UserService } from './services/user.service';
 import { AuthService } from './auth/auth.service';
 import { environment } from '../environments/environment';
