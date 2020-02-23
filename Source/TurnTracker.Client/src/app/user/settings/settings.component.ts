@@ -8,6 +8,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { takeUntil, debounceTime, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { ImmediateErrorStateMatcher } from 'src/app/validators/ImmediateErrorStateMatcher';
+import { WebauthnService } from 'src/app/auth/webauthn.service';
 
 @Component({
   selector: 'app-settings',
@@ -25,7 +26,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     public pushService: PushService,
     private _http: HttpClient,
     private _messageSevice: MessageService,
-    private _builder: FormBuilder
+    private _builder: FormBuilder,
+    private _webauthnService: WebauthnService,
     ) { }
 
   ngOnInit() {
@@ -61,5 +63,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
       () => this._messageSevice.success('Sent push notifications'),
       error => this._messageSevice.error('Failed to send push notifications', error)
     );
+  }
+
+  public testWebAuthn() {
+    this._webauthnService.test(this.me);
   }
 }
