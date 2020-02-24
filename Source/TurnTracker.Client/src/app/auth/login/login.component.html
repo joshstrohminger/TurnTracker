@@ -4,20 +4,21 @@
       <mat-card-title>Login</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-        <div>
-          <mat-form-field>
-            <input matInput placeholder="Username" type="text" formControlName="username" required id="username">
-          </mat-form-field>
-        </div>
-        <div>
-          <mat-form-field>
-            <input matInput placeholder="Password" type="password" formControlName="password" required id="password">
-          </mat-form-field>
-        </div>
-        <div class="error-message">{{error}}</div>
+      <div>
+        <mat-form-field>
+          <input matInput placeholder="Username" type="text" formControlName="username" required id="username">
+        </mat-form-field>
+      </div>
+      <div>
+        <mat-form-field>
+          <input matInput placeholder="Password" type="password" formControlName="password" required id="password">
+        </mat-form-field>
+      </div>
+      <div class="error-message">{{error}}</div>
     </mat-card-content>
     <mat-card-actions>
       <button mat-flat-button type="submit" color="primary" [disabled]="!loginForm.valid">Login</button>
+      <button mat-flat-button type="button" color="accent" *ngIf="webauthn.isAvailable$ | async" (click)="onDeviceLogin()">Device</button>
     </mat-card-actions>
   </mat-card>
 </form>

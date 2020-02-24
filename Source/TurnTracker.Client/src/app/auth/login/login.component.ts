@@ -5,6 +5,7 @@ import { AuthService } from '../auth.service';
 import { Overlay } from '@angular/cdk/overlay';
 import { MatSpinner } from '@angular/material/progress-spinner';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { WebauthnService } from '../webauthn.service';
 
 @Component({
   selector: 'app-login',
@@ -16,15 +17,13 @@ export class LoginComponent implements OnInit {
   public loginForm: FormGroup;
   public error: string = null;
   private overlayRef = this.overlay.create({
-    //hasBackdrop: true,
-    //backdropClass: 'dark-backdrop',
     positionStrategy: this.overlay.position()
      .global()
      .centerHorizontally()
      .centerVertically()
     });
 
-  constructor(formBuilder: FormBuilder, private authService: AuthService, private overlay: Overlay) {
+  constructor(formBuilder: FormBuilder, private authService: AuthService, private overlay: Overlay, public webauthn: WebauthnService) {
     this.loginForm = formBuilder.group(new Credentials());
   }
 
@@ -57,5 +56,9 @@ export class LoginComponent implements OnInit {
       }, () => {
         this.stopSpinner();
       });
+  }
+
+  onDeviceLogin() {
+    console.log('attempting to login using device');
   }
 }
