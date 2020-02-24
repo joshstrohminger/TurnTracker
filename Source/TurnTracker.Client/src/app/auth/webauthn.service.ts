@@ -5,6 +5,7 @@ import { BehaviorSubject, from } from 'rxjs';
 import { skip, share } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from '../services/message.service';
+import * as Encodr from 'encodr';
 
 @Injectable({
   providedIn: 'root'
@@ -24,12 +25,53 @@ export class WebauthnService {
   }
 
   public async registerDevice(user: IUser) {
-    const credentials = await this.createCredentials(user, new Date().toString());
-    console.log('creds', credentials);
-    this.lastResult = JSON.stringify(credentials);
-    this._http.post('auth/registerDevice', credentials).subscribe(() => {
-      this._messageService.success('finished sending registration');
-    });
+    const creds = await this.createCredentials(user, new Date().toString());
+    try {
+      const response = creds.response as AuthenticatorAttestationResponse;
+      const utf8Decoder = new TextDecoder('utf-8');
+      const decodedClientData = utf8Decoder.decode(response.clientDataJSON);
+      const clientDataObj = JSON.parse(decodedClientData);
+      const CBOR = new Encodr('cbor');
+      const decodedAttestationObject = CBOR.decode(response.attestationObject);
+      const authData = decodedAttestationObject.authData;
+
+      // get the length of the credential ID
+      const dataView = new DataView(
+          new ArrayBuffer(2));
+      const idLenBytes = authData.slice(53, 55);
+      idLenBytes.forEach(
+          (value, index) => dataView.setUint8(
+              index, value));
+      const credentialIdLength = dataView.getUint16(0);
+
+      // get the credential ID
+      const credentialId = authData.slice(
+          55, 55 + credentialIdLength);
+
+      // get the public key object
+      const publicKeyBytes = authData.slice(
+          55 + credentialIdLength);
+
+      // the publicKeyBytes are encoded again as CBOR
+      const publicKeyObject = CBOR.decode(
+          publicKeyBytes.buffer);
+      const c = {
+        id: creds.id,
+        data: clientDataObj,
+        credId: credentialId,
+        pubKey: publicKeyObject
+      };
+      console.log('creds', c);
+      this.lastResult = JSON.stringify(c);
+      this._http.post('auth/registerDevice', c).subscribe(() => {
+        this._messageService.success('finished sending registration');
+      });
+    } catch (e) {
+      console.error('failed to decode', e);
+      this._messageService.error('failed to decode', e);
+      this.lastResult = e;
+      return;
+    }
   }
 
   private convertCredential(credential: Credential, source: string): PublicKeyCredential {
@@ -38,7 +80,7 @@ export class WebauthnService {
     }
     const message = `Invalid credential type '${credential.type}' from call to '${source}'`;
     this._messageService.error(message);
-    throw message;
+    throw new Error(message);
   }
 
   private async createCredentials(user: IUser, challenge: string): Promise<PublicKeyCredential> {
