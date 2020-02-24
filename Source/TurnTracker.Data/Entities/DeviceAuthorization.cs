@@ -7,9 +7,7 @@ namespace TurnTracker.Data.Entities
         public int Id { get; set; }
         public int UserId { get; set; }
         [Required]
-        public string PublicKey { get; set; }
-        [Required]
-        public string CredentialId { get; set; }
+        public string ClientInfo { get; set; }
 
         #region Navigation Properties
 

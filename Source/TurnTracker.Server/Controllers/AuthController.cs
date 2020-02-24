@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +25,21 @@ namespace TurnTracker.Server.Controllers
         {
             _userService = userService;
             _logger = logger;
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> RegisterDevice()
+        {
+            using var reader = new StreamReader(Request.Body);
+            var info = await reader.ReadToEndAsync();
+
+            if (string.IsNullOrWhiteSpace(info)) return BadRequest();
+
+            var myId = User.GetId();
+            var result = _userService.RegisterDevice(myId, info);
+            if (result.IsFailure) return StatusCode(500);
+
+            return Ok();
         }
 
         [AllowAnonymous]

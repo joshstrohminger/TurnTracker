@@ -27,7 +27,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private _http: HttpClient,
     private _messageSevice: MessageService,
     private _builder: FormBuilder,
-    private _webauthnService: WebauthnService,
+    public webauthnService: WebauthnService,
     ) { }
 
   ngOnInit() {
@@ -66,6 +66,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   public testWebAuthn() {
-    this._webauthnService.test(this.me);
+    this.webauthnService.registerDevice(this.me);
   }
 }

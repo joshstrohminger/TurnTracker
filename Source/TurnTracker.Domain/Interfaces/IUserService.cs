@@ -20,5 +20,6 @@ namespace TurnTracker.Domain.Interfaces
         Result<IEnumerable<UserInfo>> FindUsers(string filter);
         string GenerateNotificationActionToken(Participant participant, string action, TimeSpan expiration);
         Result SetSnoozeHours(int userId, byte hours);
+        Result RegisterDevice(int userId, string info);
     }
 }

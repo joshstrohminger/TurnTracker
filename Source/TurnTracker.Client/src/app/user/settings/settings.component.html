@@ -16,7 +16,8 @@
       </mat-form-field>
     </section>
     <section>
-      <button class="test" mat-flat-button color="primary" (click)="testWebAuthn()">Test webauthn</button>
+      <button class="test" mat-flat-button color="primary" (click)="testWebAuthn()">Register for webauthn</button>
     </section>
+    <section>{{webauthnService.lastResult}}</section>
   </mat-card-content>
 </mat-card>

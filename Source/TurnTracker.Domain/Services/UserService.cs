@@ -88,6 +88,26 @@ namespace TurnTracker.Domain.Services
             return Result.Ok();
         }
 
+        public Result RegisterDevice(int userId, string info)
+        {
+            try
+            {
+                _db.DeviceAuthorizations.Add(new DeviceAuthorization
+                {
+                    UserId = userId,
+                    ClientInfo = info
+                });
+                _db.SaveChanges();
+                return Result.Success();
+            }
+            catch (Exception e)
+            {
+                const string message = "Failed to saved device registration";
+                _logger.LogError(e, message);
+                return Result.Failure(message);
+            }
+        }
+
         public Result<(User user, string accessToken, string refreshToken)> AuthenticateUser(string username, string password)
         {
             var user = _db.Users.SingleOrDefault(x => x.Username == username);
