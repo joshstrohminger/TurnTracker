@@ -10,9 +10,9 @@ namespace TurnTracker.Domain.Interfaces
     {
         Result<(User user, string accessToken, string refreshToken)> AuthenticateUser(string username, string password);
         Result ChangePassword(int userId, string oldPassword, string newPassword);
-        Result<string> RefreshUser(int userId, string refreshKey);
+        Result<string> RefreshUser(long loginId, string refreshKey);
         Result<User> GetUser(int userId);
-        Result LogoutUser(int userId);
+        Result Logout(long loginId);
         Result EnsureDefaultUsers();
         Result<User> SetDisplayName(int userId, string displayName);
         Result SetShowDisabledActivities(int userId, bool show);

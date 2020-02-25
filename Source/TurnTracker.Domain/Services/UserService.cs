@@ -79,11 +79,11 @@ namespace TurnTracker.Domain.Services
             return Result.Ok();
         }
 
-        public Result LogoutUser(int userId)
+        public Result Logout(long loginId)
         {
-            var user = _db.Users.SingleOrDefault(x => x.Id == userId);
-            if (user is null) return Result.Failure("Invalid user");
-            user.RefreshKey = null;
+            var login = _db.Logins.Find(loginId);
+            if (login is null) return Result.Failure("Invalid login");
+            _db.Logins.Remove(login);
             _db.SaveChanges();
             return Result.Ok();
         }
@@ -120,9 +120,8 @@ namespace TurnTracker.Domain.Services
             }
 
             // authentication successful so generate jwt refresh token
-            var (refreshToken, refreshKey) = GenerateRefreshToken(user);
-            var accessToken = GenerateAccessToken(user);
-            user.RefreshKey = refreshKey;
+            var (refreshToken, loginId) = GenerateRefreshToken(user);
+            var accessToken = GenerateAccessToken(user, loginId);
             _db.SaveChanges();
 
             return Result.Ok((user, accessToken, refreshToken));
@@ -163,14 +162,23 @@ namespace TurnTracker.Domain.Services
             return Result.Ok();
         }
 
-        public Result<string> RefreshUser(int userId, string refreshKey)
+        public Result<string> RefreshUser(long loginId, string refreshKey)
         {
-            var user = _db.Users.AsNoTracking().SingleOrDefault(x => x.Id == userId);
+            var login = _db.Logins.Include(x => x.User).AsNoTracking().SingleOrDefault(x => x.Id == loginId);
 
-            if (user?.RefreshKey != refreshKey)
-                return Result.Failure<string>("Invalid refresh key or user");
+            if (login is null)
+            {
+                _logger.LogWarning($"Attempted to refresh missing login id {loginId}");
+                return Result.Failure<string>("Invalid login id");
+            }
 
-            var accessKey = GenerateAccessToken(user);
+            if (login.RefreshKey != refreshKey)
+            {
+                _logger.LogWarning($"Attempted to refresh login id {loginId} with invalid refresh key");
+                return Result.Failure<string>("Invalid refresh key");
+            }
+
+            var accessKey = GenerateAccessToken(login.User, loginId);
             return Result.Ok(accessKey);
         }
 
@@ -251,16 +259,26 @@ namespace TurnTracker.Domain.Services
             return Result.Ok(user);
         }
 
-        private string GenerateAccessToken(User user)
+        private string GenerateAccessToken(User user, long loginId)
         {
-            return GenerateToken(user, TokenType.Access, _appSettings.Value.AccessTokenExpiration);
+            var loginClaim = new Claim(nameof(ClaimType.LoginId), loginId.ToString());
+            return GenerateToken(user, TokenType.Access, _appSettings.Value.AccessTokenExpiration, loginClaim);
         }
 
-        private (string refreshToken, string refreshKey) GenerateRefreshToken(User user)
+        private (string refreshToken, long loginId) GenerateRefreshToken(User user)
         {
             var refreshKey = GetRandomKey();
-            var claim = new Claim(nameof(ClaimType.RefreshKey), refreshKey);
-            return (GenerateToken(user, TokenType.Refresh, _appSettings.Value.RefreshTokenExpiration, claim), refreshKey);
+            var login = new Login
+            {
+                UserId = user.Id,
+                RefreshKey = refreshKey,
+                ExpirationDate = DateTimeOffset.Now + _appSettings.Value.RefreshTokenExpiration
+            };
+            _db.Logins.Add(login);
+            _db.SaveChanges();
+            var keyClaim = new Claim(nameof(ClaimType.RefreshKey), refreshKey);
+            var loginClaim = new Claim(nameof(ClaimType.LoginId), login.Id.ToString());
+            return (GenerateToken(user, TokenType.Refresh, _appSettings.Value.RefreshTokenExpiration, keyClaim, loginClaim), login.Id);
         }
 
         public string GenerateNotificationActionToken(Participant participant, string action, TimeSpan expiration)

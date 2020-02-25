@@ -34,7 +34,6 @@ namespace TurnTracker.Data.Entities
         public byte[] PasswordHash { get; set; }
         [Required]
         public byte[] PasswordSalt { get; set; }
-        public string RefreshKey { get; set; }
 
         public bool ShowDisabledActivities { get; set; }
         public bool EnablePushNotifications { get; set; }
@@ -47,6 +46,8 @@ namespace TurnTracker.Data.Entities
         public List<Turn> TurnsTaken { get; set; }
 
         public List<Turn> TurnsCreated { get; set; }
+
+        public List<Login> Logins { get; set; }
 
         #endregion
     }

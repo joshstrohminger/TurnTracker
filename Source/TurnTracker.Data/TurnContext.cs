@@ -23,6 +23,7 @@ namespace TurnTracker.Data
         public DbSet<NotificationSetting> NotificationSettings { get; set; }
         public DbSet<PushSubscriptionDevice> PushSubscriptionDevices { get; set; }
         public DbSet<DeviceAuthorization> DeviceAuthorizations { get; set; }
+        public DbSet<Login> Logins { get; set; }
 
         public override int SaveChanges()
         {

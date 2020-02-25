@@ -100,6 +100,7 @@ namespace TurnTracker.Server
             services.AddScoped<IPushNotificationActionService, PushNotificationActionService>();
             services.AddHttpClient<PushServiceClient>();
             services.AddHostedService<ActivityStatusChecker>();
+            services.AddHostedService<LoginPruner>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

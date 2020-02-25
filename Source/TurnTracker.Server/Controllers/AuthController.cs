@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
@@ -67,10 +66,10 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public IActionResult Logout()
         {
-            var myId = User.GetId();
-            if (_userService.LogoutUser(myId).IsSuccess)
+            var loginId = User.GetLoginId();
+            if (_userService.Logout(loginId).IsSuccess)
             {
-                _logger.LogWarning($"Failed to logout username: {User.Identity.Name}, id: {myId}");
+                _logger.LogWarning($"Failed to logout username: {User.Identity.Name}, id: {User.GetId()}, login: {loginId}");
             }
 
             return Ok();
@@ -80,7 +79,7 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public IActionResult Refresh()
         {
-            var (isSuccess, _, accessToken) = _userService.RefreshUser(User.GetId(), User.FindFirstValue(nameof(ClaimType.RefreshKey)));
+            var (isSuccess, _, accessToken) = _userService.RefreshUser(User.GetLoginId(), User.GetRefreshKey());
             if (isSuccess)
             {
                 return Ok(accessToken);
