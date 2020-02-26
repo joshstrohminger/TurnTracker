@@ -164,7 +164,7 @@ namespace TurnTracker.Domain.Services
 
         public Result<string> RefreshUser(long loginId, string refreshKey)
         {
-            var login = _db.Logins.Include(x => x.User).AsNoTracking().SingleOrDefault(x => x.Id == loginId);
+            var login = _db.Logins.Include(x => x.User).SingleOrDefault(x => x.Id == loginId);
 
             if (login is null)
             {
@@ -177,6 +177,9 @@ namespace TurnTracker.Domain.Services
                 _logger.LogWarning($"Attempted to refresh login id {loginId} with invalid refresh key");
                 return Result.Failure<string>("Invalid refresh key");
             }
+
+            login.ModifiedDate = DateTimeOffset.Now;
+            _db.SaveChanges();
 
             var accessKey = GenerateAccessToken(login.User, loginId);
             return Result.Ok(accessKey);
