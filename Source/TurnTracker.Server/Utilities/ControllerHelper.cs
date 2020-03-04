@@ -19,5 +19,15 @@ namespace TurnTracker.Server.Utilities
         {
             return user.FindFirstValue(nameof(ClaimType.RefreshKey));
         }
+
+        public static string GetUsername(this ClaimsPrincipal user)
+        {
+            return user.FindFirstValue(ClaimTypes.Name);
+        }
+
+        public static string GetDisplayName(this ClaimsPrincipal user)
+        {
+            return user.FindFirstValue(ClaimTypes.GivenName);
+        }
     }
 }

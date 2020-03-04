@@ -33,6 +33,7 @@ namespace TurnTracker.Domain.Configuration
         public TimeSpan JwtClockSkew { get; set; }
         public PushNotificationSettings PushNotifications { get; set; }
         public TimeSpan LoginPrunePeriod { get; set; }
+        public TimeSpan ChallengeExpiration { get; set; }
 
         #endregion Properties
 

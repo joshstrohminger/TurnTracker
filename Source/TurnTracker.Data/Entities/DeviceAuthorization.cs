@@ -7,7 +7,10 @@ namespace TurnTracker.Data.Entities
         public int Id { get; set; }
         public int UserId { get; set; }
         [Required]
-        public string ClientInfo { get; set; }
+        public byte[] PublicKey { get; set; }
+        [Required]
+        public byte[] CredentialId { get; set; }
+        public uint SignatureCounter { get; set; }
 
         #region Navigation Properties
 
