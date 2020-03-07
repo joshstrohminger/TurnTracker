@@ -9,6 +9,7 @@ namespace TurnTracker.Domain.Interfaces
     public interface IUserService
     {
         Result<(User user, string accessToken, string refreshToken)> AuthenticateUser(string username, string password);
+        (User user, string accessToken, string refreshToken) GenerateAndSaveLogin(User user);
         Result ChangePassword(int userId, string oldPassword, string newPassword);
         Result<string> RefreshUser(long loginId, string refreshKey);
         Result<User> GetUser(int userId);

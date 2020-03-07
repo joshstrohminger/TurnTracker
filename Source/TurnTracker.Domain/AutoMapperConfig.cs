@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Fido2NetLib;
 using Lib.Net.Http.WebPush;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Models;
@@ -25,6 +26,8 @@ namespace TurnTracker.Domain
                 .ForMember(x => x.ModifiedDate, o => o.Ignore())
                 .ForMember(x => x.Timestamp, o => o.Ignore())
                 .ReverseMap();
+
+            CreateMap<AssertionOptions, AnonymousAssertionOptions>();
         }
     }
 }

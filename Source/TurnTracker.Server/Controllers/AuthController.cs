@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using TurnTracker.Data;
 using TurnTracker.Domain.Authorization;
 using TurnTracker.Domain.Interfaces;
+using TurnTracker.Domain.Models;
 using TurnTracker.Server.Models;
 using TurnTracker.Server.Utilities;
 
@@ -48,6 +49,7 @@ namespace TurnTracker.Server.Controllers
             return Json(credential);
         }
 
+        [AllowAnonymous]
         [HttpPost("[action]")]
         public IActionResult StartDeviceAssertion()
         {
@@ -58,14 +60,23 @@ namespace TurnTracker.Server.Controllers
             return Json(options);
         }
 
+        [AllowAnonymous]
         [HttpPost("[action]")]
-        public async Task<IActionResult> CompleteDeviceAssertion([FromBody] AuthenticatorAssertionRawResponse response)
+        public async Task<IActionResult> CompleteDeviceAssertion([FromBody] AnonymousAuthenticatorAssertionRawResponse response)
         {
-            var (_, isFailure, error) = await _webAuthnService.MakeAssertionAsync(User.GetId(), response);
+            var (_, isFailure, (user, accessToken, refreshToken), (unauthorized, errorMessage)) = await _webAuthnService.MakeAssertionAsync(response, User.GetId());
 
-            if (isFailure) return BadRequest(error);
+            if (!isFailure)
+            {
+                return Ok(new AuthenticatedUser(user, accessToken, refreshToken));
+            }
 
-            return Ok();
+            if (unauthorized)
+            {
+                return Unauthorized();
+            }
+
+            return BadRequest(errorMessage);
         }
 
         [AllowAnonymous]

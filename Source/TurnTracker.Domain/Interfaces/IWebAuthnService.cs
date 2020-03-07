@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using Fido2NetLib;
+using TurnTracker.Data.Entities;
+using TurnTracker.Domain.Models;
 
 namespace TurnTracker.Domain.Interfaces
 {
@@ -8,7 +10,7 @@ namespace TurnTracker.Domain.Interfaces
     {
         Result<CredentialCreateOptions> MakeCredentialOptions(int userId, string username, string displayName, long loginId);
         Task<Result<Fido2.CredentialMakeResult>> MakeCredentialAsync(AuthenticatorAttestationRawResponse attestationResponse, int userId, long loginId);
-        Result<AssertionOptions> MakeAssertionOptions(int userId);
-        Task<Result> MakeAssertionAsync(int userId, AuthenticatorAssertionRawResponse clientResponse);
+        Result<AssertionOptions> MakeAssertionOptions(int? userId = null);
+        Task<Result<(User user, string accessToken, string refreshToken), (bool unauthorized, string message)>> MakeAssertionAsync(AnonymousAuthenticatorAssertionRawResponse clientResponse, int? userId = null);
     }
 }

@@ -100,11 +100,20 @@ namespace TurnTracker.Domain.Services
             }
 
             // authentication successful so generate jwt refresh token
+            return Result.Ok(GenerateAndSaveLogin(user));
+        }
+
+        /// <summary>
+        /// Create a new login and associated tokens and save any outstanding db changes
+        /// </summary>
+        /// <param name="user">The user associated with the login</param>
+        public (User user, string accessToken, string refreshToken) GenerateAndSaveLogin(User user)
+        {
             var (refreshToken, loginId) = GenerateRefreshToken(user);
             var accessToken = GenerateAccessToken(user, loginId);
             _db.SaveChanges();
 
-            return Result.Ok((user, accessToken, refreshToken));
+            return (user, accessToken, refreshToken);
         }
 
         public Result<IEnumerable<UserInfo>> FindUsers(string filter)
