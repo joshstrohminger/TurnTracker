@@ -45,7 +45,10 @@ namespace TurnTracker.Server
                 options.InputFormatters.Insert(0, new BoolBodyInputFormatter());
                 options.InputFormatters.Insert(0, new ByteBodyInputFormatter());
                 options.InputFormatters.Insert(0, new StringBodyInputFormatter());
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            })
+                // newtonsoft is necessary if we want to use the fido2 library since it relies heavily on it
+                .AddNewtonsoftJson()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddResponseCompression();
             services.AddMemoryCache();
 
