@@ -48,7 +48,6 @@ namespace TurnTracker.Server.Controllers
             return Json(credential);
         }
 
-
         [HttpPost("[action]")]
         public IActionResult StartDeviceAssertion()
         {

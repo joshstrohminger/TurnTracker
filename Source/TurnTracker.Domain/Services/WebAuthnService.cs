@@ -69,6 +69,7 @@ namespace TurnTracker.Domain.Services
                     FRR = float.MaxValue
                 }
             };
+            extensions = null;
 
             var options = _fido2.RequestNewCredential(user, null, authenticatorSelection, AttestationConveyancePreference.Direct, extensions);
 
@@ -84,11 +85,13 @@ namespace TurnTracker.Domain.Services
             try
             {
                 // 1. get the options we sent the client
-                if (!_cache.TryGetValue($"CredentialOptions:{loginId}", out CredentialCreateOptions options))
+                var cacheKey = $"CredentialOptions:{loginId}";
+                if (!_cache.TryGetValue(cacheKey, out CredentialCreateOptions options))
                 {
                     _logger.LogError($"Failed to find credential options for user {userId} login {loginId}");
                     return Result.Failure<Fido2.CredentialMakeResult>("No challenge found");
                 }
+                _cache.Remove(cacheKey);
 
                 // 2. Verify and make the credentials
                 var cmr = await _fido2.MakeNewCredentialAsync(attestationResponse, options,
@@ -131,18 +134,6 @@ namespace TurnTracker.Domain.Services
                     return Result.Failure<AssertionOptions>("No existing credentials");
                 }
 
-                var mismatched = false;
-                foreach (var mismatch in existingAuthorizations.Where(x => x.UserId != userId))
-                {
-                    mismatched = true;
-                    _logger.LogError($"User {userId} attempted to make assertion options for user {mismatch.UserId}");
-                }
-
-                if (mismatched)
-                {
-                    return Result.Failure<AssertionOptions>("Invalid credentials");
-                }
-
                 // 2. Create options
                 var extensions = new AuthenticationExtensionsClientInputs()
                 {
@@ -156,6 +147,8 @@ namespace TurnTracker.Domain.Services
                     Location = true,
                     UserVerificationMethod = true
                 };
+                extensions = null;
+
                 var options = _fido2.GetAssertionOptions(
                     existingAuthorizations.Select(x => new PublicKeyCredentialDescriptor(x.CredentialId)),
                     UserVerificationRequirement.Preferred,
@@ -181,15 +174,19 @@ namespace TurnTracker.Domain.Services
             try
             {
                 // 1. Get the assertion options we sent the client
-                if (!_cache.TryGetValue($"AssertionOptions:{userId}", out AssertionOptions options))
+                var cacheKey = $"AssertionOptions:{userId}";
+                if (!_cache.TryGetValue(cacheKey, out AssertionOptions options))
                 {
                     _logger.LogError($"Failed to find assertion options for user {userId}");
                     return Result.Failure("No assertion found");
                 }
+                _cache.Remove(cacheKey);
 
                 // 2. Get registered credential from database
                 var authorization = await _db.DeviceAuthorizations
-                    .FirstOrDefaultAsync(x => x.CredentialId.SequenceEqual(clientResponse.Id));
+                    //todo In .net 5, efcore 5 will support using sequenceequals, for now we'll use normal equality and just remember that it will be properly translated into sql for real databases, see https://github.com/dotnet/efcore/issues/10582
+                    //.FirstOrDefaultAsync(x => x.CredentialId.SequenceEqual(clientResponse.Id));
+                    .FirstOrDefaultAsync(x => x.CredentialId == clientResponse.Id);
 
                 if (authorization is null)
                 {

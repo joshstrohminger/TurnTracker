@@ -65,7 +65,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     );
   }
 
-  public testWebAuthn() {
-    this.webauthnService.registerDevice(this.me);
+  public register() {
+    this.webauthnService.registerDevice();
+  }
+
+  public assert() {
+    this.webauthnService.assertDevice();
   }
 }
