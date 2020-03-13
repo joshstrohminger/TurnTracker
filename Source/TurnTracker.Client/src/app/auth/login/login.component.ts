@@ -58,7 +58,11 @@ export class LoginComponent implements OnInit {
       });
   }
 
-  onDeviceLogin() {
-    console.log('attempting to login using device');
+  deviceLogin() {
+    this.error = null;
+    this.showSpinner();
+    this.webauthn.assertDevice$().subscribe(
+      () => this.stopSpinner(),
+      () => this.stopSpinner());
   }
 }

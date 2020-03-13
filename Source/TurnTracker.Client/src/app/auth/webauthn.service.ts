@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
 import { from, Observable, EMPTY } from 'rxjs';
-import { share, map, flatMap } from 'rxjs/operators';
+import { share, map, flatMap, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from '../services/message.service';
+import { AnonymousPublicKeyCredentialRequestOptions } from './anonymousPublicKeyCredentialRequestOptions';
+import { AuthService } from './auth.service';
+import { AuthenticatedUser } from './models/AuthenticatedUser';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +21,7 @@ export class WebauthnService {
 
   public lastResult: string;
 
-  constructor(private _http: HttpClient, private _messageService: MessageService) {
+  constructor(private _http: HttpClient, private _messageService: MessageService, private _authService: AuthService) {
   }
 
   private coerceToArrayBuffer(thing, name?: string): ArrayBuffer {
@@ -112,32 +115,35 @@ export class WebauthnService {
       });
   }
 
-  public assertDevice() {
+  public assertDevice$() {
     this.lastResult = '';
-    this.getCredentials$().pipe(flatMap(creds => {
-      const response = creds.response as AuthenticatorAssertionResponse;
-      console.log('assertion result before modding', creds);
+    return this.getCredentials$().pipe(flatMap(x => {
+      const response = x.credential.response as AuthenticatorAssertionResponse;
+      console.log('assertion result before modding', x.credential);
       const r = {
-          id: creds.id,
-          rawId: this.coerceToBase64Url(creds.rawId),
-          type: creds.type,
-          extensions: creds.getClientExtensionResults(),
+          id: x.credential.id,
+          rawId: this.coerceToBase64Url(x.credential.rawId),
+          type: x.credential.type,
+          extensions: x.credential.getClientExtensionResults(),
           response: {
               authenticatorData: this.coerceToBase64Url(response.authenticatorData),
               clientDataJson: this.coerceToBase64Url(response.clientDataJSON),
               signature: this.coerceToBase64Url(response.signature)
-          }
+          },
+          requestId: x.requestId
       };
       console.log('sending assertion', r);
       this.lastResult = JSON.stringify(r);
 
-      return this._http.post('auth/CompleteDeviceAssertion', r);
-    })).subscribe(
-      () => this._messageService.success('Asserted credentials'),
+      return this._http.post<AuthenticatedUser>('auth/CompleteDeviceAssertion', r);
+    }), tap(user => {
+        console.log('asserted device');
+        this._authService.saveAuthenticatedUser(user);
+      },
       error => {
-        this._messageService.error('Failed to assert credentials', error);
         this.lastResult += error;
-      });
+        this._messageService.error('Device Assertion Failed', error);
+      }));
   }
 
   private convertCredential(credential: Credential, source: string): PublicKeyCredential {
@@ -173,16 +179,27 @@ export class WebauthnService {
       map((credential: Credential) => this.convertCredential(credential, 'create')));
   }
 
-  private getCredentials$(): Observable<PublicKeyCredential> {
+  private getCredentials$(): Observable<{credential: PublicKeyCredential, requestId: string}> {
     return this._http.post('auth/StartDeviceAssertion', null).pipe(
-      flatMap((options: PublicKeyCredentialRequestOptions) => {
+      flatMap((options: AnonymousPublicKeyCredentialRequestOptions) => {
         console.log('assertion options before mod', options);
         options.challenge = this.coerceToArrayBuffer(options.challenge);
         options.allowCredentials.forEach(listItem => listItem.id = this.coerceToArrayBuffer(listItem.id));
         console.log('assertion options after mod', options);
-        return from(navigator.credentials.get({publicKey: options}));
+        return from(navigator.credentials.get({publicKey: options}))
+          .pipe(map(credential => {
+            return {
+              credential,
+              requestId: options.requestId
+            };
+          }));
       }),
-      map((credential: Credential) => this.convertCredential(credential, 'get')));
+      map(x => {
+        return {
+          credential: this.convertCredential(x.credential, 'get'),
+          requestId: x.requestId
+        };
+      }));
   }
 
   private async getCredentialsById(credentialId: string, challenge: string): Promise<PublicKeyCredential> {

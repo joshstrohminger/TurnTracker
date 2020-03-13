@@ -64,11 +64,7 @@ export class AuthService {
 
     return this._http.post<AuthenticatedUser>('auth/login', credentials).pipe(
       map(user => {
-        this.saveUser(user);
-        this._route.queryParams.pipe(first()).subscribe(params => {
-          const url = params && params.redirectUrl || '/activities';
-          this._router.navigateByUrl(url);
-        });
+        this.saveAuthenticatedUser(user);
         return null as string;
       }), catchError((error: HttpErrorResponse) => {
         switch (error.status) {
@@ -79,6 +75,14 @@ export class AuthService {
             return of('Unknown error');
         }
       }));
+  }
+
+  saveAuthenticatedUser(user: AuthenticatedUser) {
+    this.saveUser(user);
+    this._route.queryParams.pipe(first()).subscribe(params => {
+      const url = params && params.redirectUrl || '/activities';
+      this._router.navigateByUrl(url);
+    });
   }
 
   logout(): void {

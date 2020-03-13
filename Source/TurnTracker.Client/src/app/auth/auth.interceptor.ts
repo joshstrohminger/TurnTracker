@@ -23,10 +23,14 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private _authService: AuthService, private _messageService: MessageService) { }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-
-    if (request.url.endsWith('/login') || request.url.endsWith('/publickey')) {
-      console.log(`sending anonymous request for ${request.url}`);
-      return next.handle(this.modifyRequest(request));
+    const lastSegment = request.url.substring(request.url.lastIndexOf('/') + 1);
+    switch (lastSegment) {
+      case 'login':
+      case 'publickey':
+      case 'StartDeviceAssertion':
+      case 'CompleteDeviceAssertion':
+        console.log(`sending anonymous request for ${request.url}`);
+        return next.handle(this.modifyRequest(request));
     }
 
     const accessTokenInfo = this._authService.getAccessToken();

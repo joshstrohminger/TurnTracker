@@ -70,6 +70,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   public assert() {
-    this.webauthnService.assertDevice();
+    this.webauthnService.assertDevice$();
   }
 }

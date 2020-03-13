@@ -53,7 +53,7 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public IActionResult StartDeviceAssertion()
         {
-            var (_, isFailure, options, error) = _webAuthnService.MakeAssertionOptions(User.GetId());
+            var (_, isFailure, options, error) = _webAuthnService.MakeAssertionOptions(User.TryGetId());
 
             if (isFailure) return BadRequest(error);
 
@@ -64,7 +64,7 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> CompleteDeviceAssertion([FromBody] AnonymousAuthenticatorAssertionRawResponse response)
         {
-            var (_, isFailure, (user, accessToken, refreshToken), (unauthorized, errorMessage)) = await _webAuthnService.MakeAssertionAsync(response, User.GetId());
+            var (_, isFailure, (user, accessToken, refreshToken), (unauthorized, errorMessage)) = await _webAuthnService.MakeAssertionAsync(response, User.TryGetId());
 
             if (!isFailure)
             {
@@ -105,7 +105,7 @@ namespace TurnTracker.Server.Controllers
         public IActionResult Logout()
         {
             var loginId = User.GetLoginId();
-            if (_userService.Logout(loginId).IsSuccess)
+            if (_userService.Logout(loginId).IsFailure)
             {
                 _logger.LogWarning($"Failed to logout username: {User.Identity.Name}, id: {User.GetId()}, login: {loginId}");
             }

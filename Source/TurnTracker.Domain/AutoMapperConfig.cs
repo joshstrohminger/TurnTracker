@@ -27,7 +27,8 @@ namespace TurnTracker.Domain
                 .ForMember(x => x.Timestamp, o => o.Ignore())
                 .ReverseMap();
 
-            CreateMap<AssertionOptions, AnonymousAssertionOptions>();
+            CreateMap<AssertionOptions, AnonymousAssertionOptions>()
+                .ForMember(x => x.RequestId, o => o.Ignore());
         }
     }
 }

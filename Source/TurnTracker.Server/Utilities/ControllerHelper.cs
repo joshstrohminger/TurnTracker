@@ -9,6 +9,10 @@ namespace TurnTracker.Server.Utilities
         {
             return int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier));
         }
+        public static int? TryGetId(this ClaimsPrincipal user)
+        {
+            return int.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : (int?)null;
+        }
 
         public static long GetLoginId(this ClaimsPrincipal user)
         {
