@@ -107,9 +107,10 @@ namespace TurnTracker.Domain.Services
         /// Create a new login and associated tokens and save any outstanding db changes
         /// </summary>
         /// <param name="user">The user associated with the login</param>
-        public (User user, string accessToken, string refreshToken) GenerateAndSaveLogin(User user)
+        /// <param name="deviceAuthorizationId">ID of the device used to login, or <c>null</c> if no device was used.</param>
+        public (User user, string accessToken, string refreshToken) GenerateAndSaveLogin(User user, int? deviceAuthorizationId = null)
         {
-            var (refreshToken, loginId) = GenerateRefreshToken(user);
+            var (refreshToken, loginId) = GenerateRefreshToken(user, deviceAuthorizationId);
             var accessToken = GenerateAccessToken(user, loginId);
             _db.SaveChanges();
 
@@ -257,14 +258,15 @@ namespace TurnTracker.Domain.Services
             return GenerateToken(user, TokenType.Access, _appSettings.Value.AccessTokenExpiration, loginClaim);
         }
 
-        private (string refreshToken, long loginId) GenerateRefreshToken(User user)
+        private (string refreshToken, long loginId) GenerateRefreshToken(User user, int? deviceAuthorizationId)
         {
             var refreshKey = GetRandomKey();
             var login = new Login
             {
                 UserId = user.Id,
                 RefreshKey = refreshKey,
-                ExpirationDate = DateTimeOffset.Now + _appSettings.Value.RefreshTokenExpiration
+                ExpirationDate = DateTimeOffset.Now + _appSettings.Value.RefreshTokenExpiration,
+                DeviceAuthorizationId = deviceAuthorizationId
             };
             _db.Logins.Add(login);
             _db.SaveChanges();

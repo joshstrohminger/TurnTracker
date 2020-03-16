@@ -104,6 +104,11 @@ namespace TurnTracker.Data
             modelBuilder.Entity<PushSubscriptionDevice>()
                 .Property(x => x.Keys)
                 .HasJsonConversion();
+
+            modelBuilder.Entity<Login>()
+                .HasOne(login => login.DeviceUsedForLogin)
+                .WithMany(device => device.Logins)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

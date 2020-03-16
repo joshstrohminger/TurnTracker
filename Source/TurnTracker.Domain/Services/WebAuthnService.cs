@@ -231,7 +231,7 @@ namespace TurnTracker.Domain.Services
                 // 4. Store the updated counter
                 authorization.SignatureCounter = avr.Counter;
 
-                var login = _userService.GenerateAndSaveLogin(authorization.User);
+                var login = _userService.GenerateAndSaveLogin(authorization.User, authorization.Id);
                 return Result.Success<(User user, string accessToken, string refreshToken), (bool unauthorized, string message)>(login);
             }
             catch (Exception e)

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace TurnTracker.Data.Entities
 {
@@ -15,6 +16,7 @@ namespace TurnTracker.Data.Entities
         #region Navigation Properties
 
         public User User { get; set; }
+        public List<Login> Logins { get; set; }
 
         #endregion Navigation Properties
     }

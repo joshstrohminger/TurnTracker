@@ -125,11 +125,6 @@ namespace TurnTracker.Server.Controllers
 
             return BadRequest();
         }
-
-        public IActionResult CreateCredentialOptions()
-        {
-            throw new NotImplementedException();
-        }
         
         [Authorize(Roles = nameof(Role.Admin))]
         [HttpGet("[action]")]

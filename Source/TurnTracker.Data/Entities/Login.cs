@@ -12,10 +12,12 @@ namespace TurnTracker.Data.Entities
         public string RefreshKey { get; set; }
         public DateTimeOffset ExpirationDate { get; set; }
         public int UserId { get; set; }
+        public int? DeviceAuthorizationId { get; set; }
 
         #region Navigation Properties
 
         public User User { get; set; }
+        public DeviceAuthorization DeviceUsedForLogin { get; set; }
 
         #endregion Navigation Properties
     }
