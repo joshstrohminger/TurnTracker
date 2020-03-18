@@ -12,6 +12,7 @@ namespace TurnTracker.Data.Entities
         [Required]
         public byte[] CredentialId { get; set; }
         public uint SignatureCounter { get; set; }
+        public string DeviceName { get; set; }
 
         #region Navigation Properties
 

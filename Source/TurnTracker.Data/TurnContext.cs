@@ -106,9 +106,9 @@ namespace TurnTracker.Data
                 .HasJsonConversion();
 
             modelBuilder.Entity<Login>()
-                .HasOne(login => login.DeviceUsedForLogin)
+                .HasOne(login => login.DeviceAuthorization)
                 .WithMany(device => device.Logins)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

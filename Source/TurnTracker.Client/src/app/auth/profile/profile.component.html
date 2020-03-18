@@ -97,12 +97,19 @@
       </ng-template>
     </mat-card-content>
   </mat-card>
-  <mat-card>
+  <mat-card *ngIf="devices">
     <mat-card-header>
       <mat-card-title>Logins</mat-card-title>
       <mat-card-content>
         <mat-list>
-
+          <ng-container *ngFor="let device of devices">
+            <mat-list-item>
+              Device: <strong>{{device.name}}</strong> <span *ngIf="device.createdDate">Created {{device.createdDate | date: 'short'}},</span> Used {{device.updatedDate | date: 'short'}} <strong *ngIf="device.current"> Current</strong>
+            </mat-list-item>
+            <mat-list-item *ngFor="let session of device.sessions">
+              --------- Session: <strong>{{session.name}}</strong> Created {{session.createdDate | date: 'short'}}, Used {{session.updatedDate | date: 'short'}} <strong *ngIf="session.current"> Current</strong>
+            </mat-list-item>
+          </ng-container>
         </mat-list>
       </mat-card-content>
     </mat-card-header>

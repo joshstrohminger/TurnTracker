@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using AutoMapper;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
@@ -88,7 +89,7 @@ namespace TurnTracker.Domain.Services
             return Result.Ok();
         }
 
-        public Result<(User user, string accessToken, string refreshToken)> AuthenticateUser(string username, string password)
+        public Result<(User user, string accessToken, string refreshToken)> AuthenticateUser(string username, string password, string deviceName)
         {
             var user = _db.Users.SingleOrDefault(x => x.Username == username);
             if (user == null)
@@ -100,17 +101,18 @@ namespace TurnTracker.Domain.Services
             }
 
             // authentication successful so generate jwt refresh token
-            return Result.Ok(GenerateAndSaveLogin(user));
+            return Result.Ok(GenerateAndSaveLogin(user, deviceName));
         }
 
         /// <summary>
         /// Create a new login and associated tokens and save any outstanding db changes
         /// </summary>
         /// <param name="user">The user associated with the login</param>
+        /// <param name="deviceName">Name of the device used to login</param>
         /// <param name="deviceAuthorizationId">ID of the device used to login, or <c>null</c> if no device was used.</param>
-        public (User user, string accessToken, string refreshToken) GenerateAndSaveLogin(User user, int? deviceAuthorizationId = null)
+        public (User user, string accessToken, string refreshToken) GenerateAndSaveLogin(User user, string deviceName, int? deviceAuthorizationId = null)
         {
-            var (refreshToken, loginId) = GenerateRefreshToken(user, deviceAuthorizationId);
+            var (refreshToken, loginId) = GenerateRefreshToken(user, deviceName, deviceAuthorizationId);
             var accessToken = GenerateAccessToken(user, loginId);
             _db.SaveChanges();
 
@@ -132,6 +134,44 @@ namespace TurnTracker.Domain.Services
                 const string message = "Failed to search for users";
                 _logger.LogError(e, message);
                 return Result.Failure<IEnumerable<UserInfo>>(message);
+            }
+        }
+
+        public async Task<Result> DeleteDevice(int deviceAuthorizationId)
+        {
+            try
+            {
+                var device = await _db.DeviceAuthorizations.FindAsync(deviceAuthorizationId);
+                if (device != null)
+                {
+                    _db.Remove(device);
+                    await _db.SaveChangesAsync();
+                }
+                return Result.Success();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Failed to delete device {deviceAuthorizationId}", e);
+                return Result.Failure("Failed to delete device");
+            }
+        }
+
+        public async Task<Result> DeleteLogin(long loginId)
+        {
+            try
+            {
+                var login = await _db.Logins.FindAsync(loginId);
+                if (login != null)
+                {
+                    _db.Remove(login);
+                    await _db.SaveChangesAsync();
+                }
+                return Result.Success();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Failed to delete login {loginId}", e);
+                return Result.Failure("Failed to delete session");
             }
         }
 
@@ -208,6 +248,56 @@ namespace TurnTracker.Domain.Services
             return Result.Ok();
         }
 
+        public IEnumerable<Device> GetAllSessionsByDevice(int userId, long loginId)
+        {
+            return _db.Logins.AsNoTracking()
+                .Where(login => login.UserId == userId)
+                .Include(login => login.DeviceAuthorization)
+                .ToList()
+                .GroupBy(login => login.DeviceAuthorizationId)
+                .Select(g =>
+                {
+                    var current = false;
+                    DeviceAuthorization device = null;
+                    var sessions = g.Select(login =>
+                        {
+                            var session = new Session
+                            {
+                                Id = login.Id,
+                                Name = login.DeviceName,
+                                Updated = login.ModifiedDate,
+                                Created = login.CreatedDate,
+                                Current = login.Id == loginId
+                            };
+                            device ??= login.DeviceAuthorization;
+                            current |= session.Current;
+                            return session;
+                        })
+                        .OrderByDescending(x => x.Updated)
+                        .ToList();
+
+                    return g.Key is null ?
+                        new Device
+                        {
+                            Name = "Web",
+                            Current = current,
+                            Updated = sessions.Max(x => x.Updated),
+                            Sessions = sessions
+                        } :
+                        new Device
+                        {
+                            Name = device.DeviceName,
+                            Id = device.Id,
+                            Created = device.CreatedDate,
+                            Updated = device.ModifiedDate,
+                            Sessions = sessions,
+                            Current = current
+                        };
+
+                })
+                .OrderByDescending(d => d.Updated);
+        }
+
         public Result SetEnablePushNotifications(int userId, bool enable)
         {
             var user = _db.Users.SingleOrDefault(x => x.Id == userId);
@@ -258,7 +348,7 @@ namespace TurnTracker.Domain.Services
             return GenerateToken(user, TokenType.Access, _appSettings.Value.AccessTokenExpiration, loginClaim);
         }
 
-        private (string refreshToken, long loginId) GenerateRefreshToken(User user, int? deviceAuthorizationId)
+        private (string refreshToken, long loginId) GenerateRefreshToken(User user, string deviceName, int? deviceAuthorizationId)
         {
             var refreshKey = GetRandomKey();
             var login = new Login
@@ -266,7 +356,8 @@ namespace TurnTracker.Domain.Services
                 UserId = user.Id,
                 RefreshKey = refreshKey,
                 ExpirationDate = DateTimeOffset.Now + _appSettings.Value.RefreshTokenExpiration,
-                DeviceAuthorizationId = deviceAuthorizationId
+                DeviceAuthorizationId = deviceAuthorizationId,
+                DeviceName = deviceName
             };
             _db.Logins.Add(login);
             _db.SaveChanges();

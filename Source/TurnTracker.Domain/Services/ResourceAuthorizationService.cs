@@ -84,5 +84,25 @@ namespace TurnTracker.Domain.Services
             return _db.Participants.AsNoTracking()
                        .SingleOrDefault(x => x.Id == participantId && !x.Activity.IsDisabled)?.UserId == userId;
         }
+
+        public bool CanDeleteSession(long loginId, int userId)
+        {
+            return _db.Logins.AsNoTracking()
+                .SingleOrDefault(x => x.Id == loginId)?.UserId == userId;
+        }
+
+        /// <summary>
+        /// Users cannot delete the device
+        /// </summary>
+        /// <param name="deviceAuthorizationId"></param>
+        /// <param name="userId"></param>
+        /// <param name="loginId"></param>
+        /// <returns></returns>
+        public bool CanDeleteDevice(int deviceAuthorizationId, int userId, long loginId)
+        {
+            var deviceAuthorization = _db.DeviceAuthorizations.AsNoTracking()
+                .SingleOrDefault(x => x.Id == deviceAuthorizationId);
+            return deviceAuthorization?.UserId == userId && deviceAuthorization.Logins.All(x => x.Id != loginId);
+        }
     }
 }

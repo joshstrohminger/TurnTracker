@@ -9,8 +9,8 @@ namespace TurnTracker.Domain.Interfaces
     public interface IWebAuthnService
     {
         Result<CredentialCreateOptions> MakeCredentialOptions(int userId, string username, string displayName, long loginId);
-        Task<Result<Fido2.CredentialMakeResult>> MakeCredentialAsync(AuthenticatorAttestationRawResponse attestationResponse, int userId, long loginId);
+        Task<Result<Fido2.CredentialMakeResult>> MakeCredentialAsync(AuthenticatorAttestationRawResponse attestationResponse, int userId, long loginId, string deviceName);
         Result<AssertionOptions> MakeAssertionOptions(int? userId = null);
-        Task<Result<(User user, string accessToken, string refreshToken), (bool unauthorized, string message)>> MakeAssertionAsync(AnonymousAuthenticatorAssertionRawResponse clientResponse, int? userId = null);
+        Task<Result<(User user, string accessToken, string refreshToken), (bool unauthorized, string message)>> MakeAssertionAsync(AnonymousAuthenticatorAssertionRawResponse clientResponse, string deviceName, int? userId = null);
     }
 }

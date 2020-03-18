@@ -21,12 +21,14 @@ namespace TurnTracker.Server.Controllers
         private readonly IUserService _userService;
         private readonly IWebAuthnService _webAuthnService;
         private readonly ILogger<AuthController> _logger;
+        private readonly IResourceAuthorizationService _resourceAuthorizationService;
 
-        public AuthController(IUserService userService, ILogger<AuthController> logger, IWebAuthnService webAuthnService)
+        public AuthController(IUserService userService, ILogger<AuthController> logger, IWebAuthnService webAuthnService, IResourceAuthorizationService resourceAuthorizationService)
         {
             _userService = userService;
             _logger = logger;
             _webAuthnService = webAuthnService;
+            _resourceAuthorizationService = resourceAuthorizationService;
         }
 
         [HttpPost("[action]")]
@@ -42,7 +44,7 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> CompleteDeviceRegistration([FromBody] AuthenticatorAttestationRawResponse response)
         {
-            var (_, isFailure, credential, error) = await _webAuthnService.MakeCredentialAsync(response, User.GetId(), User.GetLoginId());
+            var (_, isFailure, credential, error) = await _webAuthnService.MakeCredentialAsync(response, User.GetId(), User.GetLoginId(), Request.GetDeviceName());
 
             if (isFailure) return BadRequest(error);
 
@@ -64,7 +66,7 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> CompleteDeviceAssertion([FromBody] AnonymousAuthenticatorAssertionRawResponse response)
         {
-            var (_, isFailure, (user, accessToken, refreshToken), (unauthorized, errorMessage)) = await _webAuthnService.MakeAssertionAsync(response, User.TryGetId());
+            var (_, isFailure, (user, accessToken, refreshToken), (unauthorized, errorMessage)) = await _webAuthnService.MakeAssertionAsync(response, Request.GetDeviceName(), User.TryGetId());
 
             if (!isFailure)
             {
@@ -79,13 +81,30 @@ namespace TurnTracker.Server.Controllers
             return BadRequest(errorMessage);
         }
 
+        [HttpDelete("[action]/{deviceAuthorizationId}")]
+        public async Task<IActionResult> Device(int deviceAuthorizationId)
+        {
+            if (!_resourceAuthorizationService.CanDeleteDevice(deviceAuthorizationId, User.GetId(), User.GetLoginId()))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userService.DeleteDevice(deviceAuthorizationId);
+            if (result.IsFailure)
+            {
+                return StatusCode(500);
+            }
+
+            return Ok();
+        }
+
         [AllowAnonymous]
         [HttpPost("[action]")]
         public IActionResult Login([FromBody] Credentials credentials)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var (_, isFailure, (user, accessToken, refreshToken)) = _userService.AuthenticateUser(credentials.Username, credentials.Password);
+            var (_, isFailure, (user, accessToken, refreshToken)) = _userService.AuthenticateUser(credentials.Username, credentials.Password, Request.GetDeviceName());
             if (isFailure) return Unauthorized();
             return Ok(new AuthenticatedUser(user, accessToken, refreshToken));
         }

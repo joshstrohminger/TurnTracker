@@ -1,4 +1,6 @@
 ﻿using System.Security.Claims;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 using TurnTracker.Domain.Authorization;
 
 namespace TurnTracker.Server.Utilities
@@ -32,6 +34,16 @@ namespace TurnTracker.Server.Utilities
         public static string GetDisplayName(this ClaimsPrincipal user)
         {
             return user.FindFirstValue(ClaimTypes.GivenName);
+        }
+
+        public static string GetDeviceName(this HttpRequest request)
+        {
+            var userAgent = request.Headers["User-Agent"].ToString();
+
+            // find the first string inside parenthesis
+            var match = Regex.Match(userAgent, @"^[^)]*\(([^)]+)\)");
+
+            return match.Success ? match.Groups[0].Value : userAgent;
         }
     }
 }

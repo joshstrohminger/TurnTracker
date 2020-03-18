@@ -13,11 +13,12 @@ namespace TurnTracker.Data.Entities
         public DateTimeOffset ExpirationDate { get; set; }
         public int UserId { get; set; }
         public int? DeviceAuthorizationId { get; set; }
+        public string DeviceName { get; set; }
 
         #region Navigation Properties
 
         public User User { get; set; }
-        public DeviceAuthorization DeviceUsedForLogin { get; set; }
+        public DeviceAuthorization DeviceAuthorization { get; set; }
 
         #endregion Navigation Properties
     }

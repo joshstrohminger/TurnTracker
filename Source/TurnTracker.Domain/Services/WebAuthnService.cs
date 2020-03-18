@@ -86,7 +86,7 @@ namespace TurnTracker.Domain.Services
             return Result.Success(options);
         }
 
-        public async Task<Result<Fido2.CredentialMakeResult>> MakeCredentialAsync(AuthenticatorAttestationRawResponse attestationResponse, int userId, long loginId)
+        public async Task<Result<Fido2.CredentialMakeResult>> MakeCredentialAsync(AuthenticatorAttestationRawResponse attestationResponse, int userId, long loginId, string deviceName)
         {
             try
             {
@@ -109,7 +109,8 @@ namespace TurnTracker.Domain.Services
                     UserId = userId,
                     PublicKey = cmr.Result.PublicKey,
                     CredentialId = cmr.Result.CredentialId,
-                    SignatureCounter = cmr.Result.Counter
+                    SignatureCounter = cmr.Result.Counter,
+                    DeviceName = deviceName
                 });
                 await _db.SaveChangesAsync();
 
@@ -185,7 +186,7 @@ namespace TurnTracker.Domain.Services
             }
         }
 
-        public async Task<Result<(User user, string accessToken, string refreshToken),(bool unauthorized, string message)>> MakeAssertionAsync(AnonymousAuthenticatorAssertionRawResponse clientResponse, int? userId = null)
+        public async Task<Result<(User user, string accessToken, string refreshToken),(bool unauthorized, string message)>> MakeAssertionAsync(AnonymousAuthenticatorAssertionRawResponse clientResponse, string deviceName, int? userId = null)
         {
             try
             {
@@ -231,7 +232,7 @@ namespace TurnTracker.Domain.Services
                 // 4. Store the updated counter
                 authorization.SignatureCounter = avr.Counter;
 
-                var login = _userService.GenerateAndSaveLogin(authorization.User, authorization.Id);
+                var login = _userService.GenerateAndSaveLogin(authorization.User, deviceName, authorization.Id);
                 return Result.Success<(User user, string accessToken, string refreshToken), (bool unauthorized, string message)>(login);
             }
             catch (Exception e)

@@ -10,6 +10,10 @@ import { ImmediateErrorStateMatcher } from 'src/app/validators/ImmediateErrorSta
 import { ParentErrorStateMatcher } from 'src/app/validators/ParentErrorStateMatcher';
 import { PasswordChange } from '../models/PasswordChange';
 import { UserService } from 'src/app/services/user.service';
+import { Device } from '../models/Device';
+import { Observable } from 'rxjs';
+import { share } from 'rxjs/operators';
+import { DateTime } from 'luxon';
 
 @Component({
   selector: 'app-profile',
@@ -28,6 +32,7 @@ export class ProfileComponent implements OnInit {
   readonly parentErrors = new ParentErrorStateMatcher('different');
   readonly passwordStrengthIcons = ['😡', '😠', '🙁', '😕', '😒', '😑', '😐', '🙂', '😃', '😄', '😁'];
   passwordStrengthIcon = this.passwordStrengthIcons[0];
+  devices: Device[];
 
   public get roles() {
     return Role;
@@ -48,6 +53,18 @@ export class ProfileComponent implements OnInit {
       error => {
         this._messageService.error('Failed to get profile', error);
       });
+
+    this._http.get<Device[]>('session').subscribe(devices => {
+      for (const device of devices) {
+        device.createdDate = device.created ? DateTime.fromISO(device.created) : undefined;
+        device.updatedDate = DateTime.fromISO(device.updated);
+        for (const session of device.sessions) {
+          session.createdDate = DateTime.fromISO(session.created);
+          session.updatedDate = DateTime.fromISO(session.updated);
+        }
+      }
+      this.devices = devices;
+    });
   }
 
   editDisplayName() {
