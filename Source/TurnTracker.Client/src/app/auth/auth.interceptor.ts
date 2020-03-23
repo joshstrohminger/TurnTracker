@@ -5,12 +5,11 @@ import {
   HttpRequest,
   HttpHeaders,
   HttpErrorResponse,
-  HttpResponse,
-  HttpEventType
+  HttpResponse
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
-import { map, mergeMap, catchError, filter } from 'rxjs/operators';
+import { map, mergeMap, catchError, filter, share, tap, finalize } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { AuthError } from './models/AuthError';
 import { MessageService } from '../services/message.service';
@@ -19,6 +18,7 @@ import { MessageService } from '../services/message.service';
 export class AuthInterceptor implements HttpInterceptor {
 
   private readonly baseUrl = `${window.location.origin}/api/`;
+  private refreshOperation$: Observable<string>;
 
   constructor(private _authService: AuthService, private _messageService: MessageService) { }
 
@@ -34,7 +34,10 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     const accessTokenInfo = this._authService.getAccessToken();
-    return (accessTokenInfo.isValid ? of(accessTokenInfo.token) : this.getAccessTokenUsingRefreshToken(next)).pipe(
+
+    return (accessTokenInfo.isValid ?
+        of(accessTokenInfo.token) :
+        this.getAccessTokenUsingRefreshToken(next, request.url, 'before request')).pipe(
       map(accessToken => this.modifyRequest(request, accessToken)),
       mergeMap(preppedRequest => next.handle(preppedRequest).pipe(
         catchError(error => {
@@ -44,8 +47,7 @@ export class AuthInterceptor implements HttpInterceptor {
           } else if (error instanceof HttpErrorResponse) {
             switch (error.status) {
               case 401:
-                console.log(`invalid access token for '${request.url}', refreshing`);
-                return this.getAccessTokenUsingRefreshToken(next).pipe(
+                return this.getAccessTokenUsingRefreshToken(next, request.url, 'after request').pipe(
                   map(accessToken => this.modifyRequest(request, accessToken)),
                   mergeMap(secondRequest => next.handle(secondRequest))
                 );
@@ -85,36 +87,45 @@ export class AuthInterceptor implements HttpInterceptor {
     return request.clone(update);
   }
 
-  private getAccessTokenUsingRefreshToken(next: HttpHandler): Observable<string> {
+  private getAccessTokenUsingRefreshToken(next: HttpHandler, originalUrl: string, reason: string): Observable<string> {
     const refreshTokenInfo = this._authService.getRefreshToken();
 
     if (!refreshTokenInfo.isValid) {
       return throwError(new AuthError('missing refresh token'));
     }
 
-    const refreshRequest = new HttpRequest(
-      'POST',
-      `${this.baseUrl}${this._authService.refreshUrl}`,
-      null,
-      {
-        headers: new HttpHeaders().set('Authorization', `Bearer ${refreshTokenInfo.token}`),
-        responseType: 'text'
-      });
+    if (!this.refreshOperation$) {
+      console.log(`invalid access token ${reason} for '${originalUrl}', refreshing`);
+      const refreshRequest = new HttpRequest(
+        'POST',
+        `${this.baseUrl}${this._authService.refreshUrl}`,
+        null,
+        {
+          headers: new HttpHeaders().set('Authorization', `Bearer ${refreshTokenInfo.token}`),
+          responseType: 'text'
+        });
 
-    return next.handle(refreshRequest).pipe(
-      filter(event => event instanceof HttpResponse),
-      map(
-        (response: HttpResponse<string>) => {
-          console.log('used refresh token', response);
-          const accessToken = response.body;
-          this._authService.saveAccessToken(accessToken);
-          return accessToken;
+      this.refreshOperation$ = next.handle(refreshRequest).pipe(
+        filter(event => event instanceof HttpResponse),
+        map(
+          (response: HttpResponse<string>) => {
+            console.log('used refresh token', response);
+            const accessToken = response.body;
+            this._authService.saveAccessToken(accessToken);
+            return accessToken;
+          }),
+        catchError(error => {
+          const authError = this._toAuthError(error);
+          throw authError;
         }),
-      catchError(error => {
-        const authError = this._toAuthError(error);
-        throw authError;
-      })
-    );
+        finalize(() => this.refreshOperation$ = null),
+        share()
+      );
+    } else {
+      console.log(`invalid access token ${reason} for '${originalUrl}', waiting for ongoing refresh`);
+    }
+
+    return this.refreshOperation$;
   }
 
   private _toAuthError(error: any): AuthError {

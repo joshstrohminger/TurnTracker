@@ -99,19 +99,31 @@
   </mat-card>
   <mat-card *ngIf="devices">
     <mat-card-header>
-      <mat-card-title>Logins</mat-card-title>
-      <mat-card-content>
-        <mat-list>
-          <ng-container *ngFor="let device of devices">
-            <mat-list-item>
-              Device: <strong>{{device.name}}</strong> <span *ngIf="device.createdDate">Created {{device.createdDate | date: 'short'}},</span> Used {{device.updatedDate | date: 'short'}} <strong *ngIf="device.current"> Current</strong>
-            </mat-list-item>
-            <mat-list-item *ngFor="let session of device.sessions">
-              --------- Session: <strong>{{session.name}}</strong> Created {{session.createdDate | date: 'short'}}, Used {{session.updatedDate | date: 'short'}} <strong *ngIf="session.current"> Current</strong>
-            </mat-list-item>
-          </ng-container>
-        </mat-list>
-      </mat-card-content>
+      <mat-card-title>
+        Logins
+      </mat-card-title>
     </mat-card-header>
+    <mat-card-content>
+      <mat-list>
+        <ng-container *ngFor="let device of devices; let first = first">
+          <mat-divider *ngIf="!first"></mat-divider>
+          <mat-list-item class="device accent">
+            <mat-icon mat-list-icon>devices</mat-icon>
+            <div mat-line>{{device.name}}</div>
+            <div mat-line><span *ngIf="device.createdDate">Created {{device.createdDate | date: 'short'}},</span> Active {{device.updatedDate | date: 'short'}}</div>
+            <button mat-icon-button (click)="deleteDevice(device)" [disabled]="deleting" *ngIf="!device.current && device.id">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-list-item>
+          <mat-list-item class="session" [ngClass]="{'primary': session.current}" *ngFor="let session of device.sessions">
+            <div mat-line>{{session.name}}</div>
+            <div mat-line>Created {{session.createdDate | date: 'short'}}, Active {{session.updatedDate | date: 'short'}} <strong *ngIf="session.current">Current</strong></div>
+            <button mat-icon-button (click)="deleteSession(device, session)" [disabled]="deleting" *ngIf="!session.current">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-list-item>
+        </ng-container>
+      </mat-list>
+    </mat-card-content>
   </mat-card>
 </div>

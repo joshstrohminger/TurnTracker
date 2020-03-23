@@ -49,6 +49,8 @@ namespace TurnTracker.Data.Entities
 
         public List<Login> Logins { get; set; }
 
+        public List<DeviceAuthorization> DeviceAuthorizations { get; set; }
+
         #endregion
     }
 }

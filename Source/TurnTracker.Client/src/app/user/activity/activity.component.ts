@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { ActivityDetails } from '../models/ActivityDetails';
-import { switchMap } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Unit } from '../models/Unit';
 import { DateTime } from 'luxon';

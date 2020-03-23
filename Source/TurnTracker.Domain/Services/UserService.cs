@@ -141,9 +141,12 @@ namespace TurnTracker.Domain.Services
         {
             try
             {
-                var device = await _db.DeviceAuthorizations.FindAsync(deviceAuthorizationId);
+                var device = await _db.DeviceAuthorizations
+                    .Include(x => x.Logins)
+                    .SingleOrDefaultAsync(x => x.Id == deviceAuthorizationId);
                 if (device != null)
                 {
+                    _db.RemoveRange(device.Logins);
                     _db.Remove(device);
                     await _db.SaveChangesAsync();
                 }
@@ -250,52 +253,51 @@ namespace TurnTracker.Domain.Services
 
         public IEnumerable<Device> GetAllSessionsByDevice(int userId, long loginId)
         {
-            return _db.Logins.AsNoTracking()
-                .Where(login => login.UserId == userId)
-                .Include(login => login.DeviceAuthorization)
-                .ToList()
-                .GroupBy(login => login.DeviceAuthorizationId)
-                .Select(g =>
+            var user = _db.Users.AsNoTracking()
+                .Include(u => u.Logins)
+                .Include(u => u.DeviceAuthorizations)
+                .Single(u => u.Id == userId);
+
+            var devices = user.DeviceAuthorizations.ToDictionary(d => d.Id, d => new Device
+            {
+                Name = d.DeviceName,
+                Id = d.Id,
+                Created = d.CreatedDate,
+                Updated = d.ModifiedDate,
+                Sessions = Enumerable.Empty<Session>()
+            });
+
+            foreach (var g in user.Logins.GroupBy(l => l.DeviceAuthorizationId))
+            {
+                var sessions = g.OrderByDescending(l => l.ModifiedDate).Select(login => new Session
                 {
-                    var current = false;
-                    DeviceAuthorization device = null;
-                    var sessions = g.Select(login =>
-                        {
-                            var session = new Session
-                            {
-                                Id = login.Id,
-                                Name = login.DeviceName,
-                                Updated = login.ModifiedDate,
-                                Created = login.CreatedDate,
-                                Current = login.Id == loginId
-                            };
-                            device ??= login.DeviceAuthorization;
-                            current |= session.Current;
-                            return session;
-                        })
-                        .OrderByDescending(x => x.Updated)
-                        .ToList();
+                    Id = login.Id,
+                    Name = login.DeviceName,
+                    Updated = login.ModifiedDate,
+                    Created = login.CreatedDate,
+                    Current = login.Id == loginId
+                }).ToList();
 
-                    return g.Key is null ?
-                        new Device
-                        {
-                            Name = "Web",
-                            Current = current,
-                            Updated = sessions.Max(x => x.Updated),
-                            Sessions = sessions
-                        } :
-                        new Device
-                        {
-                            Name = device.DeviceName,
-                            Id = device.Id,
-                            Created = device.CreatedDate,
-                            Updated = device.ModifiedDate,
-                            Sessions = sessions,
-                            Current = current
-                        };
+                if (g.Key.HasValue)
+                {
+                    var device = devices[g.Key.Value];
+                    device.Current = sessions.Any(s => s.Id == loginId);
+                    device.Sessions = sessions;
+                }
+                else
+                {
+                    devices[0] = new Device
+                    {
+                        Name = "Web",
+                        Created = user.CreatedDate,
+                        Current = sessions.Any(s => s.Id == loginId),
+                        Updated = sessions.Max(s => s.Updated),
+                        Sessions = sessions
+                    };
+                }
+            }
 
-                })
-                .OrderByDescending(d => d.Updated);
+            return devices.Values.OrderByDescending(d => d.Updated);
         }
 
         public Result SetEnablePushNotifications(int userId, bool enable)

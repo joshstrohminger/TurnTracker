@@ -92,15 +92,12 @@ namespace TurnTracker.Domain.Services
         }
 
         /// <summary>
-        /// Users cannot delete the device
+        /// Users cannot delete the current device
         /// </summary>
-        /// <param name="deviceAuthorizationId"></param>
-        /// <param name="userId"></param>
-        /// <param name="loginId"></param>
-        /// <returns></returns>
         public bool CanDeleteDevice(int deviceAuthorizationId, int userId, long loginId)
         {
             var deviceAuthorization = _db.DeviceAuthorizations.AsNoTracking()
+                .Include(x => x.Logins)
                 .SingleOrDefault(x => x.Id == deviceAuthorizationId);
             return deviceAuthorization?.UserId == userId && deviceAuthorization.Logins.All(x => x.Id != loginId);
         }

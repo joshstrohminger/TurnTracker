@@ -11,9 +11,9 @@ import { ParentErrorStateMatcher } from 'src/app/validators/ParentErrorStateMatc
 import { PasswordChange } from '../models/PasswordChange';
 import { UserService } from 'src/app/services/user.service';
 import { Device } from '../models/Device';
-import { Observable } from 'rxjs';
-import { share } from 'rxjs/operators';
 import { DateTime } from 'luxon';
+import { finalize } from 'rxjs/operators';
+import { Session } from '../models/Session';
 
 @Component({
   selector: 'app-profile',
@@ -22,6 +22,7 @@ import { DateTime } from 'luxon';
 })
 export class ProfileComponent implements OnInit {
 
+  deleting: false;
   user: Profile;
   displayNameControl: FormControl;
   passwordForm: FormGroup;
@@ -152,6 +153,44 @@ export class ProfileComponent implements OnInit {
         this._messageService.error(message, error);
         this.passwordForm.enable();
       }
+    );
+  }
+
+  deleteSession(device: Device, session: Session) {
+    if (this.deleting || session.current) {
+      return;
+    }
+
+    this._http.delete(`session/${session.id}`)
+      .pipe(finalize(() => this.deleting = false))
+      .subscribe(() => {
+        this._messageService.success('Deleted session');
+        const index = device.sessions.findIndex(s => s.id === session.id);
+        if (index < 0) {
+          console.error('Failed to find session after deletion');
+        } else {
+          device.sessions.splice(index, 1);
+        }
+      }, error => this._messageService.error('Failed to delete session', error)
+    );
+  }
+
+  deleteDevice(device: Device) {
+    if (this.deleting || device.current || !device.id) {
+      return;
+    }
+
+    this._http.delete(`auth/device/${device.id}`)
+      .pipe(finalize(() => this.deleting = false))
+      .subscribe(() => {
+        this._messageService.success('Deleted device');
+        const index = this.devices.findIndex(d => d.id === device.id);
+        if (index < 0) {
+          console.error('Failed to find device after deletion');
+        } else {
+          this.devices.splice(index, 1);
+        }
+      }, error => this._messageService.error('Failed to delete device', error)
     );
   }
 }

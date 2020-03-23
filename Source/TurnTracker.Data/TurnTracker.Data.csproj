@@ -49,6 +49,8 @@
     <Compile Remove="Migrations\20200316085245_AddDeviceNameColumns.Designer.cs" />
     <Compile Remove="Migrations\20200318071235_AddRelationshipBetweenDeviceAndLogin.cs" />
     <Compile Remove="Migrations\20200318071235_AddRelationshipBetweenDeviceAndLogin.Designer.cs" />
+    <Compile Remove="Migrations\20200322073839_AddRelationshipFromUserToDevice.cs" />
+    <Compile Remove="Migrations\20200322073839_AddRelationshipFromUserToDevice.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
