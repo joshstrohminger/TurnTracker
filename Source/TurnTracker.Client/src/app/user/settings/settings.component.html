@@ -15,10 +15,5 @@
         <mat-error>Must be between 1 and 255</mat-error>
       </mat-form-field>
     </section>
-    <section>
-      <button class="test" mat-flat-button color="primary" (click)="register()">Register for webauthn</button>
-      <button class="test" mat-flat-button color="accent" (click)="assert()">Assert for webauthn</button>
-    </section>
-    <section>{{webauthnService.lastResult}}</section>
   </mat-card-content>
 </mat-card>

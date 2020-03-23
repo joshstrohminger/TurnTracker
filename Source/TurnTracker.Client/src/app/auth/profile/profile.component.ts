@@ -14,6 +14,7 @@ import { Device } from '../models/Device';
 import { DateTime } from 'luxon';
 import { finalize } from 'rxjs/operators';
 import { Session } from '../models/Session';
+import { WebauthnService } from '../webauthn.service';
 
 @Component({
   selector: 'app-profile',
@@ -22,6 +23,8 @@ import { Session } from '../models/Session';
 })
 export class ProfileComponent implements OnInit {
 
+  registerForm: FormGroup;
+  registering = false;
   deleting: false;
   user: Profile;
   displayNameControl: FormControl;
@@ -39,12 +42,17 @@ export class ProfileComponent implements OnInit {
     return Role;
   }
 
+  public get deviceAlreadyRegistered() {
+    return this.devices && !!this.devices.find(d => d.current && d.id);
+  }
+
   constructor(
     private _authService: AuthService,
     private _messageService: MessageService,
     private _formBuilder: FormBuilder,
     private _http: HttpClient,
-    private _userService: UserService) { }
+    private _userService: UserService,
+    public webauthnService: WebauthnService) { }
 
   ngOnInit() {
     this._authService.getProfile().subscribe(
@@ -55,6 +63,10 @@ export class ProfileComponent implements OnInit {
         this._messageService.error('Failed to get profile', error);
       });
 
+      this.getDevices();
+  }
+
+  private getDevices() {
     this._http.get<Device[]>('session').subscribe(devices => {
       for (const device of devices) {
         device.createdDate = device.created ? DateTime.fromISO(device.created) : undefined;
@@ -65,7 +77,32 @@ export class ProfileComponent implements OnInit {
         }
       }
       this.devices = devices;
-    });
+      this.registerForm = this._formBuilder.group({
+        deviceName: ['', [Validators.required, TurnTrackerValidators.whitespace]]
+      });
+      this.recheckFormEnabled();
+    }, () => this.recheckFormEnabled());
+  }
+
+  private recheckFormEnabled() {
+    if (this.registerForm) {
+      if (!this.registering && !this.deviceAlreadyRegistered) {
+        this.registerForm.enable();
+      } else {
+        this.registerForm.disable();
+      }
+    }
+  }
+
+  registerDevice() {
+    this.registering = true;
+    this.recheckFormEnabled();
+
+    this.webauthnService.registerDevice$(this.registerForm.value.deviceName)
+    .pipe(finalize(() => this.registering = false))
+    .subscribe(
+      () => this.getDevices(),
+      () => this.recheckFormEnabled());
   }
 
   editDisplayName() {
@@ -190,7 +227,10 @@ export class ProfileComponent implements OnInit {
         } else {
           this.devices.splice(index, 1);
         }
-      }, error => this._messageService.error('Failed to delete device', error)
-    );
+        this.recheckFormEnabled();
+      }, error => {
+        this._messageService.error('Failed to delete device', error);
+        this.recheckFormEnabled();
+      });
   }
 }

@@ -88,9 +88,9 @@ export class WebauthnService {
     return thing;
   }
 
-  public registerDevice() {
+  public registerDevice$(deviceName: string) {
     this.lastResult = '';
-    this.createCredentials$().pipe(flatMap(creds => {
+    return this.createCredentials$().pipe(flatMap(creds => {
         console.log('created raw creds', creds);
         const response = creds.response as AuthenticatorAttestationResponse;
         const p = {
@@ -101,18 +101,20 @@ export class WebauthnService {
           response: {
               clientDataJSON: this.coerceToBase64Url(response.clientDataJSON),
               attestationObject: this.coerceToBase64Url(response.attestationObject)
-          }
+          },
+          deviceName: deviceName
         };
         console.log('sending creds', p);
         this.lastResult = JSON.stringify(p);
 
         return this._http.post('auth/CompleteDeviceRegistration', p);
-    })).subscribe(
+    }),
+    tap(
       () => this._messageService.success('Registered credentials'),
       error => {
         this._messageService.error('Failed to register credentials', error);
         this.lastResult += error;
-      });
+      }));
   }
 
   public assertDevice$() {

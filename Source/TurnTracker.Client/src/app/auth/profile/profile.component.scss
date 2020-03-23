@@ -41,3 +41,17 @@ button.action {
 #password-form > div:not(:first-child) {
   margin-bottom: 1em;
 }
+
+#register {
+  position: absolute;
+  top: 1em;
+  right: 1em;
+
+  button {
+    margin-left: 1em;
+  }
+}
+
+mat-chip.current {
+  margin-left: 1em;
+}

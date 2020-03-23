@@ -26,8 +26,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     public pushService: PushService,
     private _http: HttpClient,
     private _messageSevice: MessageService,
-    private _builder: FormBuilder,
-    public webauthnService: WebauthnService,
+    private _builder: FormBuilder
     ) { }
 
   ngOnInit() {
@@ -63,13 +62,5 @@ export class SettingsComponent implements OnInit, OnDestroy {
       () => this._messageSevice.success('Sent push notifications'),
       error => this._messageSevice.error('Failed to send push notifications', error)
     );
-  }
-
-  public register() {
-    this.webauthnService.registerDevice();
-  }
-
-  public assert() {
-    this.webauthnService.assertDevice$();
   }
 }

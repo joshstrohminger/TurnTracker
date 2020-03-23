@@ -42,9 +42,14 @@ namespace TurnTracker.Server.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<IActionResult> CompleteDeviceRegistration([FromBody] AuthenticatorAttestationRawResponse response)
+        public async Task<IActionResult> CompleteDeviceRegistration([FromBody] AuthenticatorAttestationNamedRawResponse response)
         {
-            var (_, isFailure, credential, error) = await _webAuthnService.MakeCredentialAsync(response, User.GetId(), User.GetLoginId(), Request.GetDeviceName());
+            if (string.IsNullOrWhiteSpace(response.DeviceName))
+            {
+                return BadRequest();
+            }
+
+            var (_, isFailure, credential, error) = await _webAuthnService.MakeCredentialAsync(response, User.GetId(), User.GetLoginId(), response.DeviceName);
 
             if (isFailure) return BadRequest(error);
 
