@@ -35,6 +35,18 @@ namespace TurnTracker.Server.Controllers
             return Json(_userService.GetAllSessionsByDevice(User.GetId(), User.GetLoginId()));
         }
 
+        [HttpDelete("[action]")]
+        public async Task<IActionResult> Web()
+        {
+            var result = await _userService.DeleteWebLogins(User.GetId(), User.GetLoginId());
+            if (result.IsFailure)
+            {
+                return StatusCode(500);
+            }
+
+            return Ok();
+        }
+
         [HttpDelete("{loginId}")]
         public async Task<IActionResult> DeleteSession(long loginId)
         {

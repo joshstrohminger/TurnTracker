@@ -159,6 +159,22 @@ namespace TurnTracker.Domain.Services
             }
         }
 
+        public async Task<Result> DeleteWebLogins(int userId, long loginId)
+        {
+            try
+            {
+                var logins = _db.Logins.Where(x => x.UserId == userId && x.Id != loginId && x.DeviceAuthorizationId == null);
+                _db.RemoveRange(logins);
+                await _db.SaveChangesAsync();
+                return Result.Success();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Failed to delete web logins", e);
+                return Result.Failure("Failed to delete web session");
+            }
+        }
+
         public async Task<Result> DeleteLogin(long loginId)
         {
             try
@@ -211,7 +227,8 @@ namespace TurnTracker.Domain.Services
                 return Result.Failure<string>("Invalid refresh key");
             }
 
-            login.ModifiedDate = DateTimeOffset.Now;
+            // mark entity as modified so the modified date will get updated
+            _db.Entry(login).State = EntityState.Modified;
             _db.SaveChanges();
 
             var accessKey = GenerateAccessToken(login.User, loginId);

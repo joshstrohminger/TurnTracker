@@ -25,5 +25,6 @@ namespace TurnTracker.Domain.Interfaces
         Task<Result> DeleteDevice(int deviceAuthorizationId);
         Task<Result> DeleteLogin(long loginId);
         IEnumerable<Device> GetAllSessionsByDevice(int userId, long loginId);
+        Task<Result> DeleteWebLogins(int userId, long loginId);
     }
 }

@@ -25,7 +25,7 @@ export class ProfileComponent implements OnInit {
 
   registerForm: FormGroup;
   registering = false;
-  deleting: false;
+  deleting = false;
   user: Profile;
   displayNameControl: FormControl;
   passwordForm: FormGroup;
@@ -44,6 +44,10 @@ export class ProfileComponent implements OnInit {
 
   public get deviceAlreadyRegistered() {
     return this.devices && !!this.devices.find(d => d.current && d.id);
+  }
+
+  public anySessionsToDelete(device: Device) {
+    return !!device.sessions.find(d => !d.current);
   }
 
   constructor(
@@ -99,10 +103,14 @@ export class ProfileComponent implements OnInit {
     this.recheckFormEnabled();
 
     this.webauthnService.registerDevice$(this.registerForm.value.deviceName)
-    .pipe(finalize(() => this.registering = false))
     .subscribe(
-      () => this.getDevices(),
-      () => this.recheckFormEnabled());
+      () => {
+        this.registering = false;
+        this.getDevices();
+      }, () => {
+        this.registering = false;
+        this.recheckFormEnabled();
+      });
   }
 
   editDisplayName() {
@@ -198,15 +206,23 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
+    this.deleting = true;
     this._http.delete(`session/${session.id}`)
       .pipe(finalize(() => this.deleting = false))
       .subscribe(() => {
         this._messageService.success('Deleted session');
-        const index = device.sessions.findIndex(s => s.id === session.id);
-        if (index < 0) {
+        const sessionsIndex = device.sessions.findIndex(s => s.id === session.id);
+        if (sessionsIndex < 0) {
           console.error('Failed to find session after deletion');
         } else {
-          device.sessions.splice(index, 1);
+          device.sessions.splice(sessionsIndex, 1);
+          if (device.sessions.length === 0 && !device.id) {
+            // remove the web device since it doesn't have any sessions
+            const deviceIndex = this.devices.findIndex(d => d.id === device.id);
+            if (deviceIndex >= 0) {
+              this.devices.splice(deviceIndex, 1);
+            }
+          }
         }
       }, error => this._messageService.error('Failed to delete session', error)
     );
@@ -217,6 +233,7 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
+    this.deleting = true;
     this._http.delete(`auth/device/${device.id}`)
       .pipe(finalize(() => this.deleting = false))
       .subscribe(() => {
@@ -232,5 +249,35 @@ export class ProfileComponent implements OnInit {
         this._messageService.error('Failed to delete device', error);
         this.recheckFormEnabled();
       });
+  }
+
+  deleteAllWebSessions() {
+    if (this.deleting) {
+      return;
+    }
+
+    const index = this.devices.findIndex(d => !d.id);
+    if (index < 0) {
+      this._messageService.error('Error deleting all web sessions');
+    }
+    const webDevice = this.devices[index];
+
+    if (!this.anySessionsToDelete(webDevice)) {
+      return;
+    }
+
+    this.deleting = true;
+    this._http.delete('session/web')
+    .pipe(finalize(() => this.deleting = false))
+    .subscribe(() => {
+      webDevice.sessions = webDevice.sessions.filter(x => x.current);
+      if (webDevice.sessions.length === 0) {
+        // remove the web device if it doesn't have any sessions
+        this.devices.splice(index, 1);
+      }
+      this._messageService.success('Deleted all web sessions');
+    }, error => {
+      this._messageService.error('Failed to delete all web sessions', error);
+    });
   }
 }

@@ -101,5 +101,11 @@ namespace TurnTracker.Domain.Services
                 .SingleOrDefault(x => x.Id == deviceAuthorizationId);
             return deviceAuthorization?.UserId == userId && deviceAuthorization.Logins.All(x => x.Id != loginId);
         }
+
+        public bool CanRegisterDevice(long loginId)
+        {
+            return _db.Logins.AsNoTracking()
+                .SingleOrDefault(x => x.Id == loginId)?.DeviceAuthorizationId == null;
+        }
     }
 }

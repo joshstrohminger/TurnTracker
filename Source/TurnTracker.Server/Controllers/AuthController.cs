@@ -34,6 +34,11 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public IActionResult StartDeviceRegistration()
         {
+            if (!_resourceAuthorizationService.CanRegisterDevice(User.GetLoginId()))
+            {
+                return BadRequest();
+            }
+
             var (_, isFailure, options, error) = _webAuthnService.MakeCredentialOptions(User.GetId(), User.GetUsername(), User.GetDisplayName(), User.GetLoginId());
 
             if (isFailure) return BadRequest(error);
@@ -71,7 +76,8 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> CompleteDeviceAssertion([FromBody] AnonymousAuthenticatorAssertionRawResponse response)
         {
-            var (_, isFailure, (user, accessToken, refreshToken), (unauthorized, errorMessage)) = await _webAuthnService.MakeAssertionAsync(response, Request.GetDeviceName(), User.TryGetId());
+            var (_, isFailure, (user, accessToken, refreshToken), (unauthorized, errorMessage)) =
+                await _webAuthnService.MakeAssertionAsync(response, Request.GetDeviceName(), User.TryGetId());
 
             if (!isFailure)
             {

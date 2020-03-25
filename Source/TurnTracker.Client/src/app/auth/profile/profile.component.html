@@ -100,7 +100,7 @@
   <mat-card *ngIf="devices">
     <mat-card-header>
       <mat-card-title>
-        Logins
+        Sessions
       </mat-card-title>
       <mat-card-subtitle>
         <form id="register" *ngIf="webauthnService.isAvailable$ | async" [formGroup]="registerForm" (submit)="registerDevice()" matTooltip="This device is already registered" [matTooltipDisabled]="!deviceAlreadyRegistered">
@@ -120,14 +120,17 @@
             <mat-icon mat-list-icon>devices</mat-icon>
             <div mat-line>{{device.name}}<mat-chip class="current" *ngIf="device.current" selected color="primary">Current</mat-chip></div>
             <div mat-line><span *ngIf="device.createdDate">Created {{device.createdDate | date: 'short'}},</span> Active {{device.updatedDate | date: 'short'}}</div>
-            <button mat-icon-button (click)="deleteDevice(device)" [disabled]="deleting" *ngIf="!device.current && device.id">
+            <button mat-icon-button (click)="deleteDevice(device)" [disabled]="deleting" *ngIf="!device.current && device.id" matTooltip="Delete device and associated sessions">
               <mat-icon>delete</mat-icon>
+            </button>
+            <button mat-icon-button (click)="deleteAllWebSessions()" [disabled]="deleting" *ngIf="!device.id && anySessionsToDelete(device)" matTooltip="Delete all web sessions">
+              <mat-icon>delete_sweep</mat-icon>
             </button>
           </mat-list-item>
           <mat-list-item class="session" *ngFor="let session of device.sessions">
             <div mat-line>{{session.name}}<mat-chip class="current" *ngIf="session.current" selected color="primary">Current</mat-chip></div>
             <div mat-line>Created {{session.createdDate | date: 'short'}}, Active {{session.updatedDate | date: 'short'}}</div>
-            <button mat-icon-button (click)="deleteSession(device, session)" [disabled]="deleting" *ngIf="!session.current">
+            <button mat-icon-button (click)="deleteSession(device, session)" [disabled]="deleting" *ngIf="!session.current" matTooltip="Delete session">
               <mat-icon>delete</mat-icon>
             </button>
           </mat-list-item>
