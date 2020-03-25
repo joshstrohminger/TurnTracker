@@ -32,6 +32,9 @@ namespace TurnTracker.Domain.Configuration
         public bool Seed { get; set; }
         public TimeSpan JwtClockSkew { get; set; }
         public PushNotificationSettings PushNotifications { get; set; }
+        public TimeSpan PrunePeriod { get; set; }
+        public TimeSpan ChallengeExpiration { get; set; }
+        public TimeSpan DeviceInactivityPeriod { get; set; }
 
         #endregion Properties
 

@@ -43,16 +43,24 @@
     <Compile Remove="Migrations\20191005180958_Init.Designer.cs" />
     <Compile Remove="Migrations\20191006071637_Init.cs" />
     <Compile Remove="Migrations\20191006071637_Init.Designer.cs" />
+    <Compile Remove="Migrations\20200315080340_AddDeviceToLoginRelationship.cs" />
+    <Compile Remove="Migrations\20200315080340_AddDeviceToLoginRelationship.Designer.cs" />
+    <Compile Remove="Migrations\20200316085245_AddDeviceNameColumns.cs" />
+    <Compile Remove="Migrations\20200316085245_AddDeviceNameColumns.Designer.cs" />
+    <Compile Remove="Migrations\20200318071235_AddRelationshipBetweenDeviceAndLogin.cs" />
+    <Compile Remove="Migrations\20200318071235_AddRelationshipBetweenDeviceAndLogin.Designer.cs" />
+    <Compile Remove="Migrations\20200322073839_AddRelationshipFromUserToDevice.cs" />
+    <Compile Remove="Migrations\20200322073839_AddRelationshipFromUserToDevice.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="9.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.1">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.1">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

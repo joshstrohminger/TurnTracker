@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using AutoMapper;
+using Fido2NetLib;
 using Lib.Net.Http.WebPush;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -44,8 +45,16 @@ namespace TurnTracker.Server
                 options.InputFormatters.Insert(0, new BoolBodyInputFormatter());
                 options.InputFormatters.Insert(0, new ByteBodyInputFormatter());
                 options.InputFormatters.Insert(0, new StringBodyInputFormatter());
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            })
+                // newtonsoft is necessary if we want to use the fido2 library since it relies heavily on it
+                .AddNewtonsoftJson()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddResponseCompression();
+            services.AddMemoryCache();
+
+            services.Configure<Fido2Configuration>(_configuration.GetSection("fido2"));
+            services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<Fido2Configuration>>().Value);
+            services.AddTransient<IFido2, Fido2>();
 
             var mapperConfig = new MapperConfiguration(cfg =>
             {
@@ -98,8 +107,10 @@ namespace TurnTracker.Server
             services.AddScoped<IPushSubscriptionService, PushSubscriptionService>();
             services.AddScoped<IPushNotificationService, PushNotificationService>();
             services.AddScoped<IPushNotificationActionService, PushNotificationActionService>();
+            services.AddScoped<IWebAuthnService, WebAuthnService>();
             services.AddHttpClient<PushServiceClient>();
             services.AddHostedService<ActivityStatusChecker>();
+            services.AddHostedService<Pruner>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

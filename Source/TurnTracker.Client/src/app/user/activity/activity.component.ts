@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { ActivityDetails } from '../models/ActivityDetails';
-import { switchMap } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Unit } from '../models/Unit';
 import { DateTime } from 'luxon';
 import { NewTurn } from '../models/NewTurn';
-import { MatDialog, MatTableDataSource } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
 import { MessageService } from 'src/app/services/message.service';
 import { TakeTurnDialog } from '../take-turn/take-turn.dialog';
 import { TakeTurnDialogConfig } from '../take-turn/TakeTurnDialogConfig';

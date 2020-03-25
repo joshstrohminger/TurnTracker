@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using TurnTracker.Data.Entities;
@@ -22,22 +24,46 @@ namespace TurnTracker.Data
         public DbSet<Setting> Settings { get; set; }
         public DbSet<NotificationSetting> NotificationSettings { get; set; }
         public DbSet<PushSubscriptionDevice> PushSubscriptionDevices { get; set; }
+        public DbSet<DeviceAuthorization> DeviceAuthorizations { get; set; }
+        public DbSet<Login> Logins { get; set; }
 
-        public override int SaveChanges()
+        private void UpdateDates()
         {
             var now = DateTimeOffset.Now;
             foreach (var entry in ChangeTracker.Entries()
                 .Where(entry => entry.Entity is Entity && (entry.State == EntityState.Added || entry.State == EntityState.Modified)))
             {
-                var entity = (Entity) entry.Entity;
+                var entity = (Entity)entry.Entity;
                 entity.ModifiedDate = now;
                 if (entry.State == EntityState.Added)
                 {
                     entity.CreatedDate = now;
                 }
             }
+        }
 
+        public override int SaveChanges()
+        {
+            UpdateDates();
             return base.SaveChanges();
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            UpdateDates();
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            UpdateDates();
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+        {
+            UpdateDates();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -78,6 +104,11 @@ namespace TurnTracker.Data
             modelBuilder.Entity<PushSubscriptionDevice>()
                 .Property(x => x.Keys)
                 .HasJsonConversion();
+
+            modelBuilder.Entity<Login>()
+                .HasOne(login => login.DeviceAuthorization)
+                .WithMany(device => device.Logins)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -10,5 +10,8 @@ namespace TurnTracker.Domain.Interfaces
         bool CanModifyTurn(int turnId, int userId);
         bool CanModifyActivity(int activityId, int userId);
         bool CanModifyParticipant(int participantId, int userId);
+        bool CanDeleteSession(long loginId, int userId);
+        bool CanDeleteDevice(int deviceAuthorizationId, int userId, long loginId);
+        bool CanRegisterDevice(long loginId);
     }
 }
