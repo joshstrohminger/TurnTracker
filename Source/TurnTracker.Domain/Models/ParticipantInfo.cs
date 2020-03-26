@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using TurnTracker.Data.Entities;
 
@@ -15,6 +16,7 @@ namespace TurnTracker.Domain.Models
         public List<NotificationInfo> NotificationSettings { get; }
         public bool? HasEmail { get; set; }
         public bool? HasMobileNumber { get; set; }
+        public TimeSpan? DismissTimeOfDay { get; set; }
 
         internal ParticipantInfo(TurnCount turnCount, int mostTurnsTaken, int turnOrder, bool includeNotificationSettings) : this(turnCount.Participant, includeNotificationSettings)
         {
@@ -42,6 +44,7 @@ namespace TurnTracker.Domain.Models
                 NotificationSettings = p.NotificationSettings.Select(x => new NotificationInfo(x)).ToList();
                 HasEmail = p.User.Email != null;
                 HasMobileNumber = p.User.MobileNumber != null;
+                DismissTimeOfDay = p.DismissUntilTimeOfDay;
             }
         }
     }

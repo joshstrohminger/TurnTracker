@@ -37,6 +37,20 @@
     <mat-expansion-panel-header>
       <mat-panel-title>Notifications</mat-panel-title>
     </mat-expansion-panel-header>
+    <div *ngIf="dismissTimeOfDayControl">
+      <mat-form-field>
+        <mat-label>Dismiss Until Time of Day</mat-label>
+        <input matInput type="time" [formControl]="dismissTimeOfDayControl">
+      </mat-form-field>
+      <ng-container *ngIf="dismissTimeOfDayControl.value !== originalDismissTimeofDay">
+        <button mat-icon-button [disabled]="dismissTimeOfDayControl.invalid || dismissTimeOfDayControl.disabled" class="action" type="submit" (click)="saveDismissTimeOfDay()" matTooltip="Save" color="primary">
+          <mat-icon>save</mat-icon>
+        </button>
+        <button mat-icon-button [disabled]="dismissTimeOfDayControl.disabled" class="action" matTooltip="Cancel and reset" (click)="resetDismissTimeOfDay()">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </ng-container>
+    </div>
     <table mat-table [dataSource]="notifications" id="notifications">
       <ng-container matColumnDef="type">
         <th mat-header-cell *matHeaderCellDef>Type</th>
