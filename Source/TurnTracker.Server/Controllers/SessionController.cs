@@ -53,7 +53,7 @@ namespace TurnTracker.Server.Controllers
             var currentLoginId = User.GetLoginId();
             if (currentLoginId == loginId || !_resourceAuthorizationService.CanDeleteSession(loginId, User.GetId()))
             {
-                return Unauthorized();
+                return Forbid();
             }
 
             var result = await _userService.DeleteLogin(loginId);

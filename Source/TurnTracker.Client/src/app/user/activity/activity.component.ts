@@ -19,6 +19,8 @@ import { TurnDetailsDialogConfig } from '../turn-details/TurnDetailsDialogConfig
 import { VerificationStatus } from '../models/Participant';
 import { UserService } from 'src/app/services/user.service';
 import { DeleteActivityDialog } from '../delete-activity/delete-activity.dialog';
+import { FormBuilder, Validators, FormControl } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-activity',
@@ -31,10 +33,13 @@ export class ActivityComponent implements OnInit {
   private _notificationPipe = new NotificationPipe();
   private _includeTurns = false;
   private _hasTurns = false;
+  private _myParticipantId: number;
+  public originalDismissTimeofDay: string;
   public get hasTurns() {
     return this._hasTurns;
   }
 
+  dismissTimeOfDayControl: FormControl;
   activity: ActivityDetails;
   busy = false;
   names = new Map<number, string>();
@@ -56,7 +61,8 @@ export class ActivityComponent implements OnInit {
     private _http: HttpClient,
     private _userService: UserService,
     private _messageService: MessageService,
-    private _dialog: MatDialog) {
+    private _dialog: MatDialog,
+    private _formBuilder: FormBuilder) {
       this.turns.filterPredicate = (turn: Turn, filter: string) => {
         return turn && (!filter || !turn.isDisabled);
       };
@@ -254,6 +260,8 @@ export class ActivityComponent implements OnInit {
 
       // replace the current notification settings with those included here
       if (participant.userId === this.myUserId) {
+        this._myParticipantId = participant.id;
+
         for (const note of this.notifications) {
           note.participantId = participant.id;
         }
@@ -269,6 +277,11 @@ export class ActivityComponent implements OnInit {
             }
           }
         }
+
+        if (participant.dismissTimeOfDay) {
+          this.originalDismissTimeofDay = participant.dismissTimeOfDay.split(':').slice(0, 2).join(':');
+          this.dismissTimeOfDayControl = this._formBuilder.control(this.originalDismissTimeofDay, Validators.required); ;
+        }
       }
     }
 
@@ -283,6 +296,24 @@ export class ActivityComponent implements OnInit {
     this.activity = activity;
     this.turns.data = turns || [];
     this._hasTurns = !!turns;
+  }
+
+  resetDismissTimeOfDay() {
+    this.dismissTimeOfDayControl.setValue(this.originalDismissTimeofDay);
+  }
+
+  saveDismissTimeOfDay() {
+    const time = this.dismissTimeOfDayControl.value;
+    if (this.dismissTimeOfDayControl.disabled || this.dismissTimeOfDayControl.invalid || time === this.originalDismissTimeofDay) {
+      return;
+    }
+
+    this.dismissTimeOfDayControl.disable();
+    this._http.put(`notification/${encodeURIComponent(this._myParticipantId)}/dismissTimeOfDay/${encodeURIComponent(time)}`, null).pipe(
+      finalize(() => this.dismissTimeOfDayControl.enable())
+    ).subscribe(
+      () => this.originalDismissTimeofDay = time,
+      error => this._messageService.error('Failed to save time', error));
   }
 
   saveNotificationSetting(note: NotificationSetting) {

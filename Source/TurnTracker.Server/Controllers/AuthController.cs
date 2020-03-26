@@ -36,7 +36,7 @@ namespace TurnTracker.Server.Controllers
         {
             if (!_resourceAuthorizationService.CanRegisterDevice(User.GetLoginId()))
             {
-                return BadRequest();
+                return Forbid();
             }
 
             var (_, isFailure, options, error) = _webAuthnService.MakeCredentialOptions(User.GetId(), User.GetUsername(), User.GetDisplayName(), User.GetLoginId());
@@ -97,7 +97,7 @@ namespace TurnTracker.Server.Controllers
         {
             if (!_resourceAuthorizationService.CanDeleteDevice(deviceAuthorizationId, User.GetId(), User.GetLoginId()))
             {
-                return Unauthorized();
+                return Forbid();
             }
 
             var result = await _userService.DeleteDevice(deviceAuthorizationId);

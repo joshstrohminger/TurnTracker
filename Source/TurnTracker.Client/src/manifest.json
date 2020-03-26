@@ -1,8 +1,8 @@
 {
   "name": "Turn Tracker",
   "short_name": "Turns",
-  "theme_color": "#009688",
-  "background_color": "#2E3032",
+  "theme_color": "#2196F3",
+  "background_color": "#303030",
   "display": "standalone",
   "lang": "en-US",
   "scope": "/",
