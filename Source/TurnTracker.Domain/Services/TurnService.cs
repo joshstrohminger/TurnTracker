@@ -190,12 +190,17 @@ namespace TurnTracker.Domain.Services
                     return ValidityError.ForInvalidObject<int>("invalid ID");
                 }
 
+                var userIds = activity.Participants.Select(p => p.Id).Append(ownerId).ToHashSet();
+
                 var add = false;
                 Activity activityToUpdate;
                 if (activity.Id == 0)
                 {
                     add = true;
-                    activityToUpdate = new Activity();
+                    activityToUpdate = new Activity
+                    {
+                        Participants = userIds.Select(CreateNewParticipant).ToList()
+                    };
                 }
                 else
                 {
@@ -209,6 +214,15 @@ namespace TurnTracker.Domain.Services
                     {
                         return ValidityError.ForInvalidObject<int>("activity is disabled");
                     }
+
+                    // remove any participants that should no longer be there
+                    activityToUpdate.Participants.RemoveAll(x => !userIds.Contains(x.UserId));
+
+                    // remove any existing participants from the list so we're left with only new participants
+                    userIds.ExceptWith(activityToUpdate.Participants.Select(x => x.UserId));
+
+                    // add new participants
+                    activityToUpdate.Participants.AddRange(userIds.Select(CreateNewParticipant));
                 }
 
                 activityToUpdate.OwnerId = ownerId;
@@ -217,8 +231,6 @@ namespace TurnTracker.Domain.Services
                 activityToUpdate.PeriodUnit = activity.PeriodUnit;
                 activityToUpdate.Period = period;
                 activityToUpdate.TakeTurns = activity.TakeTurns;
-                activityToUpdate.Participants = activity.Participants.Select(p => p.Id).Append(ownerId).Distinct()
-                    .Select(id => new Participant {UserId = id}).ToList();
 
                 if (add)
                 {
@@ -238,6 +250,15 @@ namespace TurnTracker.Domain.Services
                 var message = $"Failed to save activity '{activity?.Id}'";
                 _logger.LogError(e, message);
                 return ValidityError.ForInvalidObject<int>(message);
+            }
+
+            Participant CreateNewParticipant(int userId)
+            {
+                return new Participant
+                {
+                    UserId = userId,
+                    DismissUntilTimeOfDay = _appSettings.Value.PushNotifications.DefaultDismissTime
+                };
             }
         }
 
