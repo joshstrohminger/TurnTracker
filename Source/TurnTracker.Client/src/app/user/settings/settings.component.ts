@@ -8,6 +8,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { takeUntil, debounceTime, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { ImmediateErrorStateMatcher } from 'src/app/validators/ImmediateErrorStateMatcher';
+import { WebauthnService } from 'src/app/auth/webauthn.service';
 
 @Component({
   selector: 'app-settings',

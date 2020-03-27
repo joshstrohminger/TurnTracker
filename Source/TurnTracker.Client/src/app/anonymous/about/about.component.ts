@@ -9,14 +9,16 @@ import { DateTime } from 'luxon';
 })
 export class AboutComponent implements OnInit {
 
-  public env = environment;
+  public buildDate: string;
+  public version = environment.version;
+  public appName = environment.appName;
 
   constructor() {
     try {
-      const localBuildDate = DateTime.fromHTTP(this.env.buildDate);
-      this.env.buildDate = localBuildDate.toLocaleString(DateTime.DATETIME_FULL);
+      const localBuildDate = DateTime.fromHTTP(environment.buildDate);
+      this.buildDate = localBuildDate.toLocaleString(DateTime.DATETIME_FULL);
     } catch (error) {
-      console.error('Failed to parse build date from HTTP: ' + this.env.buildDate, error);
+      console.error('Failed to parse build date from HTTP: ' + environment.buildDate, error);
     }
   }
 

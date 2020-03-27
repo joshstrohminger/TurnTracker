@@ -15,12 +15,10 @@ namespace TurnTracker.Server.Utilities
         public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
             var request = context.HttpContext.Request;
-            using (var reader = new StreamReader(request.Body))
-            {
-                var content = await reader.ReadToEndAsync();
-                byte.TryParse(content, out var result);
-                return await InputFormatterResult.SuccessAsync(result);
-            }
+            using var reader = new StreamReader(request.Body);
+            var content = await reader.ReadToEndAsync();
+            byte.TryParse(content, out var result);
+            return await InputFormatterResult.SuccessAsync(result);
         }
 
         protected override bool CanReadType(Type type) => type == typeof(byte);

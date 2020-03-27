@@ -17,4 +17,5 @@ export class Participant {
     public notificationSettings: NotificationSetting[];
     public mobileNumberVerification: VerificationStatus;
     public emailVerification: VerificationStatus;
+    public dismissTimeOfDay: string;
 }

@@ -4,3 +4,10 @@
   min-height: 1em;
   line-height: 1em;
 }
+
+mat-card-actions button {
+  width: 100%;
+  &:not(:first-of-type) {
+    margin-top: 0.5em;
+  }
+}

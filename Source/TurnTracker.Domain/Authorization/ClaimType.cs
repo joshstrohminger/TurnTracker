@@ -5,6 +5,7 @@
         TokenType,
         RefreshKey,
         NotificationAction,
-        ParticipantId
+        ParticipantId,
+        LoginId
     }
 }

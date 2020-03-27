@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 using TurnTracker.Data;
@@ -28,6 +29,26 @@ namespace TurnTracker.Domain.Services
         #endregion
 
         #region Public
+
+        public async Task<Result> UpdateDismissTimeOfDayAsync(int participantId, TimeSpan time)
+        {
+            try
+            {
+                var participant = await _db.Participants.FindAsync(participantId);
+                if(participant != null)
+                {
+                    participant.DismissUntilTimeOfDay = time;
+                    await _db.SaveChangesAsync();
+                }
+
+                return Result.Success();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Failed to update dismiss time of day to {time} for participant {participantId}");
+                return Result.Failure(e.Message);
+            }
+        }
 
         public Result UpdateNotificationSetting(int participantId, NotificationType type, bool sms, bool email, bool push)
         {

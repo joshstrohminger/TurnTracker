@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Data.Entities;
@@ -39,6 +40,19 @@ namespace TurnTracker.Server.Controllers
 
             var result = _notificationService.UpdateNotificationSetting(setting.ParticipantId, setting.Type,
                 setting.Sms, setting.Email, setting.Push);
+            if (result.IsSuccess) return Ok();
+
+            return StatusCode(500);
+        }
+
+        [HttpPut("{participantId}/[action]/{dismissTimeOfDay}")]
+        public async Task<IActionResult> DismissTimeOfDay(int participantId, string dismissTimeOfDay)
+        {
+            if (!_resourceAuthorizationService.CanModifyParticipant(participantId, User.GetId())) return Forbid();
+
+            if (!TimeSpan.TryParse(dismissTimeOfDay, out var time)) return BadRequest();
+
+            var result = await _notificationService.UpdateDismissTimeOfDayAsync(participantId, time);
             if (result.IsSuccess) return Ok();
 
             return StatusCode(500);

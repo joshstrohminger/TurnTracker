@@ -77,22 +77,24 @@ export class EditActivityComponent implements OnInit {
       this.editForm = this._formBuilder.group({
         name: [activity.name, [Validators.required, TurnTrackerValidators.whitespace]],
         takeTurns: [activity.takeTurns],
-        periodCount: [{
-          value: activity.periodCount,
-          disabled: isNaN(activity.periodUnit)},
-        [Validators.required, Validators.pattern('[0-9]+'), Validators.min(this.countMin), Validators.max(this.countMax)]],
+        periodCount: [activity.periodCount,
+          [Validators.required, Validators.pattern('[0-9]+'), Validators.min(this.countMin), Validators.max(this.countMax)]],
         periodUnit: [activity.periodUnit],
         searchControl: ['']
       });
       this.participants = activity.participants;
-      this.editForm.controls.periodUnit.valueChanges.subscribe(value => {
+
+      const periodUnitChangeHandler = value => {
         const control = this.editForm.controls.periodCount;
         if (isNaN(value)) {
           control.disable();
         } else {
           control.enable();
         }
-      });
+      };
+      periodUnitChangeHandler(this.editForm.value.periodunit);
+      this.editForm.controls.periodUnit.valueChanges.subscribe(periodUnitChangeHandler);
+
       this.editForm.controls.searchControl.valueChanges.pipe(
         map(x => {
           if (x && x.id) {
