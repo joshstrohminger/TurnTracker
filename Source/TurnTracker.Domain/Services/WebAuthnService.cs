@@ -60,7 +60,6 @@ namespace TurnTracker.Domain.Services
 
             var authenticatorSelection = new AuthenticatorSelection
             {
-                RequireResidentKey = true,
                 UserVerification = UserVerificationRequirement.Required
             };
 
