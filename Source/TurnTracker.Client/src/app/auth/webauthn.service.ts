@@ -112,7 +112,7 @@ export class WebauthnService {
     tap(
       () => this._messageService.success('Registered credentials'),
       error => {
-        this._messageService.error('Failed to register credentials', error);
+        this._messageService.error(`Failed to register credentials: ${error.ToString()}`, error);
         this.lastResult += error;
       }));
   }
