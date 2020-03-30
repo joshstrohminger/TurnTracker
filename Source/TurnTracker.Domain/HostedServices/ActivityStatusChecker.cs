@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -38,8 +39,7 @@ namespace TurnTracker.Domain.HostedServices
                 var now = DateTimeOffset.Now;
                 var db = services.GetRequiredService<TurnContext>();
                 var expiredActivities = await db.Activities
-                    .Where(activity => !activity.IsDisabled && activity.CurrentTurnUserId.HasValue &&
-                                       activity.Due.HasValue && activity.Due <= now)
+                    .Where(activity => !activity.IsDisabled && activity.Due.HasValue && activity.Due <= now)
                     .Include(activity => activity.CurrentTurnUser)
                     .Include(activity => activity.Participants)
                     .ThenInclude(participant => participant.NotificationSettings)
@@ -49,8 +49,8 @@ namespace TurnTracker.Domain.HostedServices
                         .Any(participant => participant.NotificationSettings
                             .Any(x => x.Push && x.NextCheck <= now &&
                                       (x.Type == NotificationType.OverdueAnybody ||
-                                       x.Type == NotificationType.OverdueMine &&
-                                       participant.UserId == activity.CurrentTurnUserId))))
+                                       (x.Type == NotificationType.OverdueMine &&
+                                       participant.UserId == activity.CurrentTurnUserId)))))
                     .ToListAsync(stoppingToken);
 
                 _logger.LogInformation($"Found {expiredActivities.Count} expired activities with push notification participants");
@@ -67,13 +67,18 @@ namespace TurnTracker.Domain.HostedServices
                         stoppingToken.ThrowIfCancellationRequested();
                         // ReSharper disable once PossibleInvalidOperationException
                         var overdueTime = (now - activity.Due.Value).ToDisplayString();
-                        var notMyTurnMessage =
-                            $"It's {activity.CurrentTurnUser.DisplayName}'s turn. Overdue by {overdueTime}.";
+                        var notMyTurnBuilder = new StringBuilder();
+                        if (activity.CurrentTurnUser != null)
+                        {
+                            notMyTurnBuilder.AppendFormattable($"It's {activity.CurrentTurnUser.DisplayName}'s turn. ");
+                        }
+                        notMyTurnBuilder.AppendFormattable($"Overdue by {overdueTime}.");
+                        var notMyTurnMessage = notMyTurnBuilder.ToString();
                         var viewUrl = $"{serverUrl}/activity/{activity.Id}";
                         foreach (var participant in activity.Participants)
                         {
                             // ReSharper disable once PossibleInvalidOperationException
-                            var myTurn = activity.CurrentTurnUserId.Value == participant.UserId;
+                            var myTurn = activity.CurrentTurnUserId == participant.UserId;
 
                             var pushNotificationSetting = participant.NotificationSettings.FirstOrDefault(x =>
                                 x.Push && x.NextCheck <= now && x.Type == NotificationType.OverdueAnybody ||
