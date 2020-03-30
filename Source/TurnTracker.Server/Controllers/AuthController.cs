@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using Fido2NetLib;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -63,9 +62,9 @@ namespace TurnTracker.Server.Controllers
 
         [AllowAnonymous]
         [HttpPost("[action]")]
-        public IActionResult StartDeviceAssertion()
+        public IActionResult StartDeviceAssertion([FromBody] string username)
         {
-            var (_, isFailure, options, error) = _webAuthnService.MakeAssertionOptions(User.TryGetId());
+            var (_, isFailure, options, error) = _webAuthnService.MakeAssertionOptions(username);
 
             if (isFailure) return BadRequest(error);
 
@@ -77,7 +76,7 @@ namespace TurnTracker.Server.Controllers
         public async Task<IActionResult> CompleteDeviceAssertion([FromBody] AnonymousAuthenticatorAssertionRawResponse response)
         {
             var (_, isFailure, (user, accessToken, refreshToken), (unauthorized, errorMessage)) =
-                await _webAuthnService.MakeAssertionAsync(response, Request.GetDeviceName(), User.TryGetId());
+                await _webAuthnService.MakeAssertionAsync(response, Request.GetDeviceName());
 
             if (!isFailure)
             {

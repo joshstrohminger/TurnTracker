@@ -124,20 +124,21 @@ namespace TurnTracker.Domain.Services
             }
         }
 
-        public Result<AssertionOptions> MakeAssertionOptions(int? userId = null)
+        public Result<AssertionOptions> MakeAssertionOptions(string username)
         {
             try
             {
                 List<DeviceAuthorization> existingAuthorizations = null;
-                if (userId.HasValue)
+                if (username != null)
                 {
                     // 1. Get registered credentials from database
-                    existingAuthorizations = _db.DeviceAuthorizations
+                    existingAuthorizations = _db.Users
                         .AsNoTracking()
-                        .Where(x => x.UserId == userId)
-                        .ToList();
+                        .Include(x => x.DeviceAuthorizations)
+                        .SingleOrDefault(x => x.Username == username)
+                        ?.DeviceAuthorizations;
 
-                    if (existingAuthorizations.Count == 0)
+                    if (existingAuthorizations is null || existingAuthorizations.Count == 0)
                     {
                         return Result.Failure<AssertionOptions>("No existing credentials");
                     }
@@ -162,17 +163,10 @@ namespace TurnTracker.Domain.Services
                 );
 
                 // 3. Temporarily store options
-                if (userId.HasValue)
-                {
-                    _cache.Set($"AssertionOptions:{userId}", options, _options.Value.ChallengeExpiration);
-                }
-                else
-                {
-                    var anonymousOptions = _mapper.Map<AnonymousAssertionOptions>(options);
-                    anonymousOptions.RequestId = Guid.NewGuid().ToString();
-                    _cache.Set($"AssertionOptions:{anonymousOptions.RequestId}", options, _options.Value.ChallengeExpiration);
-                    options = anonymousOptions;
-                }
+                var anonymousOptions = _mapper.Map<AnonymousAssertionOptions>(options);
+                anonymousOptions.RequestId = Guid.NewGuid().ToString();
+                _cache.Set($"AssertionOptions:{anonymousOptions.RequestId}", options, _options.Value.ChallengeExpiration);
+                options = anonymousOptions;
 
                 // 4. Return options to client
                 return Result.Success(options);
@@ -180,30 +174,23 @@ namespace TurnTracker.Domain.Services
 
             catch (Exception e)
             {
-                _logger.LogError(e, $"Failed to make assertion options for user {userId}");
+                _logger.LogError(e, $"Failed to make assertion options for user {username}");
                 return Result.Failure<AssertionOptions>("Error starting assertion");
             }
         }
 
-        public async Task<Result<(User user, string accessToken, string refreshToken),(bool unauthorized, string message)>> MakeAssertionAsync(AnonymousAuthenticatorAssertionRawResponse clientResponse, string deviceName, int? userId = null)
+        public async Task<Result<(User user, string accessToken, string refreshToken),(bool unauthorized, string message)>>
+            MakeAssertionAsync(AnonymousAuthenticatorAssertionRawResponse clientResponse, string deviceName)
         {
             try
             {
                 // 1. Get the assertion options we sent the client
-                string cacheKey = null;
-                if (userId.HasValue)
+                if (string.IsNullOrWhiteSpace(clientResponse.RequestId))
                 {
-                    cacheKey = $"AssertionOptions:{userId}";
-                }
-                if (!string.IsNullOrWhiteSpace(clientResponse.RequestId))
-                {
-                    cacheKey = $"AssertionOptions:{clientResponse.RequestId}";
-                }
-                else if(!userId.HasValue)
-                {
-                    _logger.LogError("Attempted to make assertion without user id or request id");
+                    _logger.LogError("Attempted to make assertion without request id");
                     return Result.Failure<(User, string, string), (bool, string)>((false,"No user id or request id provided"));
                 }
+                var cacheKey = $"AssertionOptions:{clientResponse.RequestId}";
 
                 if (!_cache.TryGetValue(cacheKey, out AssertionOptions options))
                 {
@@ -221,7 +208,7 @@ namespace TurnTracker.Domain.Services
 
                 if (authorization is null)
                 {
-                    _logger.LogError($"Failed to find credentials for user '{userId}'");
+                    _logger.LogError("Failed to find credentials");
                     return Result.Failure<(User, string, string), (bool, string)>((true,"No credentials found"));
                 }
 
@@ -236,7 +223,7 @@ namespace TurnTracker.Domain.Services
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Failed to make assertion for user '{userId}'");
+                _logger.LogError(e, "Failed to make assertion for user");
                 return Result.Failure<(User, string, string), (bool, string)>((false,"Error making assertion"));
             }
         }

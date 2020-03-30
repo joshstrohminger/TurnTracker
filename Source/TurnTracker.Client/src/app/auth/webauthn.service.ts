@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { from, Observable, EMPTY } from 'rxjs';
+import { from, Observable, EMPTY, of, throwError } from 'rxjs';
 import { share, map, flatMap, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from '../services/message.service';
@@ -13,13 +13,24 @@ import { AuthenticatedUser } from './models/AuthenticatedUser';
 export class WebauthnService {
   private readonly timeout = 60000;
   private readonly publicKeyType = 'public-key';
+  private readonly usernameKey = 'username-required';
 
   private _isAvailable$ = from(PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()).pipe(share());
   public get isAvailable$() {
     return this._isAvailable$;
   }
 
-  public lastResult: string;
+  public get usernameRequired() {
+    return !!localStorage.getItem(this.usernameKey);
+  }
+
+  public set usernameRequired(required: boolean) {
+    if (required) {
+      localStorage.setItem(this.usernameKey, 'required');
+    } else {
+      localStorage.removeItem(this.usernameKey);
+    }
+  }
 
   constructor(private _http: HttpClient, private _messageService: MessageService, private _authService: AuthService) {
   }
@@ -89,7 +100,6 @@ export class WebauthnService {
   }
 
   public registerDevice$(deviceName: string) {
-    this.lastResult = '';
     return this.createCredentials$().pipe(flatMap(creds => {
         console.log('created raw creds', creds);
         const response = creds.response as AuthenticatorAttestationResponse;
@@ -105,46 +115,66 @@ export class WebauthnService {
           deviceName: deviceName
         };
         console.log('sending creds', p);
-        this.lastResult = JSON.stringify(p);
 
         return this._http.post('auth/CompleteDeviceRegistration', p);
     }),
     tap(
       () => this._messageService.success('Registered credentials'),
-      error => {
-        this._messageService.error(`Failed to register credentials: ${error.ToString()}`, error);
-        this.lastResult += error;
-      }));
+      error => this._messageService.error(`Failed to register credentials: ${error.ToString()}`, error)));
   }
 
-  public assertDevice$() {
-    this.lastResult = '';
-    return this.getCredentials$().pipe(flatMap(x => {
-      const response = x.credential.response as AuthenticatorAssertionResponse;
-      console.log('assertion result before modding', x.credential);
-      const r = {
-          id: x.credential.id,
-          rawId: this.coerceToBase64Url(x.credential.rawId),
-          type: x.credential.type,
-          extensions: x.credential.getClientExtensionResults(),
-          response: {
-              authenticatorData: this.coerceToBase64Url(response.authenticatorData),
-              clientDataJson: this.coerceToBase64Url(response.clientDataJSON),
-              signature: this.coerceToBase64Url(response.signature)
-          },
-          requestId: x.requestId
-      };
-      console.log('sending assertion', r);
-      this.lastResult = JSON.stringify(r);
+  public assertDevice$(username: string): Observable<AuthenticatedUser> {
+    if (this.usernameRequired && !!username) {
+      const message = 'This device requires a username to login';
+      this._messageService.error(message);
+      return throwError(new Error(message));
+    }
 
-      return this._http.post<AuthenticatedUser>('auth/CompleteDeviceAssertion', r);
-    }), tap(user => {
+    let requestId: string;
+    let allowCredentials: PublicKeyCredentialDescriptor[];
+
+    return this._http.post('auth/StartDeviceAssertion', username).pipe(
+      flatMap((options: AnonymousPublicKeyCredentialRequestOptions) => {
+        console.log('assertion options before mod', options);
+        options.challenge = this.coerceToArrayBuffer(options.challenge);
+        options.allowCredentials.forEach(listItem => listItem.id = this.coerceToArrayBuffer(listItem.id));
+        console.log('assertion options after mod', options);
+        requestId = options.requestId;
+        allowCredentials = options.allowCredentials;
+        return from(navigator.credentials.get({publicKey: options}));
+      }),
+      map(credential => this.convertCredential(credential, 'get')),
+      flatMap(credential => {
+        const response = credential.response as AuthenticatorAssertionResponse;
+        console.log('assertion result before modding', credential);
+        const r = {
+            id: credential.id,
+            rawId: this.coerceToBase64Url(credential.rawId),
+            type: credential.type,
+            extensions: credential.getClientExtensionResults(),
+            response: {
+                authenticatorData: this.coerceToBase64Url(response.authenticatorData),
+                clientDataJson: this.coerceToBase64Url(response.clientDataJSON),
+                signature: this.coerceToBase64Url(response.signature)
+            },
+            requestId: requestId
+        };
+        console.log('sending assertion', r);
+
+        return this._http.post<AuthenticatedUser>('auth/CompleteDeviceAssertion', r);
+      }),
+      tap(user => {
         console.log('asserted device');
         this._authService.saveAuthenticatedUser(user);
       },
       error => {
-        this.lastResult += error;
-        this._messageService.error('Device Assertion Failed', error);
+        if (!allowCredentials.length && /empty.*allowCredentials.*not supported/i.test(error.message)) {
+          // username is required for this device but one wasn't provided, require username in the future
+          this.usernameRequired = true;
+          this._messageService.error('This device requires a username to login', error);
+        } else {
+          this._messageService.error(`Device Assertion Failed: ${error.ToString()}`, error);
+        }
       }));
   }
 
@@ -179,29 +209,6 @@ export class WebauthnService {
         return from(navigator.credentials.create({ publicKey: options }));
       }),
       map((credential: Credential) => this.convertCredential(credential, 'create')));
-  }
-
-  private getCredentials$(): Observable<{credential: PublicKeyCredential, requestId: string}> {
-    return this._http.post('auth/StartDeviceAssertion', null).pipe(
-      flatMap((options: AnonymousPublicKeyCredentialRequestOptions) => {
-        console.log('assertion options before mod', options);
-        options.challenge = this.coerceToArrayBuffer(options.challenge);
-        options.allowCredentials.forEach(listItem => listItem.id = this.coerceToArrayBuffer(listItem.id));
-        console.log('assertion options after mod', options);
-        return from(navigator.credentials.get({publicKey: options}))
-          .pipe(map(credential => {
-            return {
-              credential,
-              requestId: options.requestId
-            };
-          }));
-      }),
-      map(x => {
-        return {
-          credential: this.convertCredential(x.credential, 'get'),
-          requestId: x.requestId
-        };
-      }));
   }
 
   private async getCredentialsById(credentialId: string, challenge: string): Promise<PublicKeyCredential> {
