@@ -124,7 +124,7 @@ export class WebauthnService {
   }
 
   public assertDevice$(username: string): Observable<AuthenticatedUser> {
-    if (this.usernameRequired && !!username) {
+    if (this.usernameRequired && !username) {
       const message = 'This device requires a username to login';
       this._messageService.error(message);
       return throwError(new Error(message));
