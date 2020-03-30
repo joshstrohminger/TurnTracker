@@ -61,7 +61,7 @@ export class LoginComponent implements OnInit {
   deviceLogin() {
     this.error = null;
     this.showSpinner();
-    this.webauthn.assertDevice$().subscribe(
+    this.webauthn.assertDevice$(this.loginForm.value.username).subscribe(
       () => this.stopSpinner(),
       () => this.stopSpinner());
   }
