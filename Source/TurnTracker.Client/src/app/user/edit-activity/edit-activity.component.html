@@ -16,7 +16,7 @@
     <mat-form-field>
       <mat-label>Unit</mat-label>
       <mat-select formControlName="periodUnit">
-        <mat-option>Non-periodic</mat-option>
+        <mat-option [value]="defaultUnit">{{defaultUnit}}</mat-option>
         <mat-option *ngFor="let unit of unitValues" [value]="unit">{{units[unit]}}</mat-option>
       </mat-select>
     </mat-form-field>

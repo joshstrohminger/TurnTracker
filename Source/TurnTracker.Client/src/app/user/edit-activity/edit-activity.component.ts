@@ -27,11 +27,15 @@ export class EditActivityComponent implements OnInit {
   public unitValues = Object.keys(Unit).map(x => parseInt(x, 10)).filter(x => !isNaN(<any>x));
   public units = Unit;
   private countDigits = 3;
+  public readonly defaultUnit = 'Non-Periodic';
   public readonly countMin = 1;
   public isLoading = false;
   public availableUsers: User[] = [];
   public participants: User[] = [];
   readonly countMax = parseInt('9'.repeat(this.countDigits), 10);
+  public get hasUnitDefined() {
+    return this.editForm && !isNaN(this.editForm.value.periodUnit);
+  }
 
   constructor(
     private _http: HttpClient,
@@ -55,7 +59,7 @@ export class EditActivityComponent implements OnInit {
         isDisabled: false,
         name: '',
         periodCount: null,
-        periodUnit: null,
+        periodUnit: this.defaultUnit as any,
         takeTurns: true,
         participants: [<User>{
           id: this.myId,
@@ -79,7 +83,7 @@ export class EditActivityComponent implements OnInit {
         takeTurns: [activity.takeTurns],
         periodCount: [activity.periodCount,
           [Validators.required, Validators.pattern('[0-9]+'), Validators.min(this.countMin), Validators.max(this.countMax)]],
-        periodUnit: [activity.periodUnit],
+        periodUnit: [activity.periodUnit === null ? this.defaultUnit : activity.periodUnit],
         searchControl: ['']
       });
       this.participants = activity.participants;
@@ -92,7 +96,8 @@ export class EditActivityComponent implements OnInit {
           control.enable();
         }
       };
-      periodUnitChangeHandler(this.editForm.value.periodunit);
+
+      periodUnitChangeHandler(this.editForm.value.periodUnit);
       this.editForm.controls.periodUnit.valueChanges.subscribe(periodUnitChangeHandler);
 
       this.editForm.controls.searchControl.valueChanges.pipe(
@@ -174,7 +179,7 @@ export class EditActivityComponent implements OnInit {
       id: this._activityId,
       name: this.editForm.value.name,
       periodCount: this.editForm.value.periodCount,
-      periodUnit: this.editForm.value.periodUnit,
+      periodUnit: Number(this.editForm.value.periodUnit),
       takeTurns: this.editForm.value.takeTurns,
       participants: this.participants
     }).subscribe(activity => {
