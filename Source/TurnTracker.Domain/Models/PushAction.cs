@@ -44,7 +44,7 @@ namespace TurnTracker.Domain.Models
                     break;
                 case ActionType.Post:
                     notification.Data[$"post-{Action}"] = Url;
-                    notification.Data["token"] = AdditionalData;
+                    notification.Data[$"token-{Action}"] = AdditionalData;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
