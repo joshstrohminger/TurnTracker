@@ -1,10 +1,12 @@
 notification.close();
 
+yield;
+
 var postUrl = notification.data['post-' + action];
 if (postUrl) {
   console.log(`NotificationIntercept found post url: ${postUrl}`);
   var headers = new Headers();
-  headers.set('Authorization', 'Bearer ' + notification.data.token);
+  headers.set('Authorization', 'Bearer ' + notification.data['token-' + action]);
   headers.set('Content-Type', 'application/json');
   var body = JSON.stringify({when: new Date().toString()});
   var req = new Request(postUrl, {method: 'POST', headers: headers, body: body});
