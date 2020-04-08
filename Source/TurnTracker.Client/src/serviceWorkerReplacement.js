@@ -1,5 +1,7 @@
 notification.close();
 
+yield;
+
 var postUrl = notification.data['post-' + action];
 if (postUrl) {
   console.log(`NotificationIntercept found post url: ${postUrl}`);
