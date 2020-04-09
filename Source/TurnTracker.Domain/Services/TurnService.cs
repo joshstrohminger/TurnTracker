@@ -357,7 +357,7 @@ namespace TurnTracker.Domain.Services
 
                 var myTurnMessage = myTurnBuilder.ToString();
                 var otherTurnMessage = otherTurnBuilder.ToString();
-                var url = $"{_appSettings.Value.PushNotifications.ServerUrl}/api/activity/{activityId}";
+                var url = $"{_appSettings.Value.PushNotifications.ServerUrl}/activity/{activityId}";
 
                 foreach (var notificationSettingGroup in activity.Participants.SelectMany(x => x.NotificationSettings).GroupBy(x => x.Type))
                 {
