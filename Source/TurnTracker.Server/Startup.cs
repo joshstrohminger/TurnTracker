@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
 using AutoMapper;
+using CSharpFunctionalExtensions;
 using Fido2NetLib;
+using JetBrains.Annotations;
 using Lib.Net.Http.WebPush;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -100,6 +102,11 @@ namespace TurnTracker.Server
                     };
                 });
 
+            services.AddSpaStaticFiles(config =>
+            {
+                config.RootPath = "wwwroot";
+            });
+
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITurnService, TurnService>();
             services.AddScoped<INotificationService, NotificationService>();
@@ -114,6 +121,7 @@ namespace TurnTracker.Server
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        [UsedImplicitly]
         public void Configure(IApplicationBuilder app, IOptions<AppSettings> appSettings, ILogger<Startup> logger)
         {
             using (var serviceScope = app.ApplicationServices
@@ -123,18 +131,18 @@ namespace TurnTracker.Server
                 using var context = serviceScope.ServiceProvider.GetService<TurnContext>();
                 context.Database.Migrate();
 
-                var userResult = serviceScope.ServiceProvider.GetRequiredService<IUserService>().EnsureDefaultUsers();
-                if (userResult.IsFailure)
+                var (_, defaultUsersFailed, defaultUsersError) = serviceScope.ServiceProvider.GetRequiredService<IUserService>().EnsureDefaultUsers();
+                if (defaultUsersFailed)
                 {
-                    throw new Exception($"Failed to ensure default users: {userResult.Error}");
+                    throw new Exception($"Failed to ensure default users: {defaultUsersError}");
                 }
 
                 if (appSettings.Value.Seed)
                 {
-                    var result = serviceScope.ServiceProvider.GetRequiredService<ITurnService>().EnsureSeedActivities();
-                    if (result.IsFailure)
+                    var (_, seedActivitiesFailed, seedActivitiesError) = serviceScope.ServiceProvider.GetRequiredService<ITurnService>().EnsureSeedActivities();
+                    if (seedActivitiesFailed)
                     {
-                        throw new Exception($"Failed to seed activities: {result.Error}");
+                        throw new Exception($"Failed to seed activities: {seedActivitiesError}");
                     }
                 }
             }
@@ -149,18 +157,22 @@ namespace TurnTracker.Server
                 app.UseHttpsRedirection();
             }
 
-            //app.UseCors(x => x
-            //    .AllowAnyOrigin()
-            //    .AllowAnyMethod()
-            //    .AllowAnyHeader()
-            //    .AllowCredentials());
             app.UseResponseCompression();
+
+            // rewrite / to /index.html
             app.UseDefaultFiles();
-            app.UseStaticFiles();
+
+            // serve static files for the SPA
+            app.UseSpaStaticFiles();
+
+            // use auth and mvc
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
+
+            // serve the default spa page if nothing else consumes the request
+            app.UseSpa(spa => {});
 
             logger.LogInformation($"Started version '{AppHelper.Version}'");
         }
