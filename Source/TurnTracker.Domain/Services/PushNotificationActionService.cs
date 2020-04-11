@@ -71,7 +71,7 @@ namespace TurnTracker.Domain.Services
             if (participant.Activity.Due <= now)
             {
                 var nextCheck = dismiss
-                    ? clientTime.Date.AddDays(clientTime.TimeOfDay >= participant.DismissUntilTimeOfDay ? 1 : 0).Add(participant.DismissUntilTimeOfDay)
+                    ? new DateTimeOffset(clientTime.Date.AddDays(clientTime.TimeOfDay >= participant.DismissUntilTimeOfDay ? 1 : 0).Add(participant.DismissUntilTimeOfDay), clientTime.Offset)
                     : clientTime.AddHours(Math.Max((byte) 1, participant.User.SnoozeHours));
                 _logger.LogInformation($"Fulfilling {typeName} notification for user {participant.UserId}, participant {participant.Id}, activity {participant.ActivityId}, from {clientTime} to {nextCheck}");
                 
