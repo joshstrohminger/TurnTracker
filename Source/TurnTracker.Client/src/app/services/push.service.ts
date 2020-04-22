@@ -117,6 +117,5 @@ export class PushService {
         break;
     }
     console.log(`not opening url: ${url}`);
-    //window.open(url);
   }
 }

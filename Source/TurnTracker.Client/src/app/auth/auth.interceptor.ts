@@ -9,7 +9,7 @@ import {
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
-import { map, mergeMap, catchError, filter, share, tap, finalize } from 'rxjs/operators';
+import { map, mergeMap, catchError, filter, share, finalize } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { AuthError } from './models/AuthError';
 import { MessageService } from '../services/message.service';

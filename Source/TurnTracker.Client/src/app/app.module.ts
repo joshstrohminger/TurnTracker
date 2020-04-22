@@ -48,6 +48,7 @@ import { TurnDetailsDialog } from './user/turn-details/turn-details.dialog';
 import { EditActivityComponent } from './user/edit-activity/edit-activity.component';
 import { DeleteActivityDialog } from './user/delete-activity/delete-activity.dialog';
 import { SettingsComponent } from './user/settings/settings.component';
+import { ActivityInterceptor } from './anonymous/activity.interceptor';
 
 const routes: Routes = [
   { path: 'activity/add', component: EditActivityComponent, canActivate: [AuthGuard] },
@@ -121,6 +122,7 @@ const routes: Routes = [
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ActivityInterceptor, multi: true },
     { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 5000 }}
   ],
   bootstrap: [
