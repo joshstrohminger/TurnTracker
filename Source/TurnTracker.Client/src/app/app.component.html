@@ -19,6 +19,7 @@
         <div>
           <a mat-button [routerLink]="'/'">{{appName}}</a>
         </div>
+        <mat-spinner *ngIf="activityService.isActive$ | async" color="accent" diameter="34"></mat-spinner>
         <div fxFlex fxLayout fxLayoutAlign="end">
           <a mat-button [routerLink]="'/profile'" *ngIf="authService.isLoggedIn">{{userService.currentUser.displayName}}</a>
           <a mat-button [routerLink]="'/login'" *ngIf="!authService.isLoggedIn">Login</a>
