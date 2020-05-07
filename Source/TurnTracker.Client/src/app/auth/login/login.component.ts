@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Credentials } from './Credentials';
 import { AuthService } from '../auth.service';
@@ -6,16 +6,19 @@ import { Overlay } from '@angular/cdk/overlay';
 import { MatSpinner } from '@angular/material/progress-spinner';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { WebauthnService } from '../webauthn.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
 
   public loginForm: FormGroup;
   public error: string = null;
+  private destroyed = new Subject<void>();
   private overlayRef = this.overlay.create({
     positionStrategy: this.overlay.position()
      .global()
@@ -23,11 +26,27 @@ export class LoginComponent implements OnInit {
      .centerVertically()
     });
 
-  constructor(formBuilder: FormBuilder, private authService: AuthService, private overlay: Overlay, public webauthn: WebauthnService) {
-    this.loginForm = formBuilder.group(new Credentials());
+  constructor(formBuilder: FormBuilder, public authService: AuthService, private overlay: Overlay, public webauthn: WebauthnService) {
+    this.loginForm = formBuilder.group(this.getDefaultFormValues());
+  }
+
+  private getDefaultFormValues() {
+    const save = this.authService.shouldSaveUsername;
+    return {
+      username: save ? (this.authService.savedUsername || '') : '',
+      password: '',
+      save: save
+    };
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed.complete();
   }
 
   ngOnInit() {
+    this.loginForm.controls.save.valueChanges
+      .pipe(takeUntil(this.destroyed))
+      .subscribe(save => this.authService.shouldSaveUsername = save);
   }
 
   showSpinner() {
@@ -47,7 +66,7 @@ export class LoginComponent implements OnInit {
         if (errorMessage) {
           this.error = errorMessage;
         } else {
-          this.loginForm.reset();
+          this.loginForm.reset(this.getDefaultFormValues());
         }
       }, error => {
         console.error('failed to login', error);

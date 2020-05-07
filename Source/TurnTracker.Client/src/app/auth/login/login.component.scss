@@ -5,9 +5,19 @@
   line-height: 1em;
 }
 
-mat-card-actions button {
+mat-form-field {
   width: 100%;
-  &:not(:first-of-type) {
+}
+
+mat-card-actions {
+  button {
+    width: 100%;
+    &:not(:first-of-type) {
+      margin-top: 0.5em;
+    }
+  }
+  mat-checkbox {
+    display: block;
     margin-top: 0.5em;
   }
 }
