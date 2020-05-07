@@ -11,7 +11,8 @@ export class ActivityService {
     return this._isActive.asObservable();
   }
   public set isActive(value: boolean) {
-    this._isActive.next(value);
+    // ensure updates occur in a separate change detection cycle
+    setTimeout(() => this._isActive.next(value), 0);
   }
 
   constructor() { }
