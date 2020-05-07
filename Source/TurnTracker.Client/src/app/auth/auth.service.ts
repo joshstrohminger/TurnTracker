@@ -21,9 +21,34 @@ export class AuthService {
   private readonly _accessTokenExpirationKey = 'access-token-exp';
   private readonly _refreshTokenKey = 'refresh-token';
   private readonly _refreshTokenExpirationKey = 'refresh-token-exp';
+  private readonly _savedUsernameKey = 'saved-username';
+  private readonly _shouldSaveUsernameKey = 'should-save-username';
 
   public get isLoggedIn() {
     return !!this._userService.currentUser;
+  }
+
+  public get shouldSaveUsername() {
+    return !!localStorage.getItem(this._shouldSaveUsernameKey);
+  }
+
+  public set shouldSaveUsername(shouldSave: boolean) {
+    if (shouldSave) {
+      console.log('setting should save');
+      localStorage.setItem(this._shouldSaveUsernameKey, 'true');
+    } else {
+      console.log('clearing should save');
+      localStorage.removeItem(this._shouldSaveUsernameKey);
+      localStorage.removeItem(this._savedUsernameKey);
+    }
+  }
+
+  public get savedUsername() {
+    return localStorage.getItem(this._savedUsernameKey);
+  }
+
+  public set savedUsername(username: string) {
+    localStorage.setItem(this._savedUsernameKey, username);
   }
 
   constructor(
@@ -79,6 +104,9 @@ export class AuthService {
 
   saveAuthenticatedUser(user: AuthenticatedUser) {
     this.saveUser(user);
+    if (this.shouldSaveUsername) {
+      this.savedUsername = user.username;
+    }
     this._route.queryParams.pipe(first()).subscribe(params => {
       const url = params && params.redirectUrl || '/activities';
       this._router.navigateByUrl(url);

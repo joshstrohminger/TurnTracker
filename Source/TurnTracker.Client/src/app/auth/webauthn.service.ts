@@ -13,7 +13,7 @@ import { AuthenticatedUser } from './models/AuthenticatedUser';
 export class WebauthnService {
   private readonly timeout = 60000;
   private readonly publicKeyType = 'public-key';
-  private readonly usernameKey = 'username-required';
+  private readonly usernameRequiredKey = 'username-required';
 
   private _isAvailable$ = from(PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()).pipe(share());
   public get isAvailable$() {
@@ -21,14 +21,14 @@ export class WebauthnService {
   }
 
   public get usernameRequired() {
-    return !!localStorage.getItem(this.usernameKey);
+    return !!localStorage.getItem(this.usernameRequiredKey);
   }
 
   public set usernameRequired(required: boolean) {
     if (required) {
-      localStorage.setItem(this.usernameKey, 'required');
+      localStorage.setItem(this.usernameRequiredKey, 'required');
     } else {
-      localStorage.removeItem(this.usernameKey);
+      localStorage.removeItem(this.usernameRequiredKey);
     }
   }
 
