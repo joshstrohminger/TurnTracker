@@ -21,7 +21,10 @@ export class ActivitiesComponent implements OnInit {
   anyDisabledActivities = false;
   me: IUser;
 
-  @ViewChild(MatSort, {static: true}) sort: MatSort;
+  @ViewChild(MatSort, {static: false}) set sort(sort: MatSort) {
+      this.activities.sort = sort;
+  }
+
   displayedColumns: string[] = ['name', 'currentTurnUserDisplayName', 'dueDate'];
 
   constructor(
@@ -53,12 +56,22 @@ export class ActivitiesComponent implements OnInit {
             }
           }
         }
-        this.activities.sort = this.sort;
         this.anyDisabledActivities = activities.reduce((isDisabled, activity) => isDisabled || activity.isDisabled, false);
         if (this.me && this.me.showDisabledActivities && this.anyDisabledActivities) {
           this.filterActivities(true);
         }
-        this.activities.data = activities || [];
+        this.activities.data = activities.sort((a, b) => {
+          if (a.due !== b.due) {
+            // activies that are due go first
+            return a.due ? -1 : 1;
+          }
+          if (!!a.dueDate && !!b.dueDate) {
+            // older due dates go first
+            return a.dueDate.diff(b.dueDate).milliseconds;
+          }
+          // alphabetic fallback
+          return a.name.localeCompare(b.name);
+        }) || [];
       }, error => {
         if (!(error instanceof AuthError)) {
           this._messageService.error('Failed to get activities', error);
