@@ -173,10 +173,10 @@ namespace TurnTracker.Domain.Services
                             period = TimeSpan.FromDays(7 * activity.PeriodCount.Value);
                             break;
                         case Unit.Month:
-                            period = TimeSpan.FromDays(365.25 / 12);
+                            period = TimeSpan.FromDays(365.25 / 12 * activity.PeriodCount.Value);
                             break;
                         case Unit.Year:
-                            period = TimeSpan.FromDays(365.25);
+                            period = TimeSpan.FromDays(365.25 * activity.PeriodCount.Value);
                             break;
                         default:
                             return ValidityError.ForInvalidObject<int>("invalid period unit");
