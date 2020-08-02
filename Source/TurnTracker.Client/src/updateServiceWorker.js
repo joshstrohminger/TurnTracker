@@ -1,3 +1,7 @@
+/**
+ * Attempt to replace a part of the service worker by matching the first and last lines of the replacement chunk to the original file.
+ */
+
 const fs = require('fs');
 const path = require('path');
 
