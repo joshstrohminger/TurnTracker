@@ -50,7 +50,22 @@ namespace TurnTracker.Domain.Services
                 return Result.Failure("Couldn't find device subscription");
             }
 
-            var notification = BuildMessage(title, message, _serverUrl, title);
+            var notification = BuildMessage(title, message, _serverUrl, groupKey);
+
+            await _client.RequestPushMessageDeliveryAsync(sub, notification.ToPushMessage());
+
+            return Result.Success();
+        }
+
+        public async Task<Result> SendCloseToOneDeviceAsync(int userId, string endpoint, string groupKey)
+        {
+            var sub = _pushService.Get(userId, endpoint);
+            if (sub is null)
+            {
+                return Result.Failure("Couldn't find device subscription");
+            }
+
+            var notification = BuildCloseMessage(groupKey);
 
             await _client.RequestPushMessageDeliveryAsync(sub, notification.ToPushMessage());
 
@@ -69,6 +84,22 @@ namespace TurnTracker.Domain.Services
             foreach (var sub in _pushService.Get(userId))
             {
                 _logger.LogInformation($"sending push message to {sub.Endpoint}");
+
+                _client.RequestPushMessageDeliveryAsync(sub, notification.ToPushMessage());
+                sent = true;
+            }
+
+            return Result.SuccessIf(sent, "No subscriptions found");
+        }
+
+        public Result SendCloseToAllDevices(int userId, string groupKey)
+        {
+            var sent = false;
+            var notification = BuildCloseMessage(groupKey);
+
+            foreach (var sub in _pushService.Get(userId))
+            {
+                _logger.LogInformation($"sending close push message to {sub.Endpoint}");
 
                 _client.RequestPushMessageDeliveryAsync(sub, notification.ToPushMessage());
                 sent = true;
@@ -96,6 +127,19 @@ namespace TurnTracker.Domain.Services
                 Data = new Dictionary<string, object>
                 {
                     ["url"] = url
+                }
+            };
+        }
+
+        private static AngularPushNotification BuildCloseMessage(string groupKey)
+        {
+            return new AngularPushNotification
+            {
+                Title = "Closing",
+                Tag = groupKey,
+                Data = new Dictionary<string, object>
+                {
+                    ["close"] = true
                 }
             };
         }
