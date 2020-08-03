@@ -359,37 +359,45 @@ namespace TurnTracker.Domain.Services
                 var otherTurnMessage = otherTurnBuilder.ToString();
                 var url = $"{_appSettings.Value.PushNotifications.ServerUrl}/activity/{activityId}";
 
-                foreach (var notificationSettingGroup in activity.Participants.SelectMany(x => x.NotificationSettings).GroupBy(x => x.Type))
+                foreach (var participant in activity.Participants)
                 {
-                    switch (notificationSettingGroup.Key)
+                    var pushNotified = false;
+
+                    foreach (var setting in participant.NotificationSettings.OrderBy(x => x.Type))
                     {
-                        case NotificationType.OverdueAnybody:
-                        case NotificationType.OverdueMine:
-                            foreach (var notificationSetting in notificationSettingGroup)
-                            {
-                                notificationSetting.NextCheck = now;
-                            }
-                            break;
-                        case NotificationType.TurnTakenAnybody:
-                            foreach (var notificationSetting in notificationSettingGroup.Where(n => n.Push))
-                            {
-                                _pushNotificationService.SendToAllDevices(notificationSetting.Participant.UserId,
-                                    activity.Name, otherTurnMessage, url, activityId.ToString());
-                            }
-                            break;
-                        case NotificationType.TurnTakenMine:
-                            if (details.CurrentTurnUserId.HasValue)
-                            {
-                                foreach (var notificationSetting in notificationSettingGroup
-                                    .Where(p => p.Push && p.Participant.UserId == details.CurrentTurnUserId))
+                        switch (setting.Type)
+                        {
+                            case NotificationType.OverdueAnybody:
+                            case NotificationType.OverdueMine:
+                                setting.NextCheck = now;
+
+                                // send a close push notification in case they still have a previous notification open but not if they
+                                // already got a notification about a turn being taken because that will replace any existing notification
+                                if (setting.Push && !pushNotified)
                                 {
-                                    _pushNotificationService.SendToAllDevices(notificationSetting.Participant.UserId,
-                                        activity.Name, myTurnMessage, url, activityId.ToString());
+                                    _pushNotificationService.SendCloseToAllDevices(setting.Participant.UserId, activityId.ToString());
+                                    pushNotified = true;
                                 }
-                            }
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(NotificationSetting.Type));
+                                break;
+                            case NotificationType.TurnTakenAnybody:
+                                if(setting.Push)
+                                {
+                                    _pushNotificationService.SendToAllDevices(setting.Participant.UserId,
+                                        activity.Name, otherTurnMessage, url, activityId.ToString());
+                                    pushNotified = true;
+                                }
+                                break;
+                            case NotificationType.TurnTakenMine:
+                                if (details.CurrentTurnUserId.HasValue && setting.Push && setting.Participant.UserId == details.CurrentTurnUserId)
+                                {
+                                    _pushNotificationService.SendToAllDevices(setting.Participant.UserId,
+                                        activity.Name, myTurnMessage, url, activityId.ToString());
+                                    pushNotified = true;
+                                }
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
                     }
                 }
 

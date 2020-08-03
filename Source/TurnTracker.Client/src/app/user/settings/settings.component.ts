@@ -56,6 +56,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
     );
   }
 
+  public closeTestMessageToThisDevice() {
+    this._http.post('notification/push/test/closeone', this.pushService.Sub)
+    .subscribe(
+      () => this._messageSevice.success('Sent close push notification'),
+      error => this._messageSevice.error('Failed to send close push notification', error)
+    );
+  }
+
   public sendTestMessageToAllDevices() {
     this._http.post('notification/push/test/all', null)
     .subscribe(

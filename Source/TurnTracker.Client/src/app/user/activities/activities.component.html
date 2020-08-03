@@ -15,7 +15,7 @@
   <ng-container matColumnDef="dueDate">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Due</th>
     <td mat-cell *matCellDef="let activity">
-      <app-timer [due]="activity.dueDate" [maxTimeComponents]="2"></app-timer>
+      <app-timer *ngIf="activity.dueDate" [due]="activity.dueDate" [maxTimeComponents]="2"></app-timer>
     </td>
   </ng-container>
 

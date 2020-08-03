@@ -66,12 +66,30 @@ namespace TurnTracker.Server.Controllers
 
             return StatusCode(500);
         }
-        
+
+        [HttpPost("test/closeone")]
+        public async Task<IActionResult> TestOneClose([FromBody] PushSubscription sub)
+        {
+            var result = await _pushNotificationService.SendCloseToOneDeviceAsync(User.GetId(), sub.Endpoint, "test one");
+            if (result.IsSuccess) return Ok();
+
+            return StatusCode(500);
+        }
+
         [HttpPost("test/all")]
         public IActionResult TestAll()
         {
             var result = _pushNotificationService.SendToAllDevices(User.GetId(), "Test Notification",
                 "This is a test notification to all your devices", _options.Value.PushNotifications.ServerUrl, "test all");
+            if (result.IsSuccess) return Ok();
+
+            return StatusCode(500);
+        }
+
+        [HttpDelete("test/all")]
+        public IActionResult TestAllClose()
+        {
+            var result = _pushNotificationService.SendCloseToAllDevices(User.GetId(), "test all");
             if (result.IsSuccess) return Ok();
 
             return StatusCode(500);
