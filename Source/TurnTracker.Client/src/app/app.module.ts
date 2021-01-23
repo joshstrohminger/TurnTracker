@@ -81,12 +81,6 @@ const routes: Routes = [
     DeleteActivityDialog,
     SettingsComponent
   ],
-  entryComponents: [
-    MatSpinner,
-    TakeTurnDialog,
-    TurnDetailsDialog,
-    DeleteActivityDialog
-  ],
   imports: [
     BrowserAnimationsModule,
     BrowserModule,
