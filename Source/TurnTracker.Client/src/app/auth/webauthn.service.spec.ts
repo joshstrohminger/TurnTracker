@@ -6,7 +6,7 @@ describe('WebauthnService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: WebauthnService = TestBed.get(WebauthnService);
+    const service: WebauthnService = TestBed.inject(WebauthnService);
     expect(service).toBeTruthy();
   });
 });
