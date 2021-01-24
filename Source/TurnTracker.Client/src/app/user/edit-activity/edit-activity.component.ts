@@ -184,7 +184,7 @@ export class EditActivityComponent implements OnInit {
       participants: this.participants
     }).subscribe(activity => {
       this._messageService.success(`Saved activity`);
-      this._router.navigate(['/activity', activity.id]);
+      this._router.navigate(['/activity', activity.id], {replaceUrl: true});
     },
     error => {
       const message = error && error.error || 'unknown';

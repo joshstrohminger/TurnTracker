@@ -123,7 +123,7 @@ export class ActivityComponent implements OnInit {
           () => {
             this.busy = false;
             this._messageService.success(`Deleted activity ${this.activity.name}`);
-            this._router.navigateByUrl('/activities');
+            this._router.navigateByUrl('/activities', {replaceUrl: true});
           }, error => {
             this.busy = false;
             if (error instanceof HttpErrorResponse && error.status === 403) {

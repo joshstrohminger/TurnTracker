@@ -106,7 +106,7 @@ export class AuthService {
     }
     this._route.queryParams.pipe(first()).subscribe(params => {
       const url = params && params.redirectUrl || '/activities';
-      this._router.navigateByUrl(url);
+      this._router.navigateByUrl(url, {replaceUrl: true});
     });
   }
 
