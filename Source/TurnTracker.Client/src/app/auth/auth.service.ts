@@ -79,7 +79,7 @@ export class AuthService {
   }
 
   loginRedirect(url?: string) {
-    this._router.navigate(['login'], {queryParams: url ? { redirectUrl: url } : {}} )
+    this._router.navigate(['/login'], {queryParams: url ? { redirectUrl: url } : {}} )
   }
 
   login(credentials: Credentials): Observable<string> {
