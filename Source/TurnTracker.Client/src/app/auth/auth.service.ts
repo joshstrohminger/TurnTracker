@@ -79,10 +79,7 @@ export class AuthService {
   }
 
   loginRedirect(url?: string) {
-    const options = {
-      queryParams: url ? { redirectUrl: url } : {}
-    };
-    this._router.navigateByUrl('/login', options);
+    this._router.navigate(['/login'], {queryParams: url ? { redirectUrl: url } : {}} )
   }
 
   login(credentials: Credentials): Observable<string> {
@@ -109,7 +106,7 @@ export class AuthService {
     }
     this._route.queryParams.pipe(first()).subscribe(params => {
       const url = params && params.redirectUrl || '/activities';
-      this._router.navigateByUrl(url);
+      this._router.navigateByUrl(url, {replaceUrl: true});
     });
   }
 

@@ -16,7 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSpinner, MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -25,8 +25,8 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-  import { BrowserModule } from '@angular/platform-browser';
-  import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BrowserModule, Title } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Routes, RouterModule } from '@angular/router';
 import { ServiceWorkerModule } from '@angular/service-worker';
 
@@ -51,16 +51,16 @@ import { SettingsComponent } from './user/settings/settings.component';
 import { ActivityInterceptor } from './anonymous/activity.interceptor';
 
 const routes: Routes = [
-  { path: 'activity/add', component: EditActivityComponent, canActivate: [AuthGuard] },
-  { path: 'activity/:id/edit', component: EditActivityComponent, canActivate: [AuthGuard] },
-  { path: 'activity/:id', component: ActivityComponent, canActivate: [AuthGuard] },
+  { path: 'activity/add', component: EditActivityComponent, canActivate: [AuthGuard], data: {title: 'Add Activity'} },
+  { path: 'activity/:id/edit', component: EditActivityComponent, canActivate: [AuthGuard], data: {title: 'Edit Activity'} },
+  { path: 'activity/:id', component: ActivityComponent, canActivate: [AuthGuard], data: {title: 'Activity'} },
   { path: 'activities', component: ActivitiesComponent, canActivate: [AuthGuard] },
-  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
-  { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
-  { path: 'about', component: AboutComponent },
-  { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
+  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard], data: {title: 'Profile'} },
+  { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard], data: {title: 'Settings'} },
+  { path: 'about', component: AboutComponent, data: {title: 'About'} },
+  { path: 'login', component: LoginComponent, canActivate: [LoginGuard], data: {title: 'Login'} },
   { path: '', redirectTo: '/activities', pathMatch: 'full' },
-  { path: '**', component: NotFoundComponent }
+  { path: '**', component: NotFoundComponent, data: {title: 'Not Found'} }
 ];
 
 @NgModule({
@@ -80,12 +80,6 @@ const routes: Routes = [
     EditActivityComponent,
     DeleteActivityDialog,
     SettingsComponent
-  ],
-  entryComponents: [
-    MatSpinner,
-    TakeTurnDialog,
-    TurnDetailsDialog,
-    DeleteActivityDialog
   ],
   imports: [
     BrowserAnimationsModule,
@@ -121,6 +115,7 @@ const routes: Routes = [
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [
+    Title,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ActivityInterceptor, multi: true },
     { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 5000 }}
