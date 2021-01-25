@@ -26,5 +26,5 @@ To test out the PWA features you can simply access the app from https://localhos
 The service worker that angular provides for its built-in PWA support does not have the ability to customize how push notifications are handled, to reliably open the app, or to perform actions without opening the app. This is solved in a hacky way by simply replacing a chuck of the code in the service worker. This must be done after each build because the service worker gets rebuilt every time. The customized service work can now:
 
 1. View a particular page when clicking the notification or a particular action on the notification.
-1. Post to a provided URL without opening the app using using a provided bearer token for authentication. This is used for snoozing and dismissing push notifications. 
+1. Post to a provided URL without opening the app using a provided bearer token for authentication. This is used for snoozing and dismissing push notifications. 
 1. Get rid of the notification without opening the app.
