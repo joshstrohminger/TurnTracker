@@ -19,6 +19,10 @@ namespace TurnTracker.Domain
 
             CreateMap<Activity, EditableActivity>();
 
+            CreateMap<NotificationInfo, DefaultNotificationSetting>();
+
+            CreateMap<NotificationInfo, NotificationSetting>();
+
             CreateMap<PushSubscription, PushSubscriptionDevice>()
                 .ForMember(x => x.UserId, o => o.Ignore())
                 .ForMember(x => x.User, o => o.Ignore())

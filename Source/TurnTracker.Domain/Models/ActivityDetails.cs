@@ -21,6 +21,7 @@ namespace TurnTracker.Domain.Models
         public bool IsDisabled { get; }
         public List<TurnInfo> Turns { get; }
         public List<ParticipantInfo> Participants { get; }
+        
 
         public static ActivityDetails Calculate(Activity activity, int userId)
         {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Interfaces;
+using TurnTracker.Domain.Models;
 using TurnTracker.Server.Utilities;
 
 namespace TurnTracker.Server.Controllers
@@ -32,14 +33,13 @@ namespace TurnTracker.Server.Controllers
         #region Endpoints
 
         [HttpPost]
-        public IActionResult Save([FromBody] NotificationSetting setting)
+        public IActionResult Save([FromBody] NotificationInfo info)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            if (!_resourceAuthorizationService.CanModifyParticipant(setting.ParticipantId, User.GetId())) return Forbid();
+            if (!_resourceAuthorizationService.CanModifyParticipant(info.ParticipantId, User.GetId())) return Forbid();
 
-            var result = _notificationService.UpdateNotificationSetting(setting.ParticipantId, setting.Type,
-                setting.Sms, setting.Email, setting.Push);
+            var result = _notificationService.UpdateNotificationSetting(info);
             if (result.IsSuccess) return Ok();
 
             return StatusCode(500);

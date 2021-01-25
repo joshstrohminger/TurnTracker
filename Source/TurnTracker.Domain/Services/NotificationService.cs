@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Interfaces;
+using TurnTracker.Domain.Models;
 
 namespace TurnTracker.Domain.Services
 {
@@ -14,16 +16,18 @@ namespace TurnTracker.Domain.Services
         #region Fields
 
         private readonly TurnContext _db;
+        private readonly IMapper _mapper;
         private readonly ILogger<NotificationService> _logger;
 
         #endregion
 
         #region ctor
 
-        public NotificationService(TurnContext db, ILogger<NotificationService> logger)
+        public NotificationService(TurnContext db, ILogger<NotificationService> logger, IMapper mapper)
         {
             _db = db;
             _logger = logger;
+            _mapper = mapper;
         }
 
         #endregion
@@ -50,34 +54,27 @@ namespace TurnTracker.Domain.Services
             }
         }
 
-        public Result UpdateNotificationSetting(int participantId, NotificationType type, bool sms, bool email, bool push)
+        public Result UpdateNotificationSetting(NotificationInfo info)
         {
             try
             {
-                var setting = _db.NotificationSettings.SingleOrDefault(x => x.ParticipantId == participantId && x.Type == type);
+                var setting = _db.NotificationSettings.SingleOrDefault(x => x.ParticipantId == info.ParticipantId && x.Type == info.Type);
                 if (setting is null)
                 {
                     // only add a setting if one of the notification types is selected
-                    if (sms || email || push)
+                    if (info.Sms || info.Email || info.Push)
                     {
-                        setting = new NotificationSetting
-                        {
-                            ParticipantId = participantId,
-                            Type = type,
-                            Sms = sms,
-                            Email = email,
-                            Push = push
-                        };
+                        setting = _mapper.Map<NotificationSetting>(info);
+                        setting.Origin = NotificationOrigin.Participant;
                         _db.NotificationSettings.Add(setting);
                     }
                 }
                 else
                 {
-                    if (sms || email || push)
+                    if (info.Sms || info.Email || info.Push)
                     {
-                        setting.Sms = sms;
-                        setting.Email = email;
-                        setting.Push = push;
+                        _mapper.Map(info, setting);
+                        setting.Origin = NotificationOrigin.Participant;
                         _db.NotificationSettings.Update(setting);
                     }
                     else

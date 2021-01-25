@@ -18,5 +18,13 @@ namespace TurnTracker.Domain.Models
             Push = note.Push;
             ParticipantId = note.ParticipantId;
         }
+
+        public NotificationInfo(DefaultNotificationSetting note)
+        {
+            Type = note.Type;
+            Sms = note.Sms;
+            Email = note.Email;
+            Push = note.Push;
+        }
     }
 }
