@@ -19,7 +19,7 @@ To test out the PWA features you can simply access the app from https://localhos
 `npm run-script build` will:
 
 1. Update the build date by writing it to a file called _build.json_ to be used by the application's about page.
-1. Run the angular producation build.
+1. Run the angular production build.
 1. Modify the service worker which gets rebuilt each time angular is built.
 
 #### Service Worker
