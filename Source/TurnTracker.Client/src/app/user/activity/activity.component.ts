@@ -21,6 +21,7 @@ import { UserService } from 'src/app/services/user.service';
 import { DeleteActivityDialog } from '../delete-activity/delete-activity.dialog';
 import { FormBuilder, Validators, FormControl } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
+import { TitleContentService } from 'src/app/services/title-content.service';
 
 @Component({
   selector: 'app-activity',
@@ -62,7 +63,8 @@ export class ActivityComponent implements OnInit {
     private _userService: UserService,
     private _messageService: MessageService,
     private _dialog: MatDialog,
-    private _formBuilder: FormBuilder) {
+    private _formBuilder: FormBuilder,
+    private titleContentService: TitleContentService) {
       this.turns.filterPredicate = (turn: Turn, filter: string) => {
         return turn && (!filter || !turn.isDisabled);
       };
@@ -255,6 +257,8 @@ export class ActivityComponent implements OnInit {
   }
 
   private updateActivity(activity: ActivityDetails) {
+    this.titleContentService.setTitleContent(activity.name);
+
     for (const participant of activity.participants) {
       this.names.set(participant.userId, participant.name);
 

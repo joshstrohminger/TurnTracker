@@ -12,6 +12,7 @@ import { debounceTime, tap, switchMap, finalize, filter, map } from 'rxjs/operat
 import { of, Observable } from 'rxjs';
 import { ActivityDetails } from '../models/ActivityDetails';
 import { TurnTrackerValidators } from 'src/app/validators/TurnTrackerValidators';
+import { TitleContentService } from 'src/app/services/title-content.service';
 
 @Component({
   selector: 'app-edit-activity',
@@ -43,6 +44,7 @@ export class EditActivityComponent implements OnInit {
     private _router: Router,
     private _formBuilder: FormBuilder,
     private _messageService: MessageService,
+    private titleContentService: TitleContentService,
     userService: UserService) {
       const me = userService.currentUser;
       this.myId = me.id;
@@ -78,6 +80,8 @@ export class EditActivityComponent implements OnInit {
     }
 
     getActivity.subscribe(activity => {
+      this.titleContentService.setTitleContent(activity.name);
+
       this.editForm = this._formBuilder.group({
         name: [activity.name, [Validators.required, TurnTrackerValidators.whitespace]],
         takeTurns: [activity.takeTurns],
