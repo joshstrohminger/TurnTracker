@@ -1,4 +1,6 @@
 # TurnTracker
+![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/joshstrohminger/TurnTracker)
+![GitHub last commit](https://img.shields.io/github/last-commit/joshstrohminger/TurnTracker)
 ![Azure Deploy](https://github.com/joshstrohminger/TurnTracker/workflows/Azure%20Deploy/badge.svg?branch=master)
 ![Dev Build](https://github.com/joshstrohminger/TurnTracker/workflows/Dev%20Build/badge.svg?branch=develop)
 
