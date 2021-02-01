@@ -363,13 +363,13 @@ namespace TurnTracker.Domain.Services
         public ActivityDetails GetActivityDetailsShallow(int activityId, int userId)
         {
             var activity = GetActivity(activityId, true, false);
-            return activity is null ? null : ActivityDetails.Populate(activity, userId);
+            return activity is null ? null : ActivityDetails.Populate(activity, userId, _mapper);
         }
 
         public ActivityDetails GetActivityDetails(int activityId, int userId)
         {
             var activity = GetActivity(activityId, true, true);
-            return activity is null ? null : ActivityDetails.Calculate(activity, userId);
+            return activity is null ? null : ActivityDetails.Calculate(activity, userId, _mapper);
         }
 
         public Result<ActivityDetails> TakeTurn(int activityId, int byUserId, int forUserId, DateTimeOffset when)
@@ -392,7 +392,7 @@ namespace TurnTracker.Domain.Services
                     return Result.Failure<ActivityDetails>("no such activity");
                 }
 
-                var details = ActivityDetails.Calculate(activity, byUserId);
+                var details = ActivityDetails.Calculate(activity, byUserId, _mapper);
                 
                 var turnTaker = _db.Users.Find(forUserId);
                 FormattableString fs = $"{turnTaker.DisplayName} took a turn.";
@@ -482,7 +482,7 @@ namespace TurnTracker.Domain.Services
                     {
                         return Result.Failure<ActivityDetails>("no such activity");
                     }
-                    var details = ActivityDetails.Calculate(activity, byUserId);
+                    var details = ActivityDetails.Calculate(activity, byUserId, _mapper);
 
                     _db.SaveChanges();
                     return Result.Success(details);
