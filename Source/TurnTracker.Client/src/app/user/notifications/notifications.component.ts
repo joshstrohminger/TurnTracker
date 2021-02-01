@@ -26,14 +26,4 @@ export class NotificationsComponent implements OnInit {
 
   ngOnInit(): void {
   }
-
-  public allowNotificationType(note: NotificationSetting): boolean {
-    switch(note.type) {
-      case NotificationType.TurnTakenMine:
-      case NotificationType.OverdueMine:
-        return this.takeTurns;
-    }
-    return true;
-  }
-
 }
