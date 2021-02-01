@@ -277,7 +277,7 @@ export class ActivityComponent implements OnInit {
           for (const note of participant.notificationSettings) {
             const index = this.notifications.findIndex(n => n.type === note.type);
             if (index >= 0) {
-              this.notifications[index] = note;
+              Object.assign(this.notifications[index], note);
             }
           }
         }

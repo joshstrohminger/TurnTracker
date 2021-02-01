@@ -26,6 +26,7 @@ namespace TurnTracker.Data.Entities
 
         public List<Participant> Participants { get; set; }
         public List<Turn> Turns { get; set; }
+        public List<DefaultNotificationSetting> DefaultNotificationSettings { get; set; }
 
         #region Calculated Values
 

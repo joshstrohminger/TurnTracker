@@ -12,5 +12,6 @@ namespace TurnTracker.Domain.Models
         public uint? PeriodCount { get; set; }
         public bool TakeTurns { get; set; }
         public List<UserInfo> Participants { get; set; }
+        public List<NotificationInfo> DefaultNotificationSettings { get; set; }
     }
 }

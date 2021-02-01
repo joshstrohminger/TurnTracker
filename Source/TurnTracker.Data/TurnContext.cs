@@ -23,6 +23,7 @@ namespace TurnTracker.Data
         public DbSet<Turn> Turns { get; set; }
         public DbSet<Setting> Settings { get; set; }
         public DbSet<NotificationSetting> NotificationSettings { get; set; }
+        public DbSet<DefaultNotificationSetting> DefaultNotificationSettings { get; set; }
         public DbSet<PushSubscriptionDevice> PushSubscriptionDevices { get; set; }
         public DbSet<DeviceAuthorization> DeviceAuthorizations { get; set; }
         public DbSet<Login> Logins { get; set; }
@@ -97,6 +98,11 @@ namespace TurnTracker.Data
                 .HasConversion(
                     v => v.Value.Ticks,
                     t => TimeSpan.FromTicks(t));
+
+            modelBuilder.Entity<Activity>()
+                .HasMany(activity => activity.DefaultNotificationSettings)
+                .WithOne(defaultNotificationSetting => defaultNotificationSetting.Activity)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<PushSubscriptionDevice>()
                 .HasKey(x => new {x.UserId, x.Endpoint});

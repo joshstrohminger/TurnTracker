@@ -125,6 +125,7 @@ namespace TurnTracker.Domain.Services
         {
             var activity = _db.Activities
                 .AsNoTracking()
+                .Include(x => x.DefaultNotificationSettings)
                 .Include(x => x.Participants)
                 .ThenInclude(x => x.User)
                 .SingleOrDefault(x => x.Id == id);
@@ -185,6 +186,14 @@ namespace TurnTracker.Domain.Services
 
                 activity.Participants ??= new List<UserInfo>();
 
+                // sanitize the default notification settings to ensure there's only one per type
+                var defaultNotificationSettings =
+                    (activity.DefaultNotificationSettings ?? new List<NotificationInfo>())
+                    .Where(x => x.AnyActive && x.Type.IsAllowed(activity.TakeTurns))
+                    .GroupBy(x => x.Type)
+                    .Select(g => g.First())
+                    .ToDictionary(x => x.Type);
+
                 if (activity.Id < 0)
                 {
                     return ValidityError.ForInvalidObject<int>("invalid ID");
@@ -199,12 +208,13 @@ namespace TurnTracker.Domain.Services
                     add = true;
                     activityToUpdate = new Activity
                     {
-                        Participants = userIds.Select(CreateNewParticipant).ToList()
+                        Participants = userIds.Select(CreateNewParticipant).ToList(),
+                        DefaultNotificationSettings = _mapper.Map<List<DefaultNotificationSetting>>(defaultNotificationSettings)
                     };
                 }
                 else
                 {
-                    activityToUpdate = GetActivity(activity.Id, false, false);
+                    activityToUpdate = GetActivity(activity.Id, false, false, true);
                     if (activityToUpdate is null)
                     {
                         return ValidityError.ForInvalidObject<int>("invalid ID");
@@ -223,6 +233,55 @@ namespace TurnTracker.Domain.Services
 
                     // add new participants
                     activityToUpdate.Participants.AddRange(userIds.Select(CreateNewParticipant));
+
+                    // remove any default notifications that should no longer be there
+                    activityToUpdate.DefaultNotificationSettings.RemoveAll(x =>
+                    {
+                        var remove = !defaultNotificationSettings.ContainsKey(x.Type);
+
+                        if (remove)
+                        {
+                            foreach (var participant in activityToUpdate.Participants)
+                            {
+                                participant.NotificationSettings.RemoveAll(y => y.Type == x.Type && y.Origin == NotificationOrigin.Default);
+                            }
+                        }
+
+                        return remove;
+                    });
+
+                    // remove any participant notifications that are no longer valid because the activity no longer has turns needed
+                    if (activityToUpdate.TakeTurns && !activity.TakeTurns)
+                    {
+                        foreach (var participant in activityToUpdate.Participants)
+                        {
+                            participant.NotificationSettings.RemoveAll(x => !x.Type.IsAllowed(activity.TakeTurns));
+                        }
+                    }
+
+                    // update any existing default notification and remove it from the new list
+                    foreach(var noteToUpdate in activityToUpdate.DefaultNotificationSettings)
+                    {
+                        if(defaultNotificationSettings.Remove(noteToUpdate.Type, out var updatedNote))
+                        {
+                            _mapper.Map(updatedNote, noteToUpdate);
+                            foreach(var participantNote in activityToUpdate.Participants.SelectMany(x => x.NotificationSettings).Where(x => x.Type == updatedNote.Type && x.Origin == NotificationOrigin.Default))
+                            {
+                                _mapper.Map(updatedNote, participantNote);
+                            }
+                        }
+                    }
+
+                    // add any remaining notifications
+                    foreach (var note in defaultNotificationSettings.Values)
+                    {
+                        activityToUpdate.DefaultNotificationSettings.Add(_mapper.Map<DefaultNotificationSetting>(note));
+                        foreach (var participant in activityToUpdate.Participants.Where(participant =>
+                            participant.NotificationSettings.All(x => x.Type != note.Type)))
+                        {
+                            participant.NotificationSettings.Add(_mapper.Map<NotificationSetting>(note));
+                        }
+                    }
                 }
 
                 activityToUpdate.OwnerId = ownerId;
@@ -284,7 +343,7 @@ namespace TurnTracker.Domain.Services
                 .ThenBy(x => x.Name);
         }
 
-        private Activity GetActivity(int activityId, bool readOnly, bool includeTurns)
+        private Activity GetActivity(int activityId, bool readOnly, bool includeTurns, bool includeDefaultNotifications = false)
         {
             IQueryable<Activity> query = _db.Activities;
 
@@ -298,6 +357,11 @@ namespace TurnTracker.Domain.Services
                 query = query.Include(x => x.Turns);
             }
 
+            if (includeDefaultNotifications)
+            {
+                query = query.Include(x => x.DefaultNotificationSettings);
+            }
+
             return query
                 .Include(x => x.Owner)
                 .Include(x => x.Participants).ThenInclude(x => x.User)
@@ -308,13 +372,13 @@ namespace TurnTracker.Domain.Services
         public ActivityDetails GetActivityDetailsShallow(int activityId, int userId)
         {
             var activity = GetActivity(activityId, true, false);
-            return activity is null ? null : ActivityDetails.Populate(activity, userId);
+            return activity is null ? null : ActivityDetails.Populate(activity, userId, _mapper);
         }
 
         public ActivityDetails GetActivityDetails(int activityId, int userId)
         {
             var activity = GetActivity(activityId, true, true);
-            return activity is null ? null : ActivityDetails.Calculate(activity, userId);
+            return activity is null ? null : ActivityDetails.Calculate(activity, userId, _mapper);
         }
 
         public Result<ActivityDetails> TakeTurn(int activityId, int byUserId, int forUserId, DateTimeOffset when)
@@ -337,7 +401,7 @@ namespace TurnTracker.Domain.Services
                     return Result.Failure<ActivityDetails>("no such activity");
                 }
 
-                var details = ActivityDetails.Calculate(activity, byUserId);
+                var details = ActivityDetails.Calculate(activity, byUserId, _mapper);
                 
                 var turnTaker = _db.Users.Find(forUserId);
                 FormattableString fs = $"{turnTaker.DisplayName} took a turn.";
@@ -427,7 +491,7 @@ namespace TurnTracker.Domain.Services
                     {
                         return Result.Failure<ActivityDetails>("no such activity");
                     }
-                    var details = ActivityDetails.Calculate(activity, byUserId);
+                    var details = ActivityDetails.Calculate(activity, byUserId, _mapper);
 
                     _db.SaveChanges();
                     return Result.Success(details);

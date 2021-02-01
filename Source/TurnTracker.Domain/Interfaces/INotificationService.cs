@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using TurnTracker.Data.Entities;
+using TurnTracker.Domain.Models;
 
 namespace TurnTracker.Domain.Interfaces
 {
     public interface INotificationService
     {
-        Result UpdateNotificationSetting(int participantId, NotificationType type, bool sms, bool email, bool push);
+        Result UpdateNotificationSetting(NotificationInfo info);
         Task<Result> UpdateDismissTimeOfDayAsync(int participantId, TimeSpan time);
     }
 }

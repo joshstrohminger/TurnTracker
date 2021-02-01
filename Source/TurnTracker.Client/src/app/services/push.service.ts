@@ -23,6 +23,11 @@ export class PushService {
     return this._sub;
   }
 
+  private blocked = false;
+  public get isBlocked(): boolean {
+    return this.blocked;
+  }
+
   constructor(
     private _swPush: SwPush,
     private _http: HttpClient,
@@ -61,7 +66,7 @@ export class PushService {
   private checkSubscription(serverPublicKey: string) {
     if (!this._user) {
       return;
-    } else if (this._user.enablePushNotifications) {
+    } else if (this._user.enablePushNotifications && !this.blocked) {
       this.requestPermission(serverPublicKey);
     } else if (!this._user.enablePushNotifications && this._sub) {
       this.cancelPermission(this._sub);
@@ -99,11 +104,24 @@ export class PushService {
     })
     ).subscribe(
       () => {
+        this.blocked = false;
         if (request) {
           this._messageService.success('Subscribed to push notifications on this device');
         }
       },
-      error => this._messageService.error('Failed to subscribe to push notifications on this device', error));
+      error => {
+        let errorMessage = 'Failed to subscribe to push notifications on this device';
+        if (error instanceof DOMException) {
+          console.log(`DOMException Name: ${error.name}, Message: ${error.message}`);
+          if (error.name === 'NotAllowedError') {
+            this.blocked = true;
+            return;
+          } else {
+            errorMessage += `: ${error.message}`;
+          }
+        }
+        this._messageService.error(errorMessage, error);
+      });
   }
 
   private handleNotificationClick(action: string, notification: NotificationOptions & {

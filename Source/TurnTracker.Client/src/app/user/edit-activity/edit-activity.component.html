@@ -21,6 +21,10 @@
       </mat-select>
     </mat-form-field>
   </p>
+  <notifications [notifications]="notifications"
+    [mobileNumberVerified]="false"
+    [emailVerified]="false"
+    [takeTurns]="editForm.value.takeTurns"></notifications>
   <p>
     <mat-form-field class="full-width">
       <input matInput placeholder="Search for users" [matAutocomplete]="auto" formControlName="searchControl">
