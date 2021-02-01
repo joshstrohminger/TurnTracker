@@ -9,5 +9,7 @@ namespace TurnTracker.Domain.Models
         public bool Email { get; set; }
         public bool Push { get; set; }
         public int ParticipantId { get; set; }
+
+        public bool AnyActive => Push || Sms || Email;
     }
 }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using CSharpFunctionalExtensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
@@ -58,11 +59,16 @@ namespace TurnTracker.Domain.Services
         {
             try
             {
-                var setting = _db.NotificationSettings.SingleOrDefault(x => x.ParticipantId == info.ParticipantId && x.Type == info.Type);
+                var setting = _db.NotificationSettings
+                    .SingleOrDefault(x => x.ParticipantId == info.ParticipantId && x.Type == info.Type);
+                var takeTurns = _db.Participants.Include(x => x.Activity)
+                    .Select(x => new {x.Id, x.Activity.TakeTurns})
+                    .Single(x => x.Id == info.ParticipantId)
+                    .TakeTurns;
                 if (setting is null)
                 {
                     // only add a setting if one of the notification types is selected
-                    if (info.Sms || info.Email || info.Push)
+                    if (info.AnyActive && info.Type.IsAllowed(takeTurns))
                     {
                         setting = _mapper.Map<NotificationSetting>(info);
                         setting.Origin = NotificationOrigin.Participant;
@@ -71,7 +77,7 @@ namespace TurnTracker.Domain.Services
                 }
                 else
                 {
-                    if (info.Sms || info.Email || info.Push)
+                    if (info.AnyActive && info.Type.IsAllowed(takeTurns))
                     {
                         _mapper.Map(info, setting);
                         setting.Origin = NotificationOrigin.Participant;

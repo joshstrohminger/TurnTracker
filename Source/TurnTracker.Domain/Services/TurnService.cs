@@ -189,7 +189,7 @@ namespace TurnTracker.Domain.Services
                 // sanitize the default notification settings to ensure there's only one per type
                 var defaultNotificationSettings =
                     (activity.DefaultNotificationSettings ?? new List<NotificationInfo>())
-                    .Where(x => x.Email || x.Push || x.Sms)
+                    .Where(x => x.AnyActive && x.Type.IsAllowed(activity.TakeTurns))
                     .GroupBy(x => x.Type)
                     .Select(g => g.First())
                     .ToDictionary(x => x.Type);
@@ -249,6 +249,15 @@ namespace TurnTracker.Domain.Services
 
                         return remove;
                     });
+
+                    // remove any participant notifications that are no longer valid because the activity no longer has turns needed
+                    if (activityToUpdate.TakeTurns && !activity.TakeTurns)
+                    {
+                        foreach (var participant in activityToUpdate.Participants)
+                        {
+                            participant.NotificationSettings.RemoveAll(x => !x.Type.IsAllowed(activity.TakeTurns));
+                        }
+                    }
 
                     // update any existing default notification and remove it from the new list
                     foreach(var noteToUpdate in activityToUpdate.DefaultNotificationSettings)

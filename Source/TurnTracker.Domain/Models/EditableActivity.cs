@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using TurnTracker.Data;
-using TurnTracker.Data.Entities;
 
 namespace TurnTracker.Domain.Models
 {
