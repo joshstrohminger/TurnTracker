@@ -49,6 +49,7 @@ import { EditActivityComponent } from './user/edit-activity/edit-activity.compon
 import { DeleteActivityDialog } from './user/delete-activity/delete-activity.dialog';
 import { SettingsComponent } from './user/settings/settings.component';
 import { ActivityInterceptor } from './anonymous/activity.interceptor';
+import { NotificationsComponent } from './user/notifications/notifications.component';
 
 const routes: Routes = [
   { path: 'activity/add', component: EditActivityComponent, canActivate: [AuthGuard], data: {title: 'Add Activity'} },
@@ -79,7 +80,8 @@ const routes: Routes = [
     TurnDetailsDialog,
     EditActivityComponent,
     DeleteActivityDialog,
-    SettingsComponent
+    SettingsComponent,
+    NotificationsComponent
   ],
   imports: [
     BrowserAnimationsModule,

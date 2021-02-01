@@ -17,6 +17,7 @@ export class ActivityDetails {
     public participants: Participant[];
     public turns: Turn[];
     public isDisabled: boolean;
+    public takeTurns: boolean;
 
     // Properties populated by the client and not the server
     public dueDate?: DateTime;

@@ -20,6 +20,7 @@ namespace TurnTracker.Domain.Models
         public int? CurrentTurnUserId { get; }
         public string CurrentTurnUserDisplayName { get; }
         public bool IsDisabled { get; }
+        public bool TakeTurns { get; }
         public List<TurnInfo> Turns { get; }
         public List<ParticipantInfo> Participants { get; }
         
@@ -43,6 +44,7 @@ namespace TurnTracker.Domain.Models
             OwnerName = activity.Owner.DisplayName;
             OwnerId = activity.OwnerId;
             IsDisabled = activity.IsDisabled;
+            TakeTurns = activity.TakeTurns;
 
             if (calculate)
             {
