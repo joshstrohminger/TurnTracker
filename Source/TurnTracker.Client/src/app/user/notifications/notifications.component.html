@@ -1,0 +1,26 @@
+<table mat-table [dataSource]="notifications" id="notifications">
+  <ng-container matColumnDef="type">
+    <th mat-header-cell *matHeaderCellDef>Notification</th>
+    <td mat-cell *matCellDef="let note" [class.disabled]="!note.isAllowed(takeTurns)">{{note.type | notification}}</td>
+  </ng-container>
+  <ng-container matColumnDef="sms">
+    <th mat-header-cell *matHeaderCellDef class="center" [class.warn]="!mobileNumberVerified" matTooltipPosition="above" [matTooltip]="mobileNumberVerified ? null : 'unverified'">SMS</th>
+    <td mat-cell *matCellDef="let note">
+      <mat-checkbox [(ngModel)]="note.sms" (change)="settingChanged.emit(note)" [disabled]="disabled || !note.isAllowed(takeTurns) || !mobileNumberVerified"></mat-checkbox>
+    </td>
+  </ng-container>
+  <ng-container matColumnDef="email">
+    <th mat-header-cell *matHeaderCellDef class="center" [class.warn]="!emailVerified" matTooltipPosition="above" [matTooltip]="emailVerified ? null : 'unverified'">E-Mail</th>
+    <td mat-cell *matCellDef="let note">
+      <mat-checkbox [(ngModel)]="note.email" (change)="settingChanged.emit(note)" [disabled]="disabled || !note.isAllowed(takeTurns) || !emailVerified"></mat-checkbox>
+    </td>
+  </ng-container>
+  <ng-container matColumnDef="push">
+    <th mat-header-cell *matHeaderCellDef class="center">Push</th>
+    <td mat-cell *matCellDef="let note">
+      <mat-checkbox [(ngModel)]="note.push" (change)="settingChanged.emit(note)" [disabled]="disabled || !note.isAllowed(takeTurns)"></mat-checkbox>
+    </td>
+  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="['type','sms','email','push']"></tr>
+  <tr mat-row *matRowDef="let note; columns: ['type','sms','email','push']"></tr>
+</table>

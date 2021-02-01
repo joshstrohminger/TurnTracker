@@ -13,6 +13,8 @@ import { of, Observable } from 'rxjs';
 import { ActivityDetails } from '../models/ActivityDetails';
 import { TurnTrackerValidators } from 'src/app/validators/TurnTrackerValidators';
 import { TitleContentService } from 'src/app/services/title-content.service';
+import { NotificationSetting } from '../models/NotificationSetting';
+import { NotificationType } from '../models/NotificationType';
 
 @Component({
   selector: 'app-edit-activity',
@@ -26,6 +28,9 @@ export class EditActivityComponent implements OnInit {
   public readonly myName: string;
   public editForm: FormGroup;
   public unitValues = Object.keys(Unit).map(x => parseInt(x, 10)).filter(x => !isNaN(<any>x));
+  public notifications: NotificationSetting[] = Object.keys(NotificationType)
+    .filter(key => !isNaN(Number(NotificationType[key])))
+    .map(key => new NotificationSetting(NotificationType[key]));
   public units = Unit;
   private countDigits = 3;
   public readonly defaultUnit = 'Non-Periodic';
@@ -91,6 +96,15 @@ export class EditActivityComponent implements OnInit {
         searchControl: ['']
       });
       this.participants = activity.participants;
+
+      if (activity.defaultNotificationSettings) {
+        for (const note of activity.defaultNotificationSettings) {
+          const index = this.notifications.findIndex(n => n.type === note.type);
+          if (index >= 0) {
+            Object.assign(this.notifications[index], note);
+          }
+        }
+      }
 
       const periodUnitChangeHandler = value => {
         const control = this.editForm.controls.periodCount;
@@ -179,13 +193,15 @@ export class EditActivityComponent implements OnInit {
   }
 
   saveActivity() {
+    const takeTurns = this.editForm.value.takeTurns;
     this._http.post<ActivityDetails>('activity/save', <EditableActivity>{
       id: this._activityId,
       name: this.editForm.value.name,
       periodCount: this.editForm.value.periodCount,
       periodUnit: Number(this.editForm.value.periodUnit),
-      takeTurns: this.editForm.value.takeTurns,
-      participants: this.participants
+      takeTurns,
+      participants: this.participants,
+      defaultNotificationSettings: this.notifications.filter(note => note.anyChecked && note.isAllowed(takeTurns))
     }).subscribe(activity => {
       this._messageService.success(`Saved activity`);
       this._router.navigate(['/activity', activity.id], {replaceUrl: true});

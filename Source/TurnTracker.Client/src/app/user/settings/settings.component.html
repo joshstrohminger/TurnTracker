@@ -5,6 +5,7 @@
   <mat-card-content>
     <section>
       <mat-slide-toggle formControlName="push">Push Notifications</mat-slide-toggle>
+      <div *ngIf="pushService.isBlocked" class="warn">Blocked on this device</div>
       <button class="test" mat-flat-button color="primary" (click)="sendTestMessageToThisDevice()" [disabled]="!pushService.PushEnabled || !me.enablePushNotifications">Test This Device</button>
       <button class="test" mat-flat-button color="warn" (click)="closeTestMessageToThisDevice()" [disabled]="!pushService.PushEnabled || !me.enablePushNotifications">Close This Device</button>
       <button class="test" mat-flat-button color="accent" (click)="sendTestMessageToAllDevices()" [disabled]="!pushService.PushEnabled || !me.enablePushNotifications">Test All Devices</button>

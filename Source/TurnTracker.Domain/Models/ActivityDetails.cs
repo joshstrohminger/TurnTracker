@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoMapper;
 using TurnTracker.Data;
 using TurnTracker.Data.Entities;
 
@@ -19,20 +20,22 @@ namespace TurnTracker.Domain.Models
         public int? CurrentTurnUserId { get; }
         public string CurrentTurnUserDisplayName { get; }
         public bool IsDisabled { get; }
+        public bool TakeTurns { get; }
         public List<TurnInfo> Turns { get; }
         public List<ParticipantInfo> Participants { get; }
+        
 
-        public static ActivityDetails Calculate(Activity activity, int userId)
+        public static ActivityDetails Calculate(Activity activity, int userId, IMapper mapper)
         {
-            return new ActivityDetails(activity, true, userId);
+            return new ActivityDetails(activity, true, userId, mapper);
         }
 
-        public static ActivityDetails Populate(Activity activity, int userId)
+        public static ActivityDetails Populate(Activity activity, int userId, IMapper mapper)
         {
-            return new ActivityDetails(activity, false, userId);
+            return new ActivityDetails(activity, false, userId, mapper);
         }
 
-        private ActivityDetails(Activity activity, bool calculate, int userId)
+        private ActivityDetails(Activity activity, bool calculate, int userId, IMapper mapper)
         {
             Id = activity.Id;
             Name = activity.Name;
@@ -41,6 +44,7 @@ namespace TurnTracker.Domain.Models
             OwnerName = activity.Owner.DisplayName;
             OwnerId = activity.OwnerId;
             IsDisabled = activity.IsDisabled;
+            TakeTurns = activity.TakeTurns;
 
             if (calculate)
             {
@@ -62,7 +66,7 @@ namespace TurnTracker.Domain.Models
                     .OrderBy(x => x.Count)
                     .ThenBy(x => x.FirstTurn)
                     .ThenBy(x => x.Participant.Id)
-                    .Select((x,i) => new ParticipantInfo(x, mostTurnsTaken, i, x.Participant.UserId == userId))
+                    .Select((x,i) => new ParticipantInfo(x, mostTurnsTaken, i, x.Participant.UserId == userId, mapper))
                     .ToList();
 
                 HasDisabledTurns = Participants.Any(x => x.HasDisabledTurns);
@@ -100,7 +104,7 @@ namespace TurnTracker.Domain.Models
                 Due = activity.Due;
                 Participants = activity.Participants
                     .OrderBy(x => x.TurnOrder)
-                    .Select(x => new ParticipantInfo(x, x.UserId == userId))
+                    .Select(x => new ParticipantInfo(x, x.UserId == userId, mapper))
                     .ToList();
             }
         }

@@ -10,13 +10,6 @@ namespace TurnTracker.Domain.Models
         public bool Push { get; set; }
         public int ParticipantId { get; set; }
 
-        public NotificationInfo(NotificationSetting note)
-        {
-            Type = note.Type;
-            Sms = note.Sms;
-            Email = note.Email;
-            Push = note.Push;
-            ParticipantId = note.ParticipantId;
-        }
+        public bool AnyActive => Push || Sms || Email;
     }
 }

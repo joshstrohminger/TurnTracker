@@ -24,11 +24,6 @@ table.padded td:not(:last-child) {
   width: 100%;
 }
 
-#notifications td mat-checkbox {
-  margin-left: 1em;
-  margin-right: 1em;
-}
-
 tr.disabled {
   opacity: 0.4;
 }
@@ -68,4 +63,8 @@ mat-progress-spinner {
   position: absolute;
   top: 0;
   right: 0;
+}
+
+app-timer {
+  margin-left: 16px;
 }

@@ -1,5 +1,6 @@
 import { User } from './User';
 import { Unit } from './Unit';
+import { NotificationSetting } from './NotificationSetting';
 
 export class EditableActivity {
     public id: number;
@@ -9,4 +10,5 @@ export class EditableActivity {
     public periodCount?: number;
     public takeTurns: boolean;
     public participants: User[];
+    public defaultNotificationSettings: NotificationSetting[];
 }
