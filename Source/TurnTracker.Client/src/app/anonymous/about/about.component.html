@@ -1,6 +1,17 @@
 <div style="text-align:center">
   <img alt="Logo" src="assets/logo.svg">
   <h1>{{appName}}</h1>
+  <div *ngIf="swUpdates.isEnabled">
+    <p>
+      <label>Last checked: </label>
+      <span>{{swUpdates.lastChecked}}</span>
+    </p>
+    <p class="spinner-wrapper">
+      <span *ngIf="!swUpdates.isUpdateAvailable">No update available</span>
+      <button mat-flat-button color="accent" (click)="swUpdates.updateNow()" *ngIf="swUpdates.isUpdateAvailable" [disabled]="swUpdates.isUpdating">Update</button>
+      <mat-spinner *ngIf="swUpdates.isUpdating" color="accent" diameter="34"></mat-spinner>
+    </p>
+  </div>
   <p>
     <label>Version: </label>
     <span>{{version}}</span>

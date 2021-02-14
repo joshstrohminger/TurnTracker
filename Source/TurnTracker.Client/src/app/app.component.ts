@@ -7,6 +7,7 @@ import { environment } from '../environments/environment';
 import { PushService } from './services/push.service';
 import { ActivityService } from './services/activity.service';
 import { Title } from '@angular/platform-browser';
+import { SwUpdateService } from './services/sw-update.service';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +25,7 @@ export class AppComponent {
     public authService: AuthService,
     _push: PushService,
     public activityService: ActivityService,
+    public swUpdates: SwUpdateService,
     titleService: Title,
     activatedRoute: ActivatedRoute) {
 
