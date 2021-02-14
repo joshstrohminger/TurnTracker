@@ -17,7 +17,8 @@
         </button>
         <span class="menu-spacer"></span>
         <div>
-          <a mat-button [routerLink]="'/'">{{appName}}</a>
+          <a mat-button [routerLink]="'/'" *ngIf="!swUpdates.isUpdateAvailable">{{appName}}</a>
+          <a mat-stroked-button [routerLink]="'/about'" class="update" *ngIf="swUpdates.isUpdateAvailable">Update</a>
         </div>
         <mat-spinner *ngIf="activityService.isActive$ | async" color="accent" diameter="34"></mat-spinner>
         <div fxFlex fxLayout fxLayoutAlign="end">

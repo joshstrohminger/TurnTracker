@@ -6,9 +6,17 @@
     <section>
       <mat-slide-toggle formControlName="push">Push Notifications</mat-slide-toggle>
       <div *ngIf="pushService.isBlocked" class="warn">Blocked on this device</div>
-      <button class="test" mat-flat-button color="primary" (click)="sendTestMessageToThisDevice()" [disabled]="!pushService.PushEnabled || !me.enablePushNotifications">Test This Device</button>
-      <button class="test" mat-flat-button color="warn" (click)="closeTestMessageToThisDevice()" [disabled]="!pushService.PushEnabled || !me.enablePushNotifications">Close This Device</button>
-      <button class="test" mat-flat-button color="accent" (click)="sendTestMessageToAllDevices()" [disabled]="!pushService.PushEnabled || !me.enablePushNotifications">Test All Devices</button>
+      <div *ngIf="me.enablePushNotifications">
+        <p>
+          <button class="test" mat-flat-button color="primary" (click)="sendTestMessageToThisDevice()" [disabled]="!pushService.PushEnabled">Test This Device</button>
+        </p>
+        <p>
+          <button class="test" mat-flat-button color="warn" (click)="closeTestMessageToThisDevice()" [disabled]="!pushService.PushEnabled">Close This Device</button>
+        </p>
+        <p>
+          <button class="test" mat-flat-button color="accent" (click)="sendTestMessageToAllDevices()" [disabled]="!pushService.PushEnabled">Test All Devices</button>
+        </p>
+      </div>
     </section>
     <section>
       <mat-form-field>

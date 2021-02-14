@@ -3,3 +3,14 @@ img {
   max-height: 50vh;
   height: auto;
 }
+
+mat-spinner {
+  display: inline;
+  margin-left: 0.5em;
+}
+
+.spinner-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
