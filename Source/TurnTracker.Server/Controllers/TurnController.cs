@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Net;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Server.Models;
@@ -33,10 +32,17 @@ namespace TurnTracker.Server.Controllers
                 return StatusCode(403, authResult.Error);
             }
 
-            var result = _turnService.TakeTurn(turn.ActivityId, myId, turn.ForUserId, turn.When);
-            if (result.IsSuccess) return Json(result.Value);
-
-            return StatusCode(500);
+            var result = _turnService.TakeTurn(turn.ModifiedDate, turn.ActivityId, myId, turn.ForUserId, turn.When);
+            if (result.IsSuccess)
+            {
+                return Json(result.Value);
+            }
+            
+            return result.Error switch
+            {
+                TurnError.ActivityModified => StatusCode((int) HttpStatusCode.Conflict),
+                _ => StatusCode(500)
+            };
         }
 
         [HttpDelete("{id}")]
