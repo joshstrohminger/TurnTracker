@@ -98,6 +98,7 @@ export class ActivityComponent implements OnInit {
     const dialogRef = this._dialog.open(TakeTurnDialog, {data: <TakeTurnDialogConfig>{
       activityName: this.activity.name,
       activityId: this.activity.id,
+      activityModifedDate: this.activity.modifiedDate,
       myUserId: this.myUserId,
       participants: this.activity.participants
     }});
@@ -159,7 +160,7 @@ export class ActivityComponent implements OnInit {
     }
     this.busy = true;
 
-    const turn = new NewTurn(this.activity.id, forUserId || this.myUserId);
+    const turn = new NewTurn(this.activity.modifiedDate, this.activity.id, forUserId || this.myUserId);
     this.takeTurnUnsafe(turn);
   }
 
@@ -174,6 +175,8 @@ export class ActivityComponent implements OnInit {
         if (error instanceof HttpErrorResponse && error.status === 403) {
           this._messageService.error('Not allowed to take turn');
           this._router.navigateByUrl('/activities');
+        } else if (error instanceof HttpErrorResponse && error.status === 409) {
+          this._messageService.error('The activity was modifed, refresh and try again');
         } else {
           this._messageService.error('Failed to take turn', error);
         }

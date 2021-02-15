@@ -21,6 +21,7 @@ namespace TurnTracker.Domain.Models
         public string CurrentTurnUserDisplayName { get; }
         public bool IsDisabled { get; }
         public bool TakeTurns { get; }
+        public DateTimeOffset ModifiedDate { get; private set; }
         public List<TurnInfo> Turns { get; }
         public List<ParticipantInfo> Participants { get; }
         
@@ -35,6 +36,14 @@ namespace TurnTracker.Domain.Models
             return new ActivityDetails(activity, false, userId, mapper);
         }
 
+        public void Update(Activity activity)
+        {
+            if (activity.Id == Id)
+            {
+                ModifiedDate = activity.ModifiedDate;
+            }
+        }
+
         private ActivityDetails(Activity activity, bool calculate, int userId, IMapper mapper)
         {
             Id = activity.Id;
@@ -45,6 +54,7 @@ namespace TurnTracker.Domain.Models
             OwnerId = activity.OwnerId;
             IsDisabled = activity.IsDisabled;
             TakeTurns = activity.TakeTurns;
+            ModifiedDate = activity.ModifiedDate;
 
             if (calculate)
             {
