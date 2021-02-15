@@ -14,5 +14,7 @@ namespace TurnTracker.Server.Models
 
         [InThePast]
         public DateTimeOffset When { get; set; }
+
+        public DateTimeOffset ModifiedDate { get; set; }
     }
 }

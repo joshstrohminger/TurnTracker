@@ -16,6 +16,7 @@ using TurnTracker.Domain.Models;
 
 namespace TurnTracker.Domain.Services
 {
+
     public class TurnService : ITurnService
     {
         private readonly TurnContext _db;
@@ -49,11 +50,12 @@ namespace TurnTracker.Domain.Services
                         return activityResult;
                     }
                     var activityId = activityResult.Value;
+                    var activity = GetActivityDetailsShallow(activityId, userIds[0]);
                     for(var i = 1; i < 8; i++)
                     {
                         var forUser = userIds[i % 2];
                         var byUser = userIds[i / 2 % 2];
-                        TakeTurn(activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
+                        TakeTurn(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
                     }
 
                     // second activity
@@ -63,11 +65,12 @@ namespace TurnTracker.Domain.Services
                         return activityResult;
                     }
                     activityId = activityResult.Value;
+                    activity = GetActivityDetailsShallow(activityId, userIds[0]);
                     for (var i = 1; i < 25; i++)
                     {
                         var forUser = userIds[i % 2];
                         var byUser = userIds[i / 2 % 2];
-                        TakeTurn(activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
+                        TakeTurn(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
                     }
 
                     // third activity
@@ -77,11 +80,12 @@ namespace TurnTracker.Domain.Services
                         return activityResult;
                     }
                     activityId = activityResult.Value;
+                    activity = GetActivityDetailsShallow(activityId, userIds[0]);
                     for (var i = 1; i < 37; i++)
                     {
                         var forUser = userIds[i % 2];
                         var byUser = userIds[i / 2 % 2];
-                        TakeTurn(activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
+                        TakeTurn(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
                     }
 
                     // fourth activity, disabled
@@ -91,11 +95,12 @@ namespace TurnTracker.Domain.Services
                         return activityResult;
                     }
                     activityId = activityResult.Value;
+                    activity = GetActivityDetailsShallow(activityId, userIds[0]);
                     for (var i = 1; i < 19; i++)
                     {
                         var forUser = userIds[i % 2];
                         var byUser = userIds[i / 2 % 2];
-                        TakeTurn(activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
+                        TakeTurn(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
                     }
 
                     return SetActivityDisabled(activityId, userIds[1], true);
@@ -381,7 +386,7 @@ namespace TurnTracker.Domain.Services
             return activity is null ? null : ActivityDetails.Calculate(activity, userId, _mapper);
         }
 
-        public Result<ActivityDetails> TakeTurn(int activityId, int byUserId, int forUserId, DateTimeOffset when)
+        public Result<ActivityDetails, TurnError> TakeTurn(DateTimeOffset activityModifiedDate, int activityId, int byUserId, int forUserId, DateTimeOffset when)
         {
             try
             {
@@ -398,7 +403,14 @@ namespace TurnTracker.Domain.Services
                 var activity = GetActivity(activityId, false, true);
                 if (activity == null)
                 {
-                    return Result.Failure<ActivityDetails>("no such activity");
+                    _logger.LogError($"Activity {activityId} is missing");
+                    return Result.Failure<ActivityDetails,TurnError>(TurnError.ActivityMissing);
+                }
+
+                if(_appSettings.Value.ValidateActivityModifiedDate && activity.ModifiedDate != activityModifiedDate)
+                {
+                    _logger.LogWarning($"Activity {activity.Id} was modified {activity.ModifiedDate} and doesn't match {activityModifiedDate}");
+                    return Result.Failure<ActivityDetails, TurnError>(TurnError.ActivityModified);
                 }
 
                 var details = ActivityDetails.Calculate(activity, byUserId, _mapper);
@@ -467,12 +479,14 @@ namespace TurnTracker.Domain.Services
 
                 _db.SaveChanges();
 
-                return Result.Ok(details);
+                details.Update(activity);
+
+                return Result.Ok<ActivityDetails,TurnError>(details);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to take turn");
-                return Result.Failure<ActivityDetails>(e.Message);
+                _logger.LogError(e, "Failed to take a turn");
+                return Result.Failure<ActivityDetails,TurnError>(TurnError.Exception);
             }
         }
 
@@ -494,6 +508,7 @@ namespace TurnTracker.Domain.Services
                     var details = ActivityDetails.Calculate(activity, byUserId, _mapper);
 
                     _db.SaveChanges();
+                    details.Update(activity);
                     return Result.Success(details);
                 }
 

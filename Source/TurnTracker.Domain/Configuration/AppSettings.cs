@@ -35,6 +35,7 @@ namespace TurnTracker.Domain.Configuration
         public TimeSpan PrunePeriod { get; set; }
         public TimeSpan ChallengeExpiration { get; set; }
         public TimeSpan DeviceInactivityPeriod { get; set; }
+        public bool ValidateActivityModifiedDate { get; set; }
 
         #endregion Properties
 

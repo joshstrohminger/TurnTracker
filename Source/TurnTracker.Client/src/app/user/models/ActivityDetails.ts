@@ -14,6 +14,7 @@ export class ActivityDetails {
     public ownerId: number;
     public currentTurnUserId?: number;
     public currentTurnUserDisplayName?: string;
+    public modifiedDate: string;
     public participants: Participant[];
     public turns: Turn[];
     public isDisabled: boolean;

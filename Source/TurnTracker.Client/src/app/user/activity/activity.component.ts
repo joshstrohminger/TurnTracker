@@ -22,6 +22,9 @@ import { DeleteActivityDialog } from '../delete-activity/delete-activity.dialog'
 import { FormBuilder, Validators, FormControl } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { TitleContentService } from 'src/app/services/title-content.service';
+import { Overlay } from '@angular/cdk/overlay';
+import { ReloadComponent } from '../reload/reload.component';
+import { ComponentPortal } from '@angular/cdk/portal';
 
 @Component({
   selector: 'app-activity',
@@ -64,7 +67,8 @@ export class ActivityComponent implements OnInit {
     private _messageService: MessageService,
     private _dialog: MatDialog,
     private _formBuilder: FormBuilder,
-    private titleContentService: TitleContentService) {
+    private titleContentService: TitleContentService,
+    private overlay: Overlay) {
       this.turns.filterPredicate = (turn: Turn, filter: string) => {
         return turn && (!filter || !turn.isDisabled);
       };
@@ -98,6 +102,7 @@ export class ActivityComponent implements OnInit {
     const dialogRef = this._dialog.open(TakeTurnDialog, {data: <TakeTurnDialogConfig>{
       activityName: this.activity.name,
       activityId: this.activity.id,
+      activityModifedDate: this.activity.modifiedDate,
       myUserId: this.myUserId,
       participants: this.activity.participants
     }});
@@ -159,7 +164,7 @@ export class ActivityComponent implements OnInit {
     }
     this.busy = true;
 
-    const turn = new NewTurn(this.activity.id, forUserId || this.myUserId);
+    const turn = new NewTurn(this.activity.modifiedDate, this.activity.id, forUserId || this.myUserId);
     this.takeTurnUnsafe(turn);
   }
 
@@ -174,6 +179,11 @@ export class ActivityComponent implements OnInit {
         if (error instanceof HttpErrorResponse && error.status === 403) {
           this._messageService.error('Not allowed to take turn');
           this._router.navigateByUrl('/activities');
+        } else if (error instanceof HttpErrorResponse && error.status === 409) {
+          var config = ReloadComponent.BuildOverlayConfig(this.overlay);
+          const overlayRef = this.overlay.create(config);
+          const portal = new ComponentPortal(ReloadComponent);
+          overlayRef.attach(portal);
         } else {
           this._messageService.error('Failed to take turn', error);
         }

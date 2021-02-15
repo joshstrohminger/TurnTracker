@@ -38,7 +38,7 @@ export class TakeTurnDialog implements OnInit {
     if (!when.isValid || when > DateTime.local()) {
       when = null;
     }
-    const turn = new NewTurn(this._config.activityId, this.turnForm.value.forUserId, when);
+    const turn = new NewTurn(this._config.activityModifedDate, this._config.activityId, this.turnForm.value.forUserId, when);
     this._dialog.close(turn);
   }
 }
