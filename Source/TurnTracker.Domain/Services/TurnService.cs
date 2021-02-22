@@ -270,8 +270,12 @@ namespace TurnTracker.Domain.Services
                         if(defaultNotificationSettings.Remove(noteToUpdate.Type, out var updatedNote))
                         {
                             _mapper.Map(updatedNote, noteToUpdate);
+
+                            // update any existing participant notifications that originated from a default notification
                             foreach(var participantNote in activityToUpdate.Participants.SelectMany(x => x.NotificationSettings).Where(x => x.Type == updatedNote.Type && x.Origin == NotificationOrigin.Default))
                             {
+                                //make sure we don't clear the participant ID
+                                updatedNote.ParticipantId = participantNote.ParticipantId;
                                 _mapper.Map(updatedNote, participantNote);
                             }
                         }
@@ -321,7 +325,8 @@ namespace TurnTracker.Domain.Services
                 return new Participant
                 {
                     UserId = userId,
-                    DismissUntilTimeOfDay = _appSettings.Value.PushNotifications.DefaultDismissTime
+                    DismissUntilTimeOfDay = _appSettings.Value.PushNotifications.DefaultDismissTime,
+                    NotificationSettings = new List<NotificationSetting>()
                 };
             }
         }
