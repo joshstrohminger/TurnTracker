@@ -321,7 +321,8 @@ namespace TurnTracker.Domain.Services
                 return new Participant
                 {
                     UserId = userId,
-                    DismissUntilTimeOfDay = _appSettings.Value.PushNotifications.DefaultDismissTime
+                    DismissUntilTimeOfDay = _appSettings.Value.PushNotifications.DefaultDismissTime,
+                    NotificationSettings = new List<NotificationSetting>()
                 };
             }
         }
