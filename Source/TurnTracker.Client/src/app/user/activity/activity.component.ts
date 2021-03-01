@@ -105,7 +105,8 @@ export class ActivityComponent implements OnInit {
       activityModifedDate: this.activity.modifiedDate,
       myUserId: this.myUserId,
       participants: this.activity.participants
-    }});
+    },
+    minWidth: '16em'});
     dialogRef.afterClosed().subscribe((result: NewTurn) => {
       this.busy = false;
       if (result) {

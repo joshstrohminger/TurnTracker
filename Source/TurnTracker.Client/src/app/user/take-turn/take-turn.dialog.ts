@@ -22,11 +22,13 @@ export class TakeTurnDialog implements OnInit {
     formBuilder: FormBuilder,
     private _dialog: MatDialogRef<TakeTurnDialogConfig>) {
 
+    const now = DateTime.local();
+    const when = now.minus({seconds: now.second, milliseconds: now.millisecond});
     this.activityName = _config.activityName;
     this.participants = _config.participants;
     this.turnForm = formBuilder.group({
       forUserId: _config.myUserId,
-      when: DateTime.local().toISO({includeOffset: false})
+      when: when.toISO({includeOffset: false})
     });
   }
 
