@@ -133,6 +133,7 @@ namespace TurnTracker.Domain.Services
                 .Include(x => x.DefaultNotificationSettings)
                 .Include(x => x.Participants)
                 .ThenInclude(x => x.User)
+                .AsSingleQuery()
                 .SingleOrDefault(x => x.Id == id);
 
             return activity is null ? null : _mapper.Map<EditableActivity>(activity);
@@ -376,6 +377,7 @@ namespace TurnTracker.Domain.Services
                 .Include(x => x.Owner)
                 .Include(x => x.Participants).ThenInclude(x => x.User)
                 .Include(x => x.Participants).ThenInclude(x => x.NotificationSettings)
+                .AsSingleQuery()
                 .SingleOrDefault(x => x.Id == activityId);
         }
 
