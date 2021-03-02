@@ -77,7 +77,7 @@ namespace TurnTracker.Domain.Services
                 return Result.Failure(e.Message);
             }
 
-            return Result.Ok();
+            return Result.Success();
         }
 
         public Result Logout(long loginId)
@@ -86,7 +86,7 @@ namespace TurnTracker.Domain.Services
             if (login is null) return Result.Failure("Invalid login");
             _db.Logins.Remove(login);
             _db.SaveChanges();
-            return Result.Ok();
+            return Result.Success();
         }
 
         public Result<(User user, string accessToken, string refreshToken)> AuthenticateUser(string username, string password, string deviceName)
@@ -101,7 +101,7 @@ namespace TurnTracker.Domain.Services
             }
 
             // authentication successful so generate jwt refresh token
-            return Result.Ok(GenerateAndSaveLogin(user, deviceName));
+            return Result.Success(GenerateAndSaveLogin(user, deviceName));
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace TurnTracker.Domain.Services
                     .Where(x => x.DisplayName.Contains(filter))
                     .ToList()
                     .Select(x => _mapper.Map<UserInfo>(x));
-                return Result.Ok(users);
+                return Result.Success(users);
             }
             catch (Exception e)
             {
@@ -208,7 +208,7 @@ namespace TurnTracker.Domain.Services
             AssignNewPassword(user, newPassword);
             _db.SaveChanges();
 
-            return Result.Ok();
+            return Result.Success();
         }
 
         public Result<string> RefreshUser(long loginId, string refreshKey)
@@ -232,7 +232,7 @@ namespace TurnTracker.Domain.Services
             _db.SaveChanges();
 
             var accessKey = GenerateAccessToken(login.User, loginId);
-            return Result.Ok(accessKey);
+            return Result.Success(accessKey);
         }
 
         public Result<User> SetDisplayName(int userId, string displayName)
@@ -251,7 +251,7 @@ namespace TurnTracker.Domain.Services
             user.DisplayName = displayName.Trim();
             _db.SaveChanges();
 
-            return Result.Ok(user);
+            return Result.Success(user);
         }
 
         public Result SetShowDisabledActivities(int userId, bool show)
@@ -265,7 +265,7 @@ namespace TurnTracker.Domain.Services
             user.ShowDisabledActivities = show;
             _db.SaveChanges();
 
-            return Result.Ok();
+            return Result.Success();
         }
 
         public IEnumerable<Device> GetAllSessionsByDevice(int userId, long loginId)
@@ -328,7 +328,7 @@ namespace TurnTracker.Domain.Services
             user.EnablePushNotifications = enable;
             _db.SaveChanges();
 
-            return Result.Ok();
+            return Result.Success();
         }
 
         public Result SetSnoozeHours(int userId, byte hours)
@@ -347,7 +347,7 @@ namespace TurnTracker.Domain.Services
             user.SnoozeHours = hours;
             _db.SaveChanges();
 
-            return Result.Ok();
+            return Result.Success();
         }
 
         public Result<User> GetUser(int userId)
@@ -358,7 +358,7 @@ namespace TurnTracker.Domain.Services
                 return Result.Failure<User>("invalid user");
             }
 
-            return Result.Ok(user);
+            return Result.Success(user);
         }
 
         private string GenerateAccessToken(User user, long loginId)
@@ -419,20 +419,17 @@ namespace TurnTracker.Domain.Services
             return tokenHandler.WriteToken(token);
         }
 
-        private string GetRandomKey(ushort length = 100)
+        private static string GetRandomKey(ushort length = 100)
         {
             var bytes = GetRandomBytes(length);
             return Convert.ToBase64String(bytes);
         }
 
-        private byte[] GetRandomBytes(ushort length = 50)
+        private static byte[] GetRandomBytes(ushort length = 50)
         {
             var bytes = new byte[length];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetNonZeroBytes(bytes);
-            }
-
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetNonZeroBytes(bytes);
             return bytes;
         }
 
@@ -452,7 +449,7 @@ namespace TurnTracker.Domain.Services
             if (salt is null || salt.Length != SaltSize) return Result.Failure("Invalid salt");
             if (user.PasswordHash is null || user.PasswordHash.Length != HashSize) return Result.Failure("Invalid hash");
             var hash = KeyDerivation.Pbkdf2(password, salt, HashAlgorithm, _appSettings.Value.HashIterations, HashSize);
-            return user.PasswordHash.SequenceEqual(hash) ? Result.Ok() : Result.Failure("No match");
+            return user.PasswordHash.SequenceEqual(hash) ? Result.Success() : Result.Failure("No match");
         }
     }
 }
