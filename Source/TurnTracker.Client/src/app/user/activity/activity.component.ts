@@ -36,6 +36,9 @@ export class ActivityComponent implements OnInit {
   private _activityId: number;
   private _notificationPipe = new NotificationPipe();
   private _includeTurns = false;
+  public get includeTurns(): boolean {
+    return this._includeTurns;
+  }
   private _hasTurns = false;
   private _myParticipantId: number;
   public originalDismissTimeofDay: string;
@@ -78,8 +81,8 @@ export class ActivityComponent implements OnInit {
   ngOnInit() {
     this.myUserId = this._userService.currentUser.id;
 
-    const idParam = this._route.snapshot.paramMap.get('id');
-    const id = parseInt(idParam, 10);
+    const route = this._route.snapshot;
+    const id = parseInt(route.paramMap.get('id'), 10);
     if (isNaN(id) || id <= 0) {
       this._messageService.error('Invalid activity ID');
       this._router.navigateByUrl('/activities');
@@ -87,7 +90,24 @@ export class ActivityComponent implements OnInit {
     }
 
     this._activityId = id;
-    this.refreshActivity();
+    let callback: () => any = null;
+    const turnId = parseInt(route.paramMap.get('turnId'), 10);
+
+    if(route.url[route.url.length - 1].path.toLowerCase() === 'taketurn') {
+      callback = this.takeTurnWithOptions;
+    } else if (!isNaN(turnId) && turnId > 0) {
+      this._includeTurns = true;
+      callback = () => {
+        const turn = this.turns.data?.find(t => t.id === turnId);
+        if(turn) {
+          this.showTurnDetails(turn);
+        } else {
+          this._messageService.error('Invalid turn ID');
+          //todo update the route to no longer include the turn details
+        }
+      }
+    }
+    this.refreshActivity(callback);
   }
 
   filterTurns(includeDisabledTurns: boolean) {
@@ -95,6 +115,7 @@ export class ActivityComponent implements OnInit {
   }
 
   takeTurnWithOptions() {
+    //todo add taketurn dialog to route
     if (this.busy) {
       return;
     }
@@ -146,6 +167,7 @@ export class ActivityComponent implements OnInit {
   }
 
   showTurnDetails(turn: Turn) {
+    //todo update the route to include turn details
     const canModifyTurn = !this.activity.isDisabled && (this.myUserId === turn.creatorId || this.myUserId === turn.userId);
     const dialogRef = this._dialog.open(TurnDetailsDialog, {data: <TurnDetailsDialogConfig>{
       turn: turn,
@@ -235,11 +257,11 @@ export class ActivityComponent implements OnInit {
     });
   }
 
-  refreshActivity() {
+  refreshActivity(callback: () => any = null) {
     if (this.busy) {
       return;
     }
-    this.refreshActivityUnsafe();
+    this.refreshActivityUnsafe(callback);
   }
 
   loadTurns() {
@@ -250,12 +272,13 @@ export class ActivityComponent implements OnInit {
     this.refreshActivityUnsafe();
   }
 
-  private refreshActivityUnsafe() {
+  private refreshActivityUnsafe(callback: () => any = null) {
     this.busy = true;
     this._http.get<ActivityDetails>(`activity/${this._activityId}${this._includeTurns ? '/allturns' : ''}`)
       .subscribe(activity => {
         this.busy = false;
         this.updateActivity(activity);
+        callback?.call(this);
       }, error => {
         this.busy = false;
         if (error instanceof HttpErrorResponse && error.status === 403) {
