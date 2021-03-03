@@ -47,7 +47,7 @@ namespace TurnTracker.Domain.Services
                     var activityResult = SaveActivity(new EditableActivity { Name = "Clean Litterbox", TakeTurns = true, PeriodCount = 2, PeriodUnit = Unit.Day, Participants = userIds.Select(id => new UserInfo { Id = id }).ToList() }, userIds[0]);
                     if (activityResult.IsFailure)
                     {
-                        return activityResult;
+                        return activityResult.MapError(e => e.ToString());
                     }
                     var activityId = activityResult.Value;
                     var activity = GetActivityDetailsShallow(activityId, userIds[0]);
@@ -62,7 +62,7 @@ namespace TurnTracker.Domain.Services
                     activityResult = SaveActivity(new EditableActivity { Name = "Flea Meds", TakeTurns = true, PeriodCount = 1, PeriodUnit = Unit.Month, Participants = userIds.Select(id => new UserInfo { Id = id }).ToList() }, userIds[1]);
                     if (activityResult.IsFailure)
                     {
-                        return activityResult;
+                        return activityResult.MapError(e => e.ToString());
                     }
                     activityId = activityResult.Value;
                     activity = GetActivityDetailsShallow(activityId, userIds[0]);
@@ -77,7 +77,7 @@ namespace TurnTracker.Domain.Services
                     activityResult = SaveActivity(new EditableActivity { Name = "Take Out the Trash", TakeTurns = false, Participants = userIds.Select(id => new UserInfo { Id = id }).ToList()}, userIds[0]);
                     if (activityResult.IsFailure)
                     {
-                        return activityResult;
+                        return activityResult.MapError(e => e.ToString());
                     }
                     activityId = activityResult.Value;
                     activity = GetActivityDetailsShallow(activityId, userIds[0]);
@@ -92,7 +92,7 @@ namespace TurnTracker.Domain.Services
                     activityResult = SaveActivity(new EditableActivity{Name = "Do the Dishes", TakeTurns = true, Participants = userIds.Select(id => new UserInfo{Id = id}).ToList()}, userIds[1]);
                     if (activityResult.IsFailure)
                     {
-                        return activityResult;
+                        return activityResult.MapError(e => e.ToString());
                     }
                     activityId = activityResult.Value;
                     activity = GetActivityDetailsShallow(activityId, userIds[0]);
@@ -105,7 +105,7 @@ namespace TurnTracker.Domain.Services
 
                     return SetActivityDisabled(activityId, userIds[1], true);
                 }
-                return Result.Ok();
+                return Result.Success();
             }
             catch (Exception e)
             {
@@ -133,6 +133,7 @@ namespace TurnTracker.Domain.Services
                 .Include(x => x.DefaultNotificationSettings)
                 .Include(x => x.Participants)
                 .ThenInclude(x => x.User)
+                .AsSingleQuery()
                 .SingleOrDefault(x => x.Id == id);
 
             return activity is null ? null : _mapper.Map<EditableActivity>(activity);
@@ -311,7 +312,7 @@ namespace TurnTracker.Domain.Services
 
                 _db.SaveChanges();
                 
-                return Result.Ok<int, ValidityError>(activityToUpdate.Id);
+                return Result.Success<int, ValidityError>(activityToUpdate.Id);
             }
             catch (Exception e)
             {
@@ -376,6 +377,7 @@ namespace TurnTracker.Domain.Services
                 .Include(x => x.Owner)
                 .Include(x => x.Participants).ThenInclude(x => x.User)
                 .Include(x => x.Participants).ThenInclude(x => x.NotificationSettings)
+                .AsSingleQuery()
                 .SingleOrDefault(x => x.Id == activityId);
         }
 
@@ -477,7 +479,8 @@ namespace TurnTracker.Domain.Services
                                 }
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException();
+                                _logger.LogError($"Unhandled notification type {setting.Type}");
+                                break;
                         }
                     }
                 }
@@ -486,7 +489,7 @@ namespace TurnTracker.Domain.Services
 
                 details.Update(activity);
 
-                return Result.Ok<ActivityDetails,TurnError>(details);
+                return Result.Success<ActivityDetails,TurnError>(details);
             }
             catch (Exception e)
             {
@@ -517,7 +520,7 @@ namespace TurnTracker.Domain.Services
                     return Result.Success(details);
                 }
 
-                return Result.Ok(GetActivityDetails(turn.ActivityId, byUserId));
+                return Result.Success(GetActivityDetails(turn.ActivityId, byUserId));
             }
 
             return Result.Failure<ActivityDetails>("Invalid turn id");
@@ -531,7 +534,7 @@ namespace TurnTracker.Domain.Services
             activity.IsDisabled = disabled;
             _db.SaveChanges();
 
-            return Result.Ok(GetActivityDetails(activityId, byUserId));
+            return Result.Success(GetActivityDetails(activityId, byUserId));
         }
 
         public Result DeleteActivity(int activityId)
@@ -542,7 +545,7 @@ namespace TurnTracker.Domain.Services
             _db.Remove(activity);
             _db.SaveChanges();
 
-            return Result.Ok();
+            return Result.Success();
         }
     }
 }
