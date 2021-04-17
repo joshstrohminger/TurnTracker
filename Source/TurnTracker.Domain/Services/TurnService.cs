@@ -215,7 +215,7 @@ namespace TurnTracker.Domain.Services
                     activityToUpdate = new Activity
                     {
                         Participants = userIds.Select(CreateNewParticipant).ToList(),
-                        DefaultNotificationSettings = _mapper.Map<List<DefaultNotificationSetting>>(defaultNotificationSettings)
+                        DefaultNotificationSettings = _mapper.Map<List<DefaultNotificationSetting>>(defaultNotificationSettings.Values)
                     };
                 }
                 else
