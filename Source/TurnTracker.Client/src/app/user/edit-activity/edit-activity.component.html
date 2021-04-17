@@ -1,48 +1,50 @@
-<form *ngIf="editForm" [formGroup]="editForm">
-  <p>
-    <mat-form-field>
-      <input matInput placeholder="Name" formControlName="name" required>
-      <mat-error>Required</mat-error>
-    </mat-form-field>
-  </p>
-  <p>
-    <mat-checkbox formControlName="takeTurns">Take Turns</mat-checkbox>
-  </p>
-  <p>
-    <mat-form-field>
-      <input step="1" [min]="countMin" [max]="countMax" matInput type="number" formControlName="periodCount" required>
-      <mat-error *ngIf="editForm.controls['periodCount'].invalid">{{getPeriodCountErrorMessage()}}</mat-error>
-    </mat-form-field>
-    <mat-form-field>
-      <mat-label>Unit</mat-label>
-      <mat-select formControlName="periodUnit">
-        <mat-option [value]="defaultUnit">{{defaultUnit}}</mat-option>
-        <mat-option *ngFor="let unit of unitValues" [value]="unit">{{units[unit]}}</mat-option>
-      </mat-select>
-    </mat-form-field>
-  </p>
-  <notifications [notifications]="notifications"
-    [mobileNumberVerified]="false"
-    [emailVerified]="false"
-    [takeTurns]="editForm.value.takeTurns"></notifications>
-  <p>
-    <mat-form-field class="full-width">
-      <input matInput placeholder="Search for users" [matAutocomplete]="auto" formControlName="searchControl">
-      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayUser" autoActiveFirstOption>
-        <mat-option *ngIf="isLoading" class="loading">Loading...</mat-option>
-        <ng-container *ngIf="!isLoading">
-          <mat-option *ngFor="let user of availableUsers" [value]="user">{{user.name}}</mat-option>
-        </ng-container>
-      </mat-autocomplete>
-    </mat-form-field>
-  </p>
-  <table id="participants">
-    <tr *ngFor="let user of participants; let i = index">
-      <td><button *ngIf="user.id !== myId" mat-icon-button color="warn" (click)="removeUser(user, i)"><mat-icon>close</mat-icon></button></td>
-      <td>{{user.name}}</td>
-    </tr>
-  </table>
-  <p>
-    <button mat-raised-button type="submit" [disabled]="editForm.invalid" (click)="saveActivity()">Save</button>
-  </p>
-</form>
+<div class="flex-wrapper">
+  <form *ngIf="editForm" [formGroup]="editForm">
+    <p>
+      <mat-form-field class="full-width">
+        <input matInput placeholder="Name" formControlName="name" required>
+        <mat-error>Required</mat-error>
+      </mat-form-field>
+    </p>
+    <p>
+      <mat-checkbox formControlName="takeTurns">Take Turns</mat-checkbox>
+    </p>
+    <p class="flex-wrapper">
+      <mat-form-field class="equal-width">
+        <input step="1" [min]="countMin" [max]="countMax" matInput type="number" formControlName="periodCount" required>
+        <mat-error *ngIf="editForm.controls['periodCount'].invalid">{{getPeriodCountErrorMessage()}}</mat-error>
+      </mat-form-field>
+      <mat-form-field class="equal-width">
+        <mat-label>Unit</mat-label>
+        <mat-select formControlName="periodUnit">
+          <mat-option [value]="defaultUnit">{{defaultUnit}}</mat-option>
+          <mat-option *ngFor="let unit of unitValues" [value]="unit">{{units[unit]}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </p>
+    <notifications [notifications]="notifications"
+      [mobileNumberVerified]="false"
+      [emailVerified]="false"
+      [takeTurns]="editForm.value.takeTurns"></notifications>
+    <p>
+      <mat-form-field class="full-width">
+        <input matInput placeholder="Search for users" [matAutocomplete]="auto" formControlName="searchControl">
+        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayUser" autoActiveFirstOption>
+          <mat-option *ngIf="isLoading" class="loading">Loading...</mat-option>
+          <ng-container *ngIf="!isLoading">
+            <mat-option *ngFor="let user of availableUsers" [value]="user">{{user.name}}</mat-option>
+          </ng-container>
+        </mat-autocomplete>
+      </mat-form-field>
+    </p>
+    <table id="participants">
+      <tr *ngFor="let user of participants; let i = index">
+        <td><button *ngIf="user.id !== myId" mat-icon-button color="warn" (click)="removeUser(user, i)"><mat-icon>close</mat-icon></button></td>
+        <td>{{user.name}}</td>
+      </tr>
+    </table>
+    <p>
+      <button mat-raised-button type="submit" [disabled]="editForm.invalid" (click)="saveActivity()">Save</button>
+    </p>
+  </form>
+</div>
