@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
 import { ActivityDetails } from '../models/ActivityDetails';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Unit } from '../models/Unit';
@@ -20,18 +20,20 @@ import { VerificationStatus } from '../models/Participant';
 import { UserService } from 'src/app/services/user.service';
 import { DeleteActivityDialog } from '../delete-activity/delete-activity.dialog';
 import { FormBuilder, Validators, FormControl } from '@angular/forms';
-import { finalize } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 import { TitleContentService } from 'src/app/services/title-content.service';
 import { Overlay } from '@angular/cdk/overlay';
 import { ReloadComponent } from '../reload/reload.component';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { Subject } from 'rxjs';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-activity',
   templateUrl: './activity.component.html',
   styleUrls: ['./activity.component.scss']
 })
-export class ActivityComponent implements OnInit {
+export class ActivityComponent implements OnInit, OnDestroy {
 
   private _activityId: number;
   private _notificationPipe = new NotificationPipe();
@@ -45,6 +47,7 @@ export class ActivityComponent implements OnInit {
   public get hasTurns() {
     return this._hasTurns;
   }
+  private readonly _done = new Subject();
 
   dismissTimeOfDayControl: FormControl;
   activity: ActivityDetails;
@@ -71,12 +74,18 @@ export class ActivityComponent implements OnInit {
     private _dialog: MatDialog,
     private _formBuilder: FormBuilder,
     private titleContentService: TitleContentService,
-    private overlay: Overlay) {
-      this.turns.filterPredicate = (turn: Turn, filter: string) => {
-        return turn && (!filter || !turn.isDisabled);
-      };
-      this.filterTurns(false);
-    }
+    private overlay: Overlay,
+    private location: Location) {
+    this.turns.filterPredicate = (turn: Turn, filter: string) => {
+      return turn && (!filter || !turn.isDisabled);
+    };
+    this.filterTurns(false);
+  }
+
+  ngOnDestroy(): void {
+    this._done.next();
+    this._done.complete();
+  }
 
   ngOnInit() {
     this.myUserId = this._userService.currentUser.id;
@@ -94,20 +103,29 @@ export class ActivityComponent implements OnInit {
     const turnId = parseInt(route.paramMap.get('turnId'), 10);
 
     if(route.url[route.url.length - 1].path.toLowerCase() === 'taketurn') {
-      callback = this.takeTurnWithOptions;
+      callback = () => {
+        this.location.replaceState(`activity/${this._activityId}`);
+        this.takeTurnWithOptions();
+      };
     } else if (!isNaN(turnId) && turnId > 0) {
       this._includeTurns = true;
       callback = () => {
+        this.location.replaceState(`activity/${this._activityId}`);
         const turn = this.turns.data?.find(t => t.id === turnId);
         if(turn) {
           this.showTurnDetails(turn);
         } else {
           this._messageService.error('Invalid turn ID');
-          //todo update the route to no longer include the turn details
         }
       }
     }
     this.refreshActivity(callback);
+
+    this._router.events.pipe(takeUntil(this._done)).subscribe((event: NavigationStart) => {
+      if (event.navigationTrigger === 'popstate') {
+        console.log('popping state', event);
+      }
+    });
   }
 
   filterTurns(includeDisabledTurns: boolean) {
@@ -115,11 +133,13 @@ export class ActivityComponent implements OnInit {
   }
 
   takeTurnWithOptions() {
-    //todo add taketurn dialog to route
     if (this.busy) {
       return;
     }
     this.busy = true;
+
+    this.location.go(`activity/${this._activityId}/taketurn`);
+
     const dialogRef = this._dialog.open(TakeTurnDialog, {data: <TakeTurnDialogConfig>{
       activityName: this.activity.name,
       activityId: this.activity.id,
@@ -128,10 +148,19 @@ export class ActivityComponent implements OnInit {
       participants: this.activity.participants
     },
     minWidth: '16em'});
+    let backdropClicked = false;
+    dialogRef.backdropClick().subscribe(() => {
+      backdropClicked = true;
+    });
     dialogRef.afterClosed().subscribe((result: NewTurn) => {
       this.busy = false;
-      if (result) {
-        this.takeTurnUnsafe(result);
+      // only toggle and go back if the result is true/false or the backdrop was clicked, meaning the user initiated closing the dialog
+      if(typeof result === 'boolean' || backdropClicked)
+      {
+        if (result) {
+          this.takeTurnUnsafe(result);
+        }
+        this.location.back();
       }
     });
   }
@@ -167,16 +196,26 @@ export class ActivityComponent implements OnInit {
   }
 
   showTurnDetails(turn: Turn) {
-    //todo update the route to include turn details
+    this.location.go(`activity/${this._activityId}/turn/${turn.id}`)
+
     const canModifyTurn = !this.activity.isDisabled && (this.myUserId === turn.creatorId || this.myUserId === turn.userId);
     const dialogRef = this._dialog.open(TurnDetailsDialog, {data: <TurnDetailsDialogConfig>{
       turn: turn,
       names: this.names,
       canModifyTurn: canModifyTurn
     }});
+    let backdropClicked = false;
+    dialogRef.backdropClick().subscribe(() => {
+      backdropClicked = true;
+    });
     dialogRef.afterClosed().subscribe((toggleTurnDisabled: boolean) => {
-      if (toggleTurnDisabled && canModifyTurn) {
-        this.toggleTurnDisabled(turn);
+      // only toggle and go back if the result is true/false or the backdrop was clicked, meaning the user initiated closing the dialog
+      if(typeof toggleTurnDisabled === 'boolean' || backdropClicked)
+      {
+        if (toggleTurnDisabled && canModifyTurn) {
+          this.toggleTurnDisabled(turn);
+        }
+        this.location.back();
       }
     });
   }
