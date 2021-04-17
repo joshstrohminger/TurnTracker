@@ -1,6 +1,7 @@
 name: Dev Build
 
 on:
+  workflow_dispatch:
   push:
     branches:    
       - develop
@@ -16,7 +17,7 @@ jobs:
     - name: Setup node and npm
       uses: actions/setup-node@v1
       with:
-        node-version: '13.x'
+        node-version: '15.x'
 
     - name: Install npm Dependencies
       working-directory: Source/TurnTracker.Client
@@ -29,10 +30,10 @@ jobs:
       working-directory: Source/TurnTracker.Client
       run: npm run-script build
       
-    - name: Setup .NET Core
+    - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.100
+        dotnet-version: 5.0.200
 
     - name: Build with dotnet
       run: dotnet build --configuration Release

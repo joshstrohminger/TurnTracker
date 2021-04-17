@@ -58,7 +58,7 @@
       [takeTurns]="activity.takeTurns"
       (settingChanged)="saveNotificationSetting($event)"></notifications>
   </mat-expansion-panel>
-  <mat-expansion-panel (opened)="loadTurns()">
+  <mat-expansion-panel (opened)="loadTurns()" [expanded]="includeTurns">
     <mat-expansion-panel-header>
       <mat-panel-title>Turns</mat-panel-title>
     </mat-expansion-panel-header>

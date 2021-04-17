@@ -51,6 +51,7 @@ namespace TurnTracker.Domain.HostedServices
                                       (x.Type == NotificationType.OverdueAnybody ||
                                        (x.Type == NotificationType.OverdueMine &&
                                        participant.UserId == activity.CurrentTurnUserId)))))
+                    .AsSingleQuery()
                     .ToListAsync(stoppingToken);
 
                 _logger.LogInformation($"Found {expiredActivities.Count} expired activities with push notification participants");

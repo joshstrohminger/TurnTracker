@@ -56,7 +56,7 @@ namespace TurnTracker.Domain.Services
                 return Result.Failure("Not a participant of this activity");
             }
 
-            return Result.Ok();
+            return Result.Success();
         }
 
         public bool IsOwnerOf(int activityId, int userId)

@@ -91,7 +91,7 @@ namespace TurnTracker.Domain.Services
                 }
 
                 _db.SaveChanges();
-                return Result.Ok();
+                return Result.Success();
             }
             catch (Exception e)
             {

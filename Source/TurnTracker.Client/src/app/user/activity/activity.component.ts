@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
 import { ActivityDetails } from '../models/ActivityDetails';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Unit } from '../models/Unit';
@@ -20,28 +20,34 @@ import { VerificationStatus } from '../models/Participant';
 import { UserService } from 'src/app/services/user.service';
 import { DeleteActivityDialog } from '../delete-activity/delete-activity.dialog';
 import { FormBuilder, Validators, FormControl } from '@angular/forms';
-import { finalize } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 import { TitleContentService } from 'src/app/services/title-content.service';
 import { Overlay } from '@angular/cdk/overlay';
 import { ReloadComponent } from '../reload/reload.component';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { Subject } from 'rxjs';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-activity',
   templateUrl: './activity.component.html',
   styleUrls: ['./activity.component.scss']
 })
-export class ActivityComponent implements OnInit {
+export class ActivityComponent implements OnInit, OnDestroy {
 
   private _activityId: number;
   private _notificationPipe = new NotificationPipe();
   private _includeTurns = false;
+  public get includeTurns(): boolean {
+    return this._includeTurns;
+  }
   private _hasTurns = false;
   private _myParticipantId: number;
   public originalDismissTimeofDay: string;
   public get hasTurns() {
     return this._hasTurns;
   }
+  private readonly _done = new Subject();
 
   dismissTimeOfDayControl: FormControl;
   activity: ActivityDetails;
@@ -68,18 +74,24 @@ export class ActivityComponent implements OnInit {
     private _dialog: MatDialog,
     private _formBuilder: FormBuilder,
     private titleContentService: TitleContentService,
-    private overlay: Overlay) {
-      this.turns.filterPredicate = (turn: Turn, filter: string) => {
-        return turn && (!filter || !turn.isDisabled);
-      };
-      this.filterTurns(false);
-    }
+    private overlay: Overlay,
+    private location: Location) {
+    this.turns.filterPredicate = (turn: Turn, filter: string) => {
+      return turn && (!filter || !turn.isDisabled);
+    };
+    this.filterTurns(false);
+  }
+
+  ngOnDestroy(): void {
+    this._done.next();
+    this._done.complete();
+  }
 
   ngOnInit() {
     this.myUserId = this._userService.currentUser.id;
 
-    const idParam = this._route.snapshot.paramMap.get('id');
-    const id = parseInt(idParam, 10);
+    const route = this._route.snapshot;
+    const id = parseInt(route.paramMap.get('id'), 10);
     if (isNaN(id) || id <= 0) {
       this._messageService.error('Invalid activity ID');
       this._router.navigateByUrl('/activities');
@@ -87,7 +99,33 @@ export class ActivityComponent implements OnInit {
     }
 
     this._activityId = id;
-    this.refreshActivity();
+    let callback: () => any = null;
+    const turnId = parseInt(route.paramMap.get('turnId'), 10);
+
+    if(route.url[route.url.length - 1].path.toLowerCase() === 'taketurn') {
+      callback = () => {
+        this.location.replaceState(`activity/${this._activityId}`);
+        this.takeTurnWithOptions();
+      };
+    } else if (!isNaN(turnId) && turnId > 0) {
+      this._includeTurns = true;
+      callback = () => {
+        this.location.replaceState(`activity/${this._activityId}`);
+        const turn = this.turns.data?.find(t => t.id === turnId);
+        if(turn) {
+          this.showTurnDetails(turn);
+        } else {
+          this._messageService.error('Invalid turn ID');
+        }
+      }
+    }
+    this.refreshActivity(callback);
+
+    this._router.events.pipe(takeUntil(this._done)).subscribe((event: NavigationStart) => {
+      if (event.navigationTrigger === 'popstate') {
+        console.log('popping state', event);
+      }
+    });
   }
 
   filterTurns(includeDisabledTurns: boolean) {
@@ -99,6 +137,9 @@ export class ActivityComponent implements OnInit {
       return;
     }
     this.busy = true;
+
+    this.location.go(`activity/${this._activityId}/taketurn`);
+
     const dialogRef = this._dialog.open(TakeTurnDialog, {data: <TakeTurnDialogConfig>{
       activityName: this.activity.name,
       activityId: this.activity.id,
@@ -107,10 +148,19 @@ export class ActivityComponent implements OnInit {
       participants: this.activity.participants
     },
     minWidth: '16em'});
+    let backdropClicked = false;
+    dialogRef.backdropClick().subscribe(() => {
+      backdropClicked = true;
+    });
     dialogRef.afterClosed().subscribe((result: NewTurn) => {
       this.busy = false;
-      if (result) {
-        this.takeTurnUnsafe(result);
+      // only toggle and go back if the result is true/false or the backdrop was clicked, meaning the user initiated closing the dialog
+      if(typeof result === 'boolean' || backdropClicked)
+      {
+        if (result) {
+          this.takeTurnUnsafe(result);
+        }
+        this.location.back();
       }
     });
   }
@@ -146,15 +196,26 @@ export class ActivityComponent implements OnInit {
   }
 
   showTurnDetails(turn: Turn) {
+    this.location.go(`activity/${this._activityId}/turn/${turn.id}`)
+
     const canModifyTurn = !this.activity.isDisabled && (this.myUserId === turn.creatorId || this.myUserId === turn.userId);
     const dialogRef = this._dialog.open(TurnDetailsDialog, {data: <TurnDetailsDialogConfig>{
       turn: turn,
       names: this.names,
       canModifyTurn: canModifyTurn
     }});
+    let backdropClicked = false;
+    dialogRef.backdropClick().subscribe(() => {
+      backdropClicked = true;
+    });
     dialogRef.afterClosed().subscribe((toggleTurnDisabled: boolean) => {
-      if (toggleTurnDisabled && canModifyTurn) {
-        this.toggleTurnDisabled(turn);
+      // only toggle and go back if the result is true/false or the backdrop was clicked, meaning the user initiated closing the dialog
+      if(typeof toggleTurnDisabled === 'boolean' || backdropClicked)
+      {
+        if (toggleTurnDisabled && canModifyTurn) {
+          this.toggleTurnDisabled(turn);
+        }
+        this.location.back();
       }
     });
   }
@@ -235,11 +296,11 @@ export class ActivityComponent implements OnInit {
     });
   }
 
-  refreshActivity() {
+  refreshActivity(callback: () => any = null) {
     if (this.busy) {
       return;
     }
-    this.refreshActivityUnsafe();
+    this.refreshActivityUnsafe(callback);
   }
 
   loadTurns() {
@@ -250,12 +311,13 @@ export class ActivityComponent implements OnInit {
     this.refreshActivityUnsafe();
   }
 
-  private refreshActivityUnsafe() {
+  private refreshActivityUnsafe(callback: () => any = null) {
     this.busy = true;
     this._http.get<ActivityDetails>(`activity/${this._activityId}${this._includeTurns ? '/allturns' : ''}`)
       .subscribe(activity => {
         this.busy = false;
         this.updateActivity(activity);
+        callback?.call(this);
       }, error => {
         this.busy = false;
         if (error instanceof HttpErrorResponse && error.status === 403) {

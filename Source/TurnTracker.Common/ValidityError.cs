@@ -24,5 +24,7 @@ namespace TurnTracker.Common
         {
             return Result.Failure<TValue, ValidityError>(new ValidityError(false, message));
         }
+
+        public override string ToString() => $"{(Invalid ? "Invalid" : "Valid")}: {Message}";
     }
 }
