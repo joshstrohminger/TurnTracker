@@ -9,7 +9,7 @@ namespace TurnTracker.Domain.Models
 {
     public class ActivityDetails
     {
-        public int Id { get; }
+        public int Id { get; private set; }
         public string Name { get; }
         public string Description { get; }
         public bool HasDisabledTurns { get; }
@@ -39,9 +39,10 @@ namespace TurnTracker.Domain.Models
 
         public void Update(Activity activity)
         {
-            if (activity.Id == Id)
+            if (activity.Id == Id || Id == 0)
             {
                 ModifiedDate = activity.ModifiedDate;
+                Id = activity.Id;
             }
         }
 

@@ -4,7 +4,7 @@
   <div *ngIf="swUpdates.isEnabled">
     <p>
       <label>Last checked: </label>
-      <span>{{swUpdates.lastChecked}}</span>
+      <span>{{swUpdates.lastChecked$ | async}}</span>
     </p>
     <p class="spinner-wrapper">
       <span *ngIf="!swUpdates.isUpdateAvailable">No update available</span>

@@ -1,7 +1,7 @@
-import { ApplicationRef, Injectable } from '@angular/core';
+import { ApplicationRef, Injectable, NgZone } from '@angular/core';
 import { SwUpdate } from '@angular/service-worker';
 import { DateTime } from 'luxon';
-import { concat, interval, merge, Subject } from 'rxjs';
+import { BehaviorSubject, concat, interval, merge, Observable, Subject } from 'rxjs';
 import { first } from 'rxjs/operators';
 import { MessageService } from './message.service';
 
@@ -25,12 +25,12 @@ export class SwUpdateService {
     return this.updating;
   }
 
-  private checked: DateTime;
-  public get lastChecked(): string {
-    return this.checked?.toLocaleString(DateTime.DATETIME_FULL) || 'never';
+  private lastCheckedSubject = new BehaviorSubject<string>('never');
+  public get lastChecked$(): Observable<string> {
+    return this.lastCheckedSubject.asObservable();
   }
 
-  constructor(private updates: SwUpdate, private messageService: MessageService, appRef: ApplicationRef) {
+  constructor(private updates: SwUpdate, private messageService: MessageService, appRef: ApplicationRef, private zone: NgZone) {
     if(!this.updates.isEnabled) {
       return;
     }
@@ -50,8 +50,10 @@ export class SwUpdateService {
 
     triggerAfterStable$.subscribe(() => updates.checkForUpdate().then(
       () => {
-        this.checked = DateTime.local();
-        console.log(`Checked for an update at ${this.lastChecked}`);
+        this.zone.run(() => {
+          this.lastCheckedSubject.next(DateTime.local().toLocaleString(DateTime.DATETIME_FULL));
+        });
+        console.log(`Checked for an update at ${this.lastCheckedSubject.value}`);
       },
       error => console.error(`Failed to check for an update at ${DateTime.local().toLocaleString(DateTime.DATETIME_FULL)}`, error)));
   }

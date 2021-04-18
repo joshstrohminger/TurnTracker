@@ -49,7 +49,7 @@ namespace TurnTracker.Domain.Services
                     {
                         return activityResult.MapError(e => e.ToString());
                     }
-                    var activityId = activityResult.Value;
+                    var activityId = activityResult.Value.Id;
                     var activity = GetActivityDetailsShallow(activityId, userIds[0]);
                     for(var i = 1; i < 8; i++)
                     {
@@ -64,7 +64,7 @@ namespace TurnTracker.Domain.Services
                     {
                         return activityResult.MapError(e => e.ToString());
                     }
-                    activityId = activityResult.Value;
+                    activityId = activityResult.Value.Id;
                     activity = GetActivityDetailsShallow(activityId, userIds[0]);
                     for (var i = 1; i < 25; i++)
                     {
@@ -79,7 +79,7 @@ namespace TurnTracker.Domain.Services
                     {
                         return activityResult.MapError(e => e.ToString());
                     }
-                    activityId = activityResult.Value;
+                    activityId = activityResult.Value.Id;
                     activity = GetActivityDetailsShallow(activityId, userIds[0]);
                     for (var i = 1; i < 37; i++)
                     {
@@ -94,7 +94,7 @@ namespace TurnTracker.Domain.Services
                     {
                         return activityResult.MapError(e => e.ToString());
                     }
-                    activityId = activityResult.Value;
+                    activityId = activityResult.Value.Id;
                     activity = GetActivityDetailsShallow(activityId, userIds[0]);
                     for (var i = 1; i < 19; i++)
                     {
@@ -139,18 +139,18 @@ namespace TurnTracker.Domain.Services
             return activity is null ? null : _mapper.Map<EditableActivity>(activity);
         }
 
-        public Result<int, ValidityError> SaveActivity(EditableActivity activity, int ownerId)
+        public Result<ActivityDetails, ValidityError> SaveActivity(EditableActivity activity, int ownerId)
         {
             try
             {
                 if (activity is null)
                 {
-                    return ValidityError.ForInvalidObject<int>("no activity provided");
+                    return ValidityError.ForInvalidObject<ActivityDetails>("no activity provided");
                 }
 
                 if (string.IsNullOrWhiteSpace(activity.Name))
                 {
-                    return ValidityError.ForInvalidObject<int>("empty name");
+                    return ValidityError.ForInvalidObject<ActivityDetails>("empty name");
                 }
 
                 TimeSpan? period = null;
@@ -164,7 +164,7 @@ namespace TurnTracker.Domain.Services
                 }
                 else if (activity.PeriodCount.Value == 0)
                 {
-                    return ValidityError.ForInvalidObject<int>("invalid period count");
+                    return ValidityError.ForInvalidObject<ActivityDetails>("invalid period count");
                 }
                 else
                 {
@@ -186,7 +186,7 @@ namespace TurnTracker.Domain.Services
                             period = TimeSpan.FromDays(365.25 * activity.PeriodCount.Value);
                             break;
                         default:
-                            return ValidityError.ForInvalidObject<int>("invalid period unit");
+                            return ValidityError.ForInvalidObject<ActivityDetails>("invalid period unit");
                     }
                 }
 
@@ -202,7 +202,7 @@ namespace TurnTracker.Domain.Services
 
                 if (activity.Id < 0)
                 {
-                    return ValidityError.ForInvalidObject<int>("invalid ID");
+                    return ValidityError.ForInvalidObject<ActivityDetails>("invalid ID");
                 }
 
                 var userIds = activity.Participants.Select(p => p.Id).Append(ownerId).ToHashSet();
@@ -215,20 +215,22 @@ namespace TurnTracker.Domain.Services
                     activityToUpdate = new Activity
                     {
                         Participants = userIds.Select(CreateNewParticipant).ToList(),
-                        DefaultNotificationSettings = _mapper.Map<List<DefaultNotificationSetting>>(defaultNotificationSettings.Values)
+                        DefaultNotificationSettings = _mapper.Map<List<DefaultNotificationSetting>>(defaultNotificationSettings.Values),
+                        Owner = _db.Users.Find(ownerId),
+                        Turns = new List<Turn>(0)
                     };
                 }
                 else
                 {
-                    activityToUpdate = GetActivity(activity.Id, false, false, true);
+                    activityToUpdate = GetActivity(activity.Id, false, true, true);
                     if (activityToUpdate is null)
                     {
-                        return ValidityError.ForInvalidObject<int>("invalid ID");
+                        return ValidityError.ForInvalidObject<ActivityDetails>("invalid ID");
                     }
 
                     if (activityToUpdate.IsDisabled)
                     {
-                        return ValidityError.ForInvalidObject<int>("activity is disabled");
+                        return ValidityError.ForInvalidObject<ActivityDetails>("activity is disabled");
                     }
 
                     // remove any participants that should no longer be there
@@ -313,15 +315,17 @@ namespace TurnTracker.Domain.Services
                     _db.Activities.Update(activityToUpdate);
                 }
 
+                var details = ActivityDetails.Calculate(activityToUpdate, ownerId, _mapper);
+
                 _db.SaveChanges();
-                
-                return Result.Success<int, ValidityError>(activityToUpdate.Id);
+                details.Update(activityToUpdate);
+                return Result.Success<ActivityDetails, ValidityError>(details);
             }
             catch (Exception e)
             {
                 var message = $"Failed to save activity '{activity?.Id}'";
                 _logger.LogError(e, message);
-                return ValidityError.ForInvalidObject<int>(message);
+                return ValidityError.ForInvalidObject<ActivityDetails>(message);
             }
 
             Participant CreateNewParticipant(int userId)
@@ -488,6 +492,10 @@ namespace TurnTracker.Domain.Services
                     }
                 }
 
+                // Always mark the activity as modified when taking a turn so our checks elsewhere that compare
+                // the modified timestamp will still work for activities that wouldn't normally have anything update,
+                // like when they're non-periodic or the next-turn user doesn't change.
+                _db.Entry(activity).State = EntityState.Modified;
                 _db.SaveChanges();
 
                 details.Update(activity);
@@ -518,6 +526,7 @@ namespace TurnTracker.Domain.Services
                     }
                     var details = ActivityDetails.Calculate(activity, byUserId, _mapper);
 
+                    _db.Entry(activity).State = EntityState.Modified;
                     _db.SaveChanges();
                     details.Update(activity);
                     return Result.Success(details);
