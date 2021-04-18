@@ -69,8 +69,7 @@ namespace TurnTracker.Server.Controllers
             var myId = User.GetId();
             if (activity.Id > 0 && !_resourceAuthorizationService.IsOwnerOf(activity.Id, myId)) return Forbid();
 
-            var activityResult = _turnService.SaveActivity(activity, myId)
-                .Map(activityId => _turnService.GetActivityDetailsShallow(activityId, myId));
+            var activityResult = _turnService.SaveActivity(activity, myId);
             if (activityResult.IsSuccess) return Json(activityResult.Value);
 
             if (activityResult.Error.Invalid) return BadRequest(activityResult.Error.Message);
