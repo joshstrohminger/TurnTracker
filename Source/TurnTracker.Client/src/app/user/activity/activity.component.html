@@ -7,8 +7,13 @@
     <mat-card-header>
       <mat-card-title>{{activity.name}}</mat-card-title>
       <mat-card-subtitle>
-        <span *ngIf="activity.periodCount && activity.periodCount !== null; else noPeriod">{{activity.periodCount}} {{units[activity.periodUnit]}}{{activity.periodCount > 1 ? 's' : ''}}</span>
+        <span *ngIf="activity.periodCount && activity.periodCount !== null; else noPeriod">
+          Every
+          <span *ngIf="activity.periodCount > 1"> {{activity.periodCount}}</span>
+          <span> {{units[activity.periodUnit]}}{{activity.periodCount > 1 ? 's' : ''}}</span>
+        </span>
         <ng-template #noPeriod>indefinite</ng-template>
+        <span *ngIf="activity.description"> - {{activity.description}}</span>
       </mat-card-subtitle>
       <button mat-icon-button id="edit-menu" *ngIf="activity.ownerId === myUserId; else ownerName" [disabled]="busy" [matMenuTriggerFor]="editMenu" [matMenuTriggerData]="{isDisabled: activity.isDisabled}" aria-label="Edit">
         <mat-icon>more_vert</mat-icon>

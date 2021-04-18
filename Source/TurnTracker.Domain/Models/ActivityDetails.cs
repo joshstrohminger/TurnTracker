@@ -11,6 +11,7 @@ namespace TurnTracker.Domain.Models
     {
         public int Id { get; }
         public string Name { get; }
+        public string Description { get; }
         public bool HasDisabledTurns { get; }
         public DateTimeOffset? Due { get; }
         public Unit? PeriodUnit { get; }
@@ -48,6 +49,7 @@ namespace TurnTracker.Domain.Models
         {
             Id = activity.Id;
             Name = activity.Name;
+            Description = activity.Description;
             PeriodUnit = activity.PeriodUnit;
             PeriodCount = activity.PeriodCount;
             OwnerName = activity.Owner.DisplayName;

@@ -6,6 +6,7 @@ import { DateTime } from 'luxon';
 export class ActivityDetails {
     public id: number;
     public name: string;
+    public description: string;
     public hasDisabledTurns: boolean;
     public due?: string;
     public periodUnit?: Unit;
