@@ -492,6 +492,10 @@ namespace TurnTracker.Domain.Services
                     }
                 }
 
+                // Always mark the activity as modified when taking a turn so our checks elsewhere that compare
+                // the modified timestamp will still work for activities that wouldn't normally have anything update,
+                // like when they're non-periodic or the next-turn user doesn't change.
+                _db.Entry(activity).State = EntityState.Modified;
                 _db.SaveChanges();
 
                 details.Update(activity);
@@ -522,6 +526,7 @@ namespace TurnTracker.Domain.Services
                     }
                     var details = ActivityDetails.Calculate(activity, byUserId, _mapper);
 
+                    _db.Entry(activity).State = EntityState.Modified;
                     _db.SaveChanges();
                     details.Update(activity);
                     return Result.Success(details);
