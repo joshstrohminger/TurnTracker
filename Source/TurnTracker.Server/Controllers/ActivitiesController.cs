@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Domain.Interfaces;
@@ -11,11 +12,13 @@ namespace TurnTracker.Server.Controllers
     [Route("api/[controller]")]
     public class ActivitiesController : Controller
     {
+        private readonly IMapper _mapper;
         private readonly ITurnService _turnService;
 
-        public ActivitiesController(ITurnService turnService)
+        public ActivitiesController(ITurnService turnService, IMapper mapper)
         {
             _turnService = turnService;
+            _mapper = mapper;
         }
 
         [HttpGet("participating")]
@@ -23,15 +26,7 @@ namespace TurnTracker.Server.Controllers
         {
             return Json(_turnService
                 .GetActivitiesByParticipant(User.GetId())
-                .Select(a => new ActivitySummary
-                {
-                    Id = a.Id,
-                    Name = a.Name,
-                    CurrentTurnUserId = a.CurrentTurnUserId,
-                    CurrentTurnUserDisplayName = a.CurrentTurnUser?.DisplayName,
-                    Due = a.Due,
-                    IsDisabled = a.IsDisabled
-                }));
+                .Select(activity => _mapper.Map<ActivitySummary>(activity)));
         }
     }
 }

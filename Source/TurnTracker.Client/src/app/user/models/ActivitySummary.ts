@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 export class ActivitySummary {
   public id: number;
   public name: string;
+  public description: string;
   public currentTurnUserId?: number;
   public currentTurnUserDisplayName?: string;
   public due?: string;

@@ -89,6 +89,7 @@ export class EditActivityComponent implements OnInit {
 
       this.editForm = this._formBuilder.group({
         name: [activity.name, [Validators.required, TurnTrackerValidators.whitespace]],
+        description: [activity.description],
         takeTurns: [activity.takeTurns],
         periodCount: [activity.periodCount,
           [Validators.required, Validators.pattern('[0-9]+'), Validators.min(this.countMin), Validators.max(this.countMax)]],
@@ -197,6 +198,7 @@ export class EditActivityComponent implements OnInit {
     this._http.post<ActivityDetails>('activity/save', <EditableActivity>{
       id: this._activityId,
       name: this.editForm.value.name,
+      description: this.editForm.value.description,
       periodCount: this.editForm.value.periodCount,
       periodUnit: Number(this.editForm.value.periodUnit),
       takeTurns,

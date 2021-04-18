@@ -7,6 +7,7 @@ namespace TurnTracker.Domain.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string Description { get; set; }
         public bool IsDisabled { get; set; }
         public Unit? PeriodUnit { get; set; }
         public uint? PeriodCount { get; set; }

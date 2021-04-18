@@ -296,6 +296,9 @@ namespace TurnTracker.Domain.Services
 
                 activityToUpdate.OwnerId = ownerId;
                 activityToUpdate.Name = activity.Name;
+                activityToUpdate.Description = string.IsNullOrWhiteSpace(activity.Description)
+                    ? null
+                    : activity.Description.Trim();
                 activityToUpdate.PeriodCount = activity.PeriodCount;
                 activityToUpdate.PeriodUnit = activity.PeriodUnit;
                 activityToUpdate.Period = period;

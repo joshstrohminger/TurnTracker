@@ -14,6 +14,7 @@ namespace TurnTracker.Data.Entities
 
         [Required]
         public string Name { get; set; }
+        public string Description { get; set; }
 
         [DataType("interval")]
         public TimeSpan? Period { get; set; }
