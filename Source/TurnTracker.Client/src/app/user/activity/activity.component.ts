@@ -152,13 +152,13 @@ export class ActivityComponent implements OnInit, OnDestroy {
     dialogRef.backdropClick().subscribe(() => {
       backdropClicked = true;
     });
-    dialogRef.afterClosed().subscribe((result: NewTurn) => {
+    dialogRef.afterClosed().subscribe((result: NewTurn|false|undefined) => {
       this.busy = false;
-      // only toggle and go back if the result is true/false or the backdrop was clicked, meaning the user initiated closing the dialog
-      if(typeof result === 'boolean' || backdropClicked)
+      // only toggle and go back if the result is false (dialog closed) or the backdrop was clicked, meaning the user initiated closing the dialog
+      if(result || result === false || backdropClicked)
       {
         if (result) {
-          this.takeTurnUnsafe(result);
+          this.takeTurnUnsafe(result as NewTurn);
         }
         this.location.back();
       }
