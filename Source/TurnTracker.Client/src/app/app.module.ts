@@ -53,16 +53,21 @@ import { NotificationsComponent } from './user/notifications/notifications.compo
 import { ReloadComponent } from './user/reload/reload.component';
 
 const routes: Routes = [
-  { path: 'activity/add', component: EditActivityComponent, canActivate: [AuthGuard], data: {title: 'Add Activity'} },
-  { path: 'activity/:id/edit', component: EditActivityComponent, canActivate: [AuthGuard], data: {title: 'Edit Activity'} },
-  { path: 'activity/:id', component: ActivityComponent, canActivate: [AuthGuard], data: {title: 'Activity'} },
-  { path: 'activity/:id/taketurn', component: ActivityComponent, canActivate: [AuthGuard], data: {title: 'Activity'} },
-  { path: 'activity/:id/turn/:turnId', component: ActivityComponent, canActivate: [AuthGuard], data: {title: 'Activity'} },
+  {
+    path: 'activity',
+    canActivate: [AuthGuard],
+    children: [
+    { path: 'add', component: EditActivityComponent, data: {title: 'Add Activity'} },
+    { path: ':id/edit', component: EditActivityComponent, data: {title: 'Edit Activity'} },
+    { path: ':id', component: ActivityComponent, data: {title: 'Activity'} },
+    { path: ':id/taketurn', component: ActivityComponent, data: {title: 'Activity'} },
+    { path: ':id/turn/:turnId', component: ActivityComponent, data: {title: 'Activity'} },
+  ]},
   { path: 'activities', component: ActivitiesComponent, canActivate: [AuthGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard], data: {title: 'Profile'} },
   { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard], data: {title: 'Settings'} },
-  { path: 'about', component: AboutComponent, data: {title: 'About'} },
   { path: 'login', component: LoginComponent, canActivate: [LoginGuard], data: {title: 'Login'} },
+  { path: 'about', component: AboutComponent, data: {title: 'About'} },
   { path: '', redirectTo: '/activities', pathMatch: 'full' },
   { path: '**', component: NotFoundComponent, data: {title: 'Not Found'} }
 ];
