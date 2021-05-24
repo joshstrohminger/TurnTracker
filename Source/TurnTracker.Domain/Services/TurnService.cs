@@ -214,7 +214,7 @@ namespace TurnTracker.Domain.Services
                     add = true;
                     activityToUpdate = new Activity
                     {
-                        Participants = userIds.Select(CreateNewParticipant).ToList(),
+                        Participants = _db.Users.Where(user => userIds.Contains(user.Id)).ToList().Select(CreateNewParticipant).ToList(),
                         DefaultNotificationSettings = _mapper.Map<List<DefaultNotificationSetting>>(defaultNotificationSettings.Values),
                         Owner = _db.Users.Find(ownerId),
                         Turns = new List<Turn>(0)
@@ -240,7 +240,7 @@ namespace TurnTracker.Domain.Services
                     userIds.ExceptWith(activityToUpdate.Participants.Select(x => x.UserId));
 
                     // add new participants
-                    activityToUpdate.Participants.AddRange(userIds.Select(CreateNewParticipant));
+                    activityToUpdate.Participants.AddRange(_db.Users.Where(user => userIds.Contains(user.Id)).ToList().Select(CreateNewParticipant));
 
                     // remove any default notifications that should no longer be there
                     activityToUpdate.DefaultNotificationSettings.RemoveAll(x =>
@@ -328,11 +328,12 @@ namespace TurnTracker.Domain.Services
                 return ValidityError.ForInvalidObject<ActivityDetails>(message);
             }
 
-            Participant CreateNewParticipant(int userId)
+            Participant CreateNewParticipant(User user)
             {
                 return new Participant
                 {
-                    UserId = userId,
+                    UserId = user.Id,
+                    User = user,
                     DismissUntilTimeOfDay = _appSettings.Value.PushNotifications.DefaultDismissTime,
                     NotificationSettings = new List<NotificationSetting>()
                 };
