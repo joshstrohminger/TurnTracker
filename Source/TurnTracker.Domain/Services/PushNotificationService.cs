@@ -120,6 +120,7 @@ namespace TurnTracker.Domain.Services
             }
             catch (PushServiceClientException e)
             {
+                //https://developers.google.com/web/fundamentals/push-notifications/common-issues-and-reporting-bugs#http_status_codes
                 if (e.StatusCode == HttpStatusCode.NotFound || e.StatusCode == HttpStatusCode.Gone)
                 {
                     _logger.LogWarning(e,
