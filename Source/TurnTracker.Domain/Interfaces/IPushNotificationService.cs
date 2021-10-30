@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using TurnTracker.Domain.Models;
+using TurnTracker.Domain.Services;
 
 namespace TurnTracker.Domain.Interfaces
 {
@@ -8,7 +10,8 @@ namespace TurnTracker.Domain.Interfaces
     {
         Task<Result> SendToOneDeviceAsync(int userId, string title, string message, string endpoint, string groupKey);
         Task<Result> SendCloseToOneDeviceAsync(int userId, string endpoint, string groupKey);
-        Task<Result> SendToAllDevicesAsync(int userId, string title, string message, string url, string groupKey, params PushAction[] actions);
-        Task<Result> SendCloseToAllDevicesAsync(int userId, string groupKey);
+        Task<PushFailure[]> SendToAllDevicesAsync(int userId, string title, string message, string url, string groupKey, params PushAction[] actions);
+        Task<PushFailure[]> SendCloseToAllDevicesAsync(int userId, string groupKey);
+        Task CleanupFailuresAsync(IEnumerable<PushFailure> failures);
     }
 }

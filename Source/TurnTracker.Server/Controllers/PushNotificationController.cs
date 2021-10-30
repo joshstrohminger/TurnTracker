@@ -74,16 +74,16 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("test/all")]
         public async Task<IActionResult> TestAll()
         {
-            var (isSuccess, _) = await _pushNotificationService.SendToAllDevicesAsync(User.GetId(), "Test Notification",
+            var failure = await _pushNotificationService.SendToAllDevicesAsync(User.GetId(), "Test Notification",
                 "This is a test notification to all your devices", _options.Value.PushNotifications.ServerUrl, "test all");
-            return isSuccess ? Ok() : StatusCode(500);
+            return failure is null ? StatusCode(500) : Ok();
         }
 
         [HttpDelete("test/all")]
         public async Task<IActionResult> TestAllClose()
         {
-            var (isSuccess, _) = await _pushNotificationService.SendCloseToAllDevicesAsync(User.GetId(), "test all");
-            return isSuccess ? Ok() : StatusCode(500);
+            var failure = await _pushNotificationService.SendCloseToAllDevicesAsync(User.GetId(), "test all");
+            return failure is null ? StatusCode(500) : Ok();
         }
 
         #endregion

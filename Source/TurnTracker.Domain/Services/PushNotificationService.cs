@@ -14,6 +14,26 @@ using TurnTracker.Domain.Models;
 
 namespace TurnTracker.Domain.Services
 {
+    public enum PushError
+    {
+        Unknown,
+        NeedsToBeRemoved
+    }
+
+    public class PushFailure
+    {
+        public int UserId { get; }
+        public PushSubscription Sub { get; set; }
+        public PushError Error { get; }
+
+        public PushFailure(int userId, PushSubscription sub, PushError error)
+        {
+            UserId = userId;
+            Sub = sub ?? throw new ArgumentNullException(nameof(sub));
+            Error = error;
+        }
+    }
+
     public class PushNotificationService : IPushNotificationService
     {
         #region Fields
@@ -74,7 +94,7 @@ namespace TurnTracker.Domain.Services
             return Result.Success();
         }
 
-        public Task<Result> SendToAllDevicesAsync(int userId, string title, string message, string url, string groupKey, params PushAction[] actions)
+        public Task<PushFailure[]> SendToAllDevicesAsync(int userId, string title, string message, string url, string groupKey, params PushAction[] actions)
         {
             var notification = BuildMessage(title, message, url, groupKey);
             foreach (var action in actions)
@@ -85,38 +105,39 @@ namespace TurnTracker.Domain.Services
             return SendPushMessageToAllDevicesWithCleanupAsync(userId, pushMessage);
         }
 
-        public Task<Result> SendCloseToAllDevicesAsync(int userId, string groupKey)
+        public Task<PushFailure[]> SendCloseToAllDevicesAsync(int userId, string groupKey)
         {
             var pushMessage = BuildCloseMessage(groupKey).ToPushMessage();
             return SendPushMessageToAllDevicesWithCleanupAsync(userId, pushMessage);
+        }
 
+        public async Task CleanupFailuresAsync(IEnumerable<PushFailure> failures)
+        {
+            foreach (var failure in failures.Where(x => x?.Error == PushError.NeedsToBeRemoved))
+            {
+                _logger.LogInformation($"Removing sub for user ID {failure.UserId}");
+                await _pushService.RemoveSubscriptionAsync(failure.UserId, failure.Sub, false);
+            }
         }
 
         #endregion Public
 
         #region Private
 
-        private async Task<Result> SendPushMessageToAllDevicesWithCleanupAsync(int userId, PushMessage pushMessage)
+        private Task<PushFailure[]> SendPushMessageToAllDevicesWithCleanupAsync(int userId, PushMessage pushMessage)
         {
-            var results = await Task.WhenAll(_pushService.Get(userId)
-                .Select(sub => RequestDeliveryWithCleanupAsync(userId, sub, pushMessage)));
-
-            if (results.Length == 0)
-            {
-                return Result.Failure("no subscriptions found");
-            }
-            
-            return Result.SuccessIf(results.Any(result => result.IsSuccess), "Failed to send to all devices");
+            return Task.WhenAll(_pushService.Get(userId)
+                .Select(sub => RequestDeliveryAsync(userId, sub, pushMessage)));
         }
 
-        private async Task<Result> RequestDeliveryWithCleanupAsync(int userId, PushSubscription sub, PushMessage message)
+        private async Task<PushFailure> RequestDeliveryAsync(int userId, PushSubscription sub, PushMessage message)
         {
             _logger.LogInformation($"sending close push message to {sub.Endpoint}");
 
             try
             {
                 await _client.RequestPushMessageDeliveryAsync(sub, message);
-                return Result.Success();
+                return null;
             }
             catch (PushServiceClientException e)
             {
@@ -125,19 +146,19 @@ namespace TurnTracker.Domain.Services
                 {
                     _logger.LogWarning(e,
                         $"Failed to send push message, removing subscription for user ID {userId} to endpoint {sub.Endpoint}");
-                    return await _pushService.RemoveSubscriptionAsync(userId, sub, false);
+                    return new PushFailure(userId, sub, PushError.NeedsToBeRemoved);
                 }
 
                 _logger.LogError(e,
                     $"Failed to send push message for user ID {userId} to endpoint {sub.Endpoint}, headers: {e.Headers}, body: {e.Body}");
-                return Result.Failure("Failed to send push message");
+                return new PushFailure(userId, sub, PushError.Unknown);
 
             }
             catch (Exception e)
             {
                 _logger.LogError(e,
                     $"Failed to send push message for user ID {userId} to endpoint {sub.Endpoint}");
-                return Result.Failure("Failed to send push message");
+                return new PushFailure(userId, sub, PushError.Unknown);
             }
         }
 
