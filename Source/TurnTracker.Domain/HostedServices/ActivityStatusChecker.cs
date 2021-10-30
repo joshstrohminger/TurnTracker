@@ -95,13 +95,13 @@ namespace TurnTracker.Domain.HostedServices
                             var snoozeToken = userService.GenerateNotificationActionToken(participant, snoozeAction,
                                 _appSettings.Value.PushNotifications.DefaultExpiration);
                             var actionUrl = $"{serverUrl}/api/notification/push/act";
-                            if (pushNotificationService.SendToAllDevices(participant.UserId, activity.Name, message,
+                            var sendResult = await pushNotificationService.SendToAllDevicesAsync(participant.UserId, activity.Name, message,
                                     viewUrl, activity.Id.ToString(),
                                     new PushAction(dismissAction, "Dismiss", actionUrl, dismissToken),
-                                    new PushAction(snoozeAction, $"{participant.User.SnoozeHours} Hour{(participant.User.SnoozeHours == 1 ? "" : "s")}", actionUrl, snoozeToken))
-                                .IsSuccess)
+                                    new PushAction(snoozeAction, $"{participant.User.SnoozeHours} Hour{(participant.User.SnoozeHours == 1 ? "" : "s")}", actionUrl, snoozeToken));
+                            if(sendResult.IsSuccess)
                             {
-                                // keep track of the notification that we sent
+                                // keep track of the notification(s) that we sent
                                 pushNotificationSetting.NextCheck = now.Add(_appSettings.Value.PushNotifications.DefaultSnooze);
                             }
                         }

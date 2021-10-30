@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnTracker.Domain.Interfaces;
@@ -21,7 +22,7 @@ namespace TurnTracker.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult TakeTurn([FromBody] NewTurn turn)
+        public async Task<IActionResult> TakeTurn([FromBody] NewTurn turn)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -32,7 +33,7 @@ namespace TurnTracker.Server.Controllers
                 return StatusCode(403, authResult.Error);
             }
 
-            var result = _turnService.TakeTurn(turn.ModifiedDate, turn.ActivityId, myId, turn.ForUserId, turn.When);
+            var result = await _turnService.TakeTurnAsync(turn.ModifiedDate, turn.ActivityId, myId, turn.ForUserId, turn.When);
             if (result.IsSuccess)
             {
                 return Json(result.Value);

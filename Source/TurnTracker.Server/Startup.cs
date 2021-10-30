@@ -60,7 +60,7 @@ namespace TurnTracker.Server
 
             var mapperConfig = new MapperConfiguration(cfg =>
             {
-                cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith("TurnTracker.")));
+                cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name?.StartsWith("TurnTracker.") ?? false));
             });
             mapperConfig.AssertConfigurationIsValid();
             services.AddSingleton(mapperConfig.CreateMapper());
@@ -128,7 +128,7 @@ namespace TurnTracker.Server
                 .GetRequiredService<IServiceScopeFactory>()
                 .CreateScope())
             {
-                using var context = serviceScope.ServiceProvider.GetService<TurnContext>();
+                using var context = serviceScope.ServiceProvider.GetRequiredService<TurnContext>();
                 context.Database.Migrate();
 
                 var (_, defaultUsersFailed, defaultUsersError) = serviceScope.ServiceProvider.GetRequiredService<IUserService>().EnsureDefaultUsers();
@@ -139,7 +139,7 @@ namespace TurnTracker.Server
 
                 if (appSettings.Value.Seed)
                 {
-                    var (_, seedActivitiesFailed, seedActivitiesError) = serviceScope.ServiceProvider.GetRequiredService<ITurnService>().EnsureSeedActivities();
+                    var (_, seedActivitiesFailed, seedActivitiesError) = serviceScope.ServiceProvider.GetRequiredService<ITurnService>().EnsureSeedActivitiesAsync().GetAwaiter().GetResult();
                     if (seedActivitiesFailed)
                     {
                         throw new Exception($"Failed to seed activities: {seedActivitiesError}");
@@ -172,7 +172,7 @@ namespace TurnTracker.Server
             app.UseEndpoints(endpoints => endpoints.MapControllers());
 
             // serve the default spa page if nothing else consumes the request
-            app.UseSpa(spa => {});
+            app.UseSpa(_ => {});
 
             logger.LogInformation($"Started version '{AppHelper.Version}'");
         }
