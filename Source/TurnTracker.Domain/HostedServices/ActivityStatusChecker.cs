@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,7 @@ using TurnTracker.Data.Entities;
 using TurnTracker.Domain.Configuration;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Domain.Models;
+using TurnTracker.Domain.Services;
 
 namespace TurnTracker.Domain.HostedServices
 {
@@ -62,6 +64,7 @@ namespace TurnTracker.Domain.HostedServices
                     var serverUrl = services.GetRequiredService<IOptions<AppSettings>>().Value.PushNotifications
                         .ServerUrl;
                     var userService = services.GetRequiredService<IUserService>();
+                    var failures = new List<PushFailure>();
 
                     foreach (var activity in expiredActivities)
                     {
@@ -95,18 +98,17 @@ namespace TurnTracker.Domain.HostedServices
                             var snoozeToken = userService.GenerateNotificationActionToken(participant, snoozeAction,
                                 _appSettings.Value.PushNotifications.DefaultExpiration);
                             var actionUrl = $"{serverUrl}/api/notification/push/act";
-                            var sendResult = await pushNotificationService.SendToAllDevicesAsync(participant.UserId, activity.Name, message,
+                            failures.AddRange(await pushNotificationService.SendToAllDevicesAsync(participant.UserId, activity.Name, message,
                                     viewUrl, activity.Id.ToString(),
                                     new PushAction(dismissAction, "Dismiss", actionUrl, dismissToken),
-                                    new PushAction(snoozeAction, $"{participant.User.SnoozeHours} Hour{(participant.User.SnoozeHours == 1 ? "" : "s")}", actionUrl, snoozeToken));
-                            if(sendResult.IsSuccess)
-                            {
-                                // keep track of the notification(s) that we sent
-                                pushNotificationSetting.NextCheck = now.Add(_appSettings.Value.PushNotifications.DefaultSnooze);
-                            }
+                                    new PushAction(snoozeAction, $"{participant.User.SnoozeHours} Hour{(participant.User.SnoozeHours == 1 ? "" : "s")}", actionUrl, snoozeToken)));
+
+                            // keep track of the notification(s) that we sent
+                            pushNotificationSetting.NextCheck = now.Add(_appSettings.Value.PushNotifications.DefaultSnooze);
                         }
                     }
 
+                    await pushNotificationService.CleanupFailuresAsync(failures);
                     await db.SaveChangesAsync(stoppingToken);
                 }
 

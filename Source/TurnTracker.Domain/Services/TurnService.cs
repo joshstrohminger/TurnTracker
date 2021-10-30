@@ -451,7 +451,7 @@ namespace TurnTracker.Domain.Services
                 var otherTurnMessage = otherTurnBuilder.ToString();
                 var url = $"{_appSettings.Value.PushNotifications.ServerUrl}/activity/{activityId}";
 
-                var pushMessageTasks = new List<Task<Result>>();
+                var failures = new List<PushFailure>();
 
                 foreach (var participant in activity.Participants)
                 {
@@ -469,14 +469,14 @@ namespace TurnTracker.Domain.Services
                                 // already got a notification about a turn being taken because that will replace any existing notification
                                 if (setting.Push && !pushNotified)
                                 {
-                                    pushMessageTasks.Add(_pushNotificationService.SendCloseToAllDevicesAsync(setting.Participant.UserId, activityId.ToString()));
+                                    failures.AddRange(await _pushNotificationService.SendCloseToAllDevicesAsync(setting.Participant.UserId, activityId.ToString()));
                                     pushNotified = true;
                                 }
                                 break;
                             case NotificationType.TurnTakenAnybody:
                                 if(setting.Push)
                                 {
-                                    pushMessageTasks.Add(_pushNotificationService.SendToAllDevicesAsync(setting.Participant.UserId,
+                                    failures.AddRange(await _pushNotificationService.SendToAllDevicesAsync(setting.Participant.UserId,
                                         activity.Name, otherTurnMessage, url, activityId.ToString()));
                                     pushNotified = true;
                                 }
@@ -484,7 +484,7 @@ namespace TurnTracker.Domain.Services
                             case NotificationType.TurnTakenMine:
                                 if (details.CurrentTurnUserId.HasValue && setting.Push && setting.Participant.UserId == details.CurrentTurnUserId)
                                 {
-                                    pushMessageTasks.Add(_pushNotificationService.SendToAllDevicesAsync(setting.Participant.UserId,
+                                    failures.AddRange(await _pushNotificationService.SendToAllDevicesAsync(setting.Participant.UserId,
                                         activity.Name, myTurnMessage, url, activityId.ToString()));
                                     pushNotified = true;
                                 }
@@ -496,8 +496,8 @@ namespace TurnTracker.Domain.Services
                     }
                 }
 
-                // Ensure we are done sending each push message before continuing
-                await Task.WhenAll(pushMessageTasks);
+                // Ensure we are done sending each push message before cleaning up failures and continuing
+                await _pushNotificationService.CleanupFailuresAsync(failures);
 
                 // Always mark the activity as modified when taking a turn so our checks elsewhere that compare
                 // the modified timestamp will still work for activities that wouldn't normally have anything update,
