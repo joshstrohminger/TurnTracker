@@ -47,7 +47,7 @@ namespace TurnTracker.Domain.Models
                     notification.Data[$"token-{Action}"] = AdditionalData;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(Type), Type, "Unexpected action type");
             }
         }
     }
