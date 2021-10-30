@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using CSharpFunctionalExtensions;
 using Lib.Net.Http.WebPush;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -42,57 +43,47 @@ namespace TurnTracker.Server.Controllers
         }
 
         [HttpPost("[action]")]
-        public IActionResult Unsubscribe([FromBody] PushSubscription sub)
+        public async Task<IActionResult> Unsubscribe([FromBody] PushSubscription sub)
         {
-            if (_pushSubscriptionService.RemoveSubscription(User.GetId(), sub).IsSuccess) return Ok();
-
-            return StatusCode(500);
+            var (isSuccess, _) = await _pushSubscriptionService.RemoveSubscriptionAsync(User.GetId(), sub, true);
+            return isSuccess ? Ok() : StatusCode(500);
         }
 
         [HttpPost("[action]")]
         public IActionResult Subscribe([FromBody] PushSubscription sub)
         {
-            if (_pushSubscriptionService.SaveSubscription(User.GetId(), sub).IsSuccess) return Ok();
-
-            return StatusCode(500);
+            var (isSuccess, _) = _pushSubscriptionService.SaveSubscription(User.GetId(), sub);
+            return isSuccess ? Ok() : StatusCode(500);
         }
 
         [HttpPost("test/one")]
         public async Task<IActionResult> TestOne([FromBody] PushSubscription sub)
         {
-            var result = await _pushNotificationService.SendToOneDeviceAsync(User.GetId(), "Test Notification",
+            var (isSuccess, _) = await _pushNotificationService.SendToOneDeviceAsync(User.GetId(), "Test Notification",
                 "This is a test notification to just this device", sub.Endpoint, "test one");
-            if (result.IsSuccess) return Ok();
-
-            return StatusCode(500);
+            return isSuccess ? Ok() : StatusCode(500);
         }
 
         [HttpPost("test/closeone")]
         public async Task<IActionResult> TestOneClose([FromBody] PushSubscription sub)
         {
-            var result = await _pushNotificationService.SendCloseToOneDeviceAsync(User.GetId(), sub.Endpoint, "test one");
-            if (result.IsSuccess) return Ok();
-
-            return StatusCode(500);
+            var (isSuccess, _) = await _pushNotificationService.SendCloseToOneDeviceAsync(User.GetId(), sub.Endpoint, "test one");
+            return isSuccess ? Ok() : StatusCode(500);
         }
 
         [HttpPost("test/all")]
-        public IActionResult TestAll()
+        public async Task<IActionResult> TestAll()
         {
-            var result = _pushNotificationService.SendToAllDevices(User.GetId(), "Test Notification",
+            var (isSuccess, _) = await _pushNotificationService.SendToAllDevicesAsync(User.GetId(), "Test Notification",
                 "This is a test notification to all your devices", _options.Value.PushNotifications.ServerUrl, "test all");
-            if (result.IsSuccess) return Ok();
-
-            return StatusCode(500);
+            return isSuccess ? Ok() : StatusCode(500);
         }
 
         [HttpDelete("test/all")]
-        public IActionResult TestAllClose()
+        public async Task<IActionResult> TestAllClose()
         {
-            var result = _pushNotificationService.SendCloseToAllDevices(User.GetId(), "test all");
-            if (result.IsSuccess) return Ok();
-
-            return StatusCode(500);
+            var (isSuccess, _) = await _pushNotificationService.SendCloseToAllDevicesAsync(User.GetId(), "test all");
+            return isSuccess ? Ok() : StatusCode(500);
         }
 
         #endregion

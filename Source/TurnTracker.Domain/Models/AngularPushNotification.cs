@@ -20,7 +20,7 @@ namespace TurnTracker.Domain.Models
             }
         }
 
-        private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
+        private static readonly JsonSerializerSettings JsonSerializerSettings = new()
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };

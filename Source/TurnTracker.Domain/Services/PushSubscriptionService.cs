@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using CSharpFunctionalExtensions;
 using Lib.Net.Http.WebPush;
@@ -56,15 +57,18 @@ namespace TurnTracker.Domain.Services
             }
         }
 
-        public Result RemoveSubscription(int userId, PushSubscription sub)
+        public async Task<Result> RemoveSubscriptionAsync(int userId, PushSubscription sub, bool save)
         {
             try
             {
-                var device = _db.PushSubscriptionDevices.Find(userId, sub.Endpoint);
+                var device = await _db.PushSubscriptionDevices.FindAsync(userId, sub.Endpoint);
                 if (device != null)
                 {
                     _db.PushSubscriptionDevices.Remove(device);
-                    _db.SaveChanges();
+                    if (save)
+                    {
+                        await _db.SaveChangesAsync();
+                    }
                 }
                 return Result.Success();
             }

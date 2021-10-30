@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using TurnTracker.Common;
 using TurnTracker.Data.Entities;
@@ -17,13 +18,13 @@ namespace TurnTracker.Domain.Interfaces
 
     public interface ITurnService
     {
-        Result EnsureSeedActivities();
+        Task<Result> EnsureSeedActivitiesAsync();
         IEnumerable<Activity> GetAllActivities();
         IEnumerable<Activity> GetActivitiesByOwner(int userId);
         IEnumerable<Activity> GetActivitiesByParticipant(int userId);
         ActivityDetails GetActivityDetails(int activityId, int userId);
         ActivityDetails GetActivityDetailsShallow(int activityId, int userId);
-        Result<ActivityDetails, TurnError> TakeTurn(DateTimeOffset activityModifiedDate, int activityId, int byUserId, int forUserId, DateTimeOffset when);
+        Task<Result<ActivityDetails, TurnError>> TakeTurnAsync(DateTimeOffset activityModifiedDate, int activityId, int byUserId, int forUserId, DateTimeOffset when);
         Result<ActivityDetails> SetTurnDisabled(int turnId, int byUserId, bool disabled);
         Turn GetTurn(int id);
         Result<ActivityDetails> SetActivityDisabled(int activityId, int byUserId, bool disabled);

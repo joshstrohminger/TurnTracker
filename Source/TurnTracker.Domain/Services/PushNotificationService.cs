@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using Lib.Net.Http.WebPush;
@@ -72,45 +74,71 @@ namespace TurnTracker.Domain.Services
             return Result.Success();
         }
 
-        public Result SendToAllDevices(int userId, string title, string message, string url, string groupKey, params PushAction[] actions)
+        public Task<Result> SendToAllDevicesAsync(int userId, string title, string message, string url, string groupKey, params PushAction[] actions)
         {
-            var sent = false;
             var notification = BuildMessage(title, message, url, groupKey);
             foreach (var action in actions)
             {
                 action.ApplyToNotification(notification);
             }
-
-            foreach (var sub in _pushService.Get(userId))
-            {
-                _logger.LogInformation($"sending push message to {sub.Endpoint}");
-
-                _client.RequestPushMessageDeliveryAsync(sub, notification.ToPushMessage());
-                sent = true;
-            }
-
-            return Result.SuccessIf(sent, "No subscriptions found");
+            var pushMessage = notification.ToPushMessage();
+            return SendPushMessageToAllDevicesWithCleanupAsync(userId, pushMessage);
         }
 
-        public Result SendCloseToAllDevices(int userId, string groupKey)
+        public Task<Result> SendCloseToAllDevicesAsync(int userId, string groupKey)
         {
-            var sent = false;
-            var notification = BuildCloseMessage(groupKey);
+            var pushMessage = BuildCloseMessage(groupKey).ToPushMessage();
+            return SendPushMessageToAllDevicesWithCleanupAsync(userId, pushMessage);
 
-            foreach (var sub in _pushService.Get(userId))
-            {
-                _logger.LogInformation($"sending close push message to {sub.Endpoint}");
-
-                _client.RequestPushMessageDeliveryAsync(sub, notification.ToPushMessage());
-                sent = true;
-            }
-
-            return Result.SuccessIf(sent, "No subscriptions found");
         }
 
         #endregion Public
 
         #region Private
+
+        private async Task<Result> SendPushMessageToAllDevicesWithCleanupAsync(int userId, PushMessage pushMessage)
+        {
+            var results = await Task.WhenAll(_pushService.Get(userId)
+                .Select(sub => RequestDeliveryWithCleanupAsync(userId, sub, pushMessage)));
+
+            if (results.Length == 0)
+            {
+                return Result.Failure("no subscriptions found");
+            }
+            
+            return Result.SuccessIf(results.Any(result => result.IsSuccess), "Failed to send to all devices");
+        }
+
+        private async Task<Result> RequestDeliveryWithCleanupAsync(int userId, PushSubscription sub, PushMessage message)
+        {
+            _logger.LogInformation($"sending close push message to {sub.Endpoint}");
+
+            try
+            {
+                await _client.RequestPushMessageDeliveryAsync(sub, message);
+                return Result.Success();
+            }
+            catch (PushServiceClientException e)
+            {
+                if (e.StatusCode == HttpStatusCode.NotFound || e.StatusCode == HttpStatusCode.Gone)
+                {
+                    _logger.LogWarning(e,
+                        $"Failed to send push message, removing subscription for user ID {userId} to endpoint {sub.Endpoint}");
+                    return await _pushService.RemoveSubscriptionAsync(userId, sub, false);
+                }
+
+                _logger.LogError(e,
+                    $"Failed to send push message for user ID {userId} to endpoint {sub.Endpoint}, headers: {e.Headers}, body: {e.Body}");
+                return Result.Failure("Failed to send push message");
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e,
+                    $"Failed to send push message for user ID {userId} to endpoint {sub.Endpoint}");
+                return Result.Failure("Failed to send push message");
+            }
+        }
 
         private static AngularPushNotification BuildMessage(string title, string message, string url, string groupKey, params AngularPushNotification.NotificationAction[] actions)
         {

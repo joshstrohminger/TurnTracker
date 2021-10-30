@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using AutoMapper;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +35,7 @@ namespace TurnTracker.Domain.Services
             _appSettings = appSettings;
         }
 
-        public Result EnsureSeedActivities()
+        public async Task<Result> EnsureSeedActivitiesAsync()
         {
             try
             {
@@ -55,7 +56,7 @@ namespace TurnTracker.Domain.Services
                     {
                         var forUser = userIds[i % 2];
                         var byUser = userIds[i / 2 % 2];
-                        TakeTurn(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
+                        await TakeTurnAsync(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
                     }
 
                     // second activity
@@ -70,7 +71,7 @@ namespace TurnTracker.Domain.Services
                     {
                         var forUser = userIds[i % 2];
                         var byUser = userIds[i / 2 % 2];
-                        TakeTurn(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
+                        await TakeTurnAsync(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
                     }
 
                     // third activity
@@ -85,7 +86,7 @@ namespace TurnTracker.Domain.Services
                     {
                         var forUser = userIds[i % 2];
                         var byUser = userIds[i / 2 % 2];
-                        TakeTurn(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
+                        await TakeTurnAsync(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
                     }
 
                     // fourth activity, disabled
@@ -100,7 +101,7 @@ namespace TurnTracker.Domain.Services
                     {
                         var forUser = userIds[i % 2];
                         var byUser = userIds[i / 2 % 2];
-                        TakeTurn(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
+                        await TakeTurnAsync(activity.ModifiedDate, activityId, byUser, forUser, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(i)));
                     }
 
                     return SetActivityDisabled(activityId, userIds[1], true);
@@ -401,7 +402,7 @@ namespace TurnTracker.Domain.Services
             return activity is null ? null : ActivityDetails.Calculate(activity, userId, _mapper);
         }
 
-        public Result<ActivityDetails, TurnError> TakeTurn(DateTimeOffset activityModifiedDate, int activityId, int byUserId, int forUserId, DateTimeOffset when)
+        public async Task<Result<ActivityDetails, TurnError>> TakeTurnAsync(DateTimeOffset activityModifiedDate, int activityId, int byUserId, int forUserId, DateTimeOffset when)
         {
             try
             {
@@ -430,7 +431,7 @@ namespace TurnTracker.Domain.Services
 
                 var details = ActivityDetails.Calculate(activity, byUserId, _mapper);
                 
-                var turnTaker = _db.Users.Find(forUserId);
+                var turnTaker = await _db.Users.FindAsync(forUserId);
                 FormattableString fs = $"{turnTaker.DisplayName} took a turn.";
                 var myTurnBuilder = new StringBuilder().AppendFormattable(fs);
                 var otherTurnBuilder = new StringBuilder().AppendFormattable(fs);
@@ -450,6 +451,8 @@ namespace TurnTracker.Domain.Services
                 var otherTurnMessage = otherTurnBuilder.ToString();
                 var url = $"{_appSettings.Value.PushNotifications.ServerUrl}/activity/{activityId}";
 
+                var pushMessageTasks = new List<Task<Result>>();
+
                 foreach (var participant in activity.Participants)
                 {
                     var pushNotified = false;
@@ -466,23 +469,23 @@ namespace TurnTracker.Domain.Services
                                 // already got a notification about a turn being taken because that will replace any existing notification
                                 if (setting.Push && !pushNotified)
                                 {
-                                    _pushNotificationService.SendCloseToAllDevices(setting.Participant.UserId, activityId.ToString());
+                                    pushMessageTasks.Add(_pushNotificationService.SendCloseToAllDevicesAsync(setting.Participant.UserId, activityId.ToString()));
                                     pushNotified = true;
                                 }
                                 break;
                             case NotificationType.TurnTakenAnybody:
                                 if(setting.Push)
                                 {
-                                    _pushNotificationService.SendToAllDevices(setting.Participant.UserId,
-                                        activity.Name, otherTurnMessage, url, activityId.ToString());
+                                    pushMessageTasks.Add(_pushNotificationService.SendToAllDevicesAsync(setting.Participant.UserId,
+                                        activity.Name, otherTurnMessage, url, activityId.ToString()));
                                     pushNotified = true;
                                 }
                                 break;
                             case NotificationType.TurnTakenMine:
                                 if (details.CurrentTurnUserId.HasValue && setting.Push && setting.Participant.UserId == details.CurrentTurnUserId)
                                 {
-                                    _pushNotificationService.SendToAllDevices(setting.Participant.UserId,
-                                        activity.Name, myTurnMessage, url, activityId.ToString());
+                                    pushMessageTasks.Add(_pushNotificationService.SendToAllDevicesAsync(setting.Participant.UserId,
+                                        activity.Name, myTurnMessage, url, activityId.ToString()));
                                     pushNotified = true;
                                 }
                                 break;
@@ -493,11 +496,14 @@ namespace TurnTracker.Domain.Services
                     }
                 }
 
+                // Ensure we are done sending each push message before continuing
+                await Task.WhenAll(pushMessageTasks);
+
                 // Always mark the activity as modified when taking a turn so our checks elsewhere that compare
                 // the modified timestamp will still work for activities that wouldn't normally have anything update,
                 // like when they're non-periodic or the next-turn user doesn't change.
                 _db.Entry(activity).State = EntityState.Modified;
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
 
                 details.Update(activity);
 
