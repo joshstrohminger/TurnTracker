@@ -174,6 +174,21 @@ namespace TurnTracker.Server
             app.UseAuthorization();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
 
+            // temporary logging to discover where some requests are coming from
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/admin"))
+                {
+                    var headers = string.Join('\n',
+                        context.Request.Headers.Select(kvp => $"    {kvp.Key}: {kvp.Value}"));
+                    using var reader = new StreamReader(context.Request.Body);
+                    var body = await reader.ReadToEndAsync();
+                    logger.LogInformation($"{context.Request.Method}: {context.Request.Path}\nHeaders:\n{headers}\nBody:\n{body}");
+                }
+
+                await next.Invoke();
+            });
+
             // only GET methods are supported beyond this point since we should only be returning the default page when we get to app.useSpa
             app.Use(async (context, next) =>
             {
