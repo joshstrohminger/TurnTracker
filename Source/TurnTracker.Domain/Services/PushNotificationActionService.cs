@@ -67,27 +67,29 @@ namespace TurnTracker.Domain.Services
                 return Result.Failure(message);
             }
 
-            var now = DateTimeOffset.Now;
+            var now = DateTimeOffset.UtcNow;
             if (participant.Activity.Due <= now)
             {
-                var snoozeHours = Math.Max((byte)1, participant.User.SnoozeHours);
-                DateTimeOffset nextCheck;
+                var snoozeTime = clientTime.AddHours(Math.Max((byte)1, participant.User.SnoozeHours));
+                var nextCheck = snoozeTime;
+
+                // base calculations on the client time to have the proper timezone and to account for request delays, but check for big differences
+                var diff = (now - clientTime).Duration();
+                if (diff > TimeSpan.FromHours(1))
+                {
+                    _logger.LogWarning($"Client time {clientTime} differs from current time {now} by {diff}");
+                }
 
                 if (dismiss)
                 {
                     // dismiss until the dismissal time of day on the current day in the client's timezone
-                    nextCheck = now.ToOffset(clientTime.Offset).Date.Add(participant.DismissUntilTimeOfDay);
+                    nextCheck = new DateTimeOffset(clientTime.Date.Add(participant.DismissUntilTimeOfDay), clientTime.Offset);
 
                     // dismiss until tomorrow if that time has already passed or we're within the snooze time
-                    var snoozeTime = now.AddHours(snoozeHours);
                     if (snoozeTime >= nextCheck)
                     {
                         nextCheck = nextCheck.AddDays(1);
                     }
-                }
-                else
-                {
-                    nextCheck = now.AddHours(snoozeHours);
                 }
 
                 _logger.LogInformation($"Fulfilling {typeName} notification for user {participant.UserId}, participant {participant.Id}, activity {participant.ActivityId}, from {clientTime} to {nextCheck}");
