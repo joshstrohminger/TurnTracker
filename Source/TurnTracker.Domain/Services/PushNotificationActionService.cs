@@ -70,9 +70,26 @@ namespace TurnTracker.Domain.Services
             var now = DateTimeOffset.Now;
             if (participant.Activity.Due <= now)
             {
-                var nextCheck = dismiss
-                    ? new DateTimeOffset(clientTime.Date.AddDays(clientTime.TimeOfDay >= participant.DismissUntilTimeOfDay ? 1 : 0).Add(participant.DismissUntilTimeOfDay), clientTime.Offset)
-                    : clientTime.AddHours(Math.Max((byte) 1, participant.User.SnoozeHours));
+                var snoozeHours = Math.Max((byte)1, participant.User.SnoozeHours);
+                DateTimeOffset nextCheck;
+
+                if (dismiss)
+                {
+                    // dismiss until the dismissal time of day on the current day in the client's timezone
+                    nextCheck = now.ToOffset(clientTime.Offset).Date.Add(participant.DismissUntilTimeOfDay);
+
+                    // dismiss until tomorrow if that time has already passed or we're within the snooze time
+                    var snoozeTime = now.AddHours(snoozeHours);
+                    if (snoozeTime >= nextCheck)
+                    {
+                        nextCheck = nextCheck.AddDays(1);
+                    }
+                }
+                else
+                {
+                    nextCheck = now.AddHours(snoozeHours);
+                }
+
                 _logger.LogInformation($"Fulfilling {typeName} notification for user {participant.UserId}, participant {participant.Id}, activity {participant.ActivityId}, from {clientTime} to {nextCheck}");
                 
                 foreach (var notificationSetting in participant.NotificationSettings.Where(x =>
