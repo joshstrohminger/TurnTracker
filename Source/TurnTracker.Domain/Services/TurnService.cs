@@ -473,14 +473,14 @@ namespace TurnTracker.Domain.Services
                                 // already got a notification about a turn being taken because that will replace any existing notification
                                 if (setting.Push && !pushNotified)
                                 {
-                                    failures.AddRange(await _pushNotificationService.SendCloseToAllDevicesAsync(setting.Participant.UserId, activityId.ToString()));
+                                    failures.AddRange(await _pushNotificationService.SendCloseToAllDevicesAsync("turn", setting.Participant.UserId, activityId.ToString()));
                                     pushNotified = true;
                                 }
                                 break;
                             case NotificationType.TurnTakenAnybody:
                                 if(setting.Push)
                                 {
-                                    failures.AddRange(await _pushNotificationService.SendToAllDevicesAsync(setting.Participant.UserId,
+                                    failures.AddRange(await _pushNotificationService.SendToAllDevicesAsync("turn", setting.Participant.UserId,
                                         activity.Name, otherTurnMessage, url, activityId.ToString()));
                                     pushNotified = true;
                                 }
@@ -488,7 +488,7 @@ namespace TurnTracker.Domain.Services
                             case NotificationType.TurnTakenMine:
                                 if (details.CurrentTurnUserId.HasValue && setting.Push && setting.Participant.UserId == details.CurrentTurnUserId)
                                 {
-                                    failures.AddRange(await _pushNotificationService.SendToAllDevicesAsync(setting.Participant.UserId,
+                                    failures.AddRange(await _pushNotificationService.SendToAllDevicesAsync("turn", setting.Participant.UserId,
                                         activity.Name, myTurnMessage, url, activityId.ToString()));
                                     pushNotified = true;
                                 }

@@ -74,7 +74,7 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("test/all")]
         public async Task<IActionResult> TestAll()
         {
-            var failure = await _pushNotificationService.SendToAllDevicesAsync(User.GetId(), "Test Notification",
+            var failure = await _pushNotificationService.SendToAllDevicesAsync("test", User.GetId(), "Test Notification",
                 "This is a test notification to all your devices", _options.Value.PushNotifications.ServerUrl, "test all");
             return failure is null ? StatusCode(500) : Ok();
         }
@@ -82,7 +82,7 @@ namespace TurnTracker.Server.Controllers
         [HttpDelete("test/all")]
         public async Task<IActionResult> TestAllClose()
         {
-            var failure = await _pushNotificationService.SendCloseToAllDevicesAsync(User.GetId(), "test all");
+            var failure = await _pushNotificationService.SendCloseToAllDevicesAsync("test", User.GetId(), "test all");
             return failure is null ? StatusCode(500) : Ok();
         }
 
