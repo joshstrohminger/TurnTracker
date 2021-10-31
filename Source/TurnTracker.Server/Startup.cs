@@ -183,7 +183,7 @@ namespace TurnTracker.Server
                         context.Request.Headers.Select(kvp => $"    {kvp.Key}: {kvp.Value}"));
                     using var reader = new StreamReader(context.Request.Body);
                     var body = await reader.ReadToEndAsync();
-                    logger.LogInformation($"{context.Request.Method}: {context.Request.Path}\nHeaders:\n{headers}\nBody:\n{body}");
+                    logger.LogWarning($"{context.Request.Method}: {context.Request.Path}\nHeaders:\n{headers}\nBody:\n{body}");
                 }
 
                 await next.Invoke();
