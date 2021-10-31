@@ -195,16 +195,18 @@ export class EditActivityComponent implements OnInit {
 
   saveActivity() {
     const takeTurns = this.editForm.value.takeTurns;
-    this._http.post<ActivityDetails>('activity/save', <EditableActivity>{
+    const activity: EditableActivity = {
       id: this._activityId,
       name: this.editForm.value.name,
       description: this.editForm.value.description,
       periodCount: this.editForm.value.periodCount,
       periodUnit: Number(this.editForm.value.periodUnit),
       takeTurns,
+      isDisabled: false,
       participants: this.participants,
       defaultNotificationSettings: this.notifications.filter(note => note.anyChecked && note.isAllowed(takeTurns))
-    }).subscribe(activity => {
+    };
+    this._http.post<ActivityDetails>('activity/save', activity).subscribe(activity => {
       this._messageService.success(`Saved activity`);
       this._router.navigate(['/activity', activity.id], {replaceUrl: true});
     },

@@ -220,6 +220,10 @@ namespace TurnTracker.Domain.Services
                         Owner = _db.Users.Find(ownerId),
                         Turns = new List<Turn>(0)
                     };
+                    foreach (var participant in activityToUpdate.Participants)
+                    {
+                        participant.NotificationSettings.AddRange(_mapper.Map<List<NotificationSetting>>(defaultNotificationSettings.Values));
+                    }
                 }
                 else
                 {

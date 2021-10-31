@@ -20,7 +20,7 @@
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *matRowDef="let activity; columns: displayedColumns" (click)="viewDetails(activity)" [class.disabled]="activity.isDisabled"></tr>
+  <tr mat-row *matRowDef="let activity; columns: displayedColumns" class="activity-row" (click)="viewDetails(activity)" [class.disabled]="activity.isDisabled"></tr>
 </table>
 
 <div id="bottom-fab-container">
