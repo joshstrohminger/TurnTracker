@@ -177,7 +177,7 @@ namespace TurnTracker.Server
             // temporary logging to discover where some requests are coming from
             app.Use(async (context, next) =>
             {
-                if (context.Request.Path.StartsWithSegments("/admin"))
+                if (context.Request.Path.StartsWithSegments("/admin") || context.Request.Method.Equals(WebRequestMethods.Http.Post, StringComparison.OrdinalIgnoreCase))
                 {
                     var headers = string.Join('\n',
                         context.Request.Headers.Select(kvp => $"    {kvp.Key}: {kvp.Value}"));
