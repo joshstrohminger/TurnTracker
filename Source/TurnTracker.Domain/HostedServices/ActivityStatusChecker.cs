@@ -69,8 +69,7 @@ namespace TurnTracker.Domain.HostedServices
                     foreach (var activity in expiredActivities)
                     {
                         stoppingToken.ThrowIfCancellationRequested();
-                        // ReSharper disable once PossibleInvalidOperationException
-                        var overdueTime = (now - activity.Due.Value).ToDisplayString();
+                        var overdueTime = (now - activity.Due!.Value).ToDisplayString();
                         var notMyTurnBuilder = new StringBuilder();
                         if (activity.CurrentTurnUser != null)
                         {
@@ -81,12 +80,11 @@ namespace TurnTracker.Domain.HostedServices
                         var viewUrl = $"{serverUrl}/activity/{activity.Id}";
                         foreach (var participant in activity.Participants)
                         {
-                            // ReSharper disable once PossibleInvalidOperationException
                             var myTurn = activity.CurrentTurnUserId == participant.UserId;
 
                             var pushNotificationSetting = participant.NotificationSettings.FirstOrDefault(x =>
-                                x.Push && x.NextCheck <= now && x.Type == NotificationType.OverdueAnybody ||
-                                x.Type == NotificationType.OverdueMine && myTurn);
+                                x.Push && x.NextCheck <= now && (x.Type == NotificationType.OverdueAnybody ||
+                                (x.Type == NotificationType.OverdueMine && myTurn)));
 
                             if (pushNotificationSetting is null) continue;
 
@@ -98,7 +96,7 @@ namespace TurnTracker.Domain.HostedServices
                             var snoozeToken = userService.GenerateNotificationActionToken(participant, snoozeAction,
                                 _appSettings.Value.PushNotifications.DefaultExpiration);
                             var actionUrl = $"{serverUrl}/api/notification/push/act";
-                            failures.AddRange(await pushNotificationService.SendToAllDevicesAsync(participant.UserId, activity.Name, message,
+                            failures.AddRange(await pushNotificationService.SendToAllDevicesAsync("expired", participant.UserId, activity.Name, message,
                                     viewUrl, activity.Id.ToString(),
                                     new PushAction(dismissAction, "Dismiss", actionUrl, dismissToken),
                                     new PushAction(snoozeAction, $"{participant.User.SnoozeHours} Hour{(participant.User.SnoozeHours == 1 ? "" : "s")}", actionUrl, snoozeToken)));
