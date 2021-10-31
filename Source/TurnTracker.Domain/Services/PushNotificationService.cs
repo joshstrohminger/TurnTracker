@@ -94,7 +94,7 @@ namespace TurnTracker.Domain.Services
             return Result.Success();
         }
 
-        public Task<PushFailure[]> SendToAllDevicesAsync(int userId, string title, string message, string url, string groupKey, params PushAction[] actions)
+        public Task<PushFailure[]> SendToAllDevicesAsync(string label, int userId, string title, string message, string url, string groupKey, params PushAction[] actions)
         {
             var notification = BuildMessage(title, message, url, groupKey);
             foreach (var action in actions)
@@ -102,13 +102,13 @@ namespace TurnTracker.Domain.Services
                 action.ApplyToNotification(notification);
             }
             var pushMessage = notification.ToPushMessage();
-            return SendPushMessageToAllDevicesWithCleanupAsync(userId, pushMessage);
+            return SendPushMessageToAllDevicesWithCleanupAsync(label + " event", userId, pushMessage);
         }
 
-        public Task<PushFailure[]> SendCloseToAllDevicesAsync(int userId, string groupKey)
+        public Task<PushFailure[]> SendCloseToAllDevicesAsync(string label, int userId, string groupKey)
         {
             var pushMessage = BuildCloseMessage(groupKey).ToPushMessage();
-            return SendPushMessageToAllDevicesWithCleanupAsync(userId, pushMessage);
+            return SendPushMessageToAllDevicesWithCleanupAsync(label + " close", userId, pushMessage);
         }
 
         public async Task CleanupFailuresAsync(IEnumerable<PushFailure> failures)
@@ -124,15 +124,15 @@ namespace TurnTracker.Domain.Services
 
         #region Private
 
-        private Task<PushFailure[]> SendPushMessageToAllDevicesWithCleanupAsync(int userId, PushMessage pushMessage)
+        private Task<PushFailure[]> SendPushMessageToAllDevicesWithCleanupAsync(string label, int userId, PushMessage pushMessage)
         {
             return Task.WhenAll(_pushService.Get(userId)
-                .Select(sub => RequestDeliveryAsync(userId, sub, pushMessage)));
+                .Select(sub => RequestDeliveryAsync(label, userId, sub, pushMessage)));
         }
 
-        private async Task<PushFailure> RequestDeliveryAsync(int userId, PushSubscription sub, PushMessage message)
+        private async Task<PushFailure> RequestDeliveryAsync(string label, int userId, PushSubscription sub, PushMessage message)
         {
-            _logger.LogInformation($"sending close push message to {sub.Endpoint}");
+            _logger.LogInformation($"Sending {label} push message to {sub.Endpoint}");
 
             try
             {

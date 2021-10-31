@@ -1,4 +1,5 @@
-﻿using TurnTracker.Data.Entities;
+﻿using System;
+using TurnTracker.Data.Entities;
 
 namespace TurnTracker.Domain
 {
@@ -6,14 +7,14 @@ namespace TurnTracker.Domain
     {
         public static bool IsAllowed(this NotificationType type, bool takeTurns)
         {
-            switch (type)
+            return type switch
             {
-                case NotificationType.TurnTakenMine:
-                case NotificationType.OverdueMine:
-                    return takeTurns;
-                default:
-                    return true;
-            }
+                NotificationType.TurnTakenMine => takeTurns,
+                NotificationType.OverdueMine => takeTurns,
+                NotificationType.TurnTakenAnybody => true,
+                NotificationType.OverdueAnybody => true,
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unexpected type")
+            };
         }
     }
 }
