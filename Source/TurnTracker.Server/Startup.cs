@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Net;
 using AutoMapper;
 using CSharpFunctionalExtensions;
 using Fido2NetLib;
@@ -16,6 +18,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 using TurnTracker.Common;
 using TurnTracker.Data;
 using TurnTracker.Domain.Authorization;
@@ -170,6 +173,19 @@ namespace TurnTracker.Server
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
+
+            // only GET methods are supported beyond this point since we should only be returning the default page when we get to app.useSpa
+            app.Use(async (context, next) =>
+            {
+                if (!context.Request.Method.Equals(WebRequestMethods.Http.Get, StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                    context.Response.Headers[HeaderNames.Allow] = WebRequestMethods.Http.Get;
+                    return;
+                }
+
+                await next.Invoke();
+            });
 
             // serve the default spa page if nothing else consumes the request
             app.UseSpa(_ => {});
