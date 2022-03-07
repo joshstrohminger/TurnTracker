@@ -15,6 +15,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Setup node and npm
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+
+      - name: Install npm Dependencies
+        working-directory: Source/TurnTracker.Client
+        run: npm install
+        
+      - name: Install angular CLI
+        run: npm install -g @angular/cli
+        
+      - name: Build with npm
+        working-directory: Source/TurnTracker.Client
+        run: npm run-script build
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
