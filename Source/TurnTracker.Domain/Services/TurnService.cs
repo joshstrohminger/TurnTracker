@@ -35,6 +35,31 @@ namespace TurnTracker.Domain.Services
             _appSettings = appSettings;
         }
 
+        public Result CreateMissingParticipants()
+        {
+            try
+            {
+                return Result.Combine(_db.Activities.Include(a => a.Participants)
+                    .Where(a => a.Participants.Count == 0).Select(a => new { a.Id, a.OwnerId }).ToList().Select(info =>
+                    {
+                        _logger.LogWarning($"Missing participants for activity {info.Id}");
+                        var activity = GetActivityForEdit(info.Id);
+                        if (activity.IsDisabled)
+                        {
+                            _logger.LogError($"Can't add missing participants to disabled activity {info.Id} - {activity.Name}");
+                            return Result.Success();
+                        }
+                        var result = SaveActivity(activity, info.OwnerId);
+                        return Result.SuccessIf(result.IsSuccess, result.IsSuccess ? "" : result.Error.Message);
+                    }));
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e, "Failed to create missing participants");
+                return Result.Failure(e.Message);
+            }
+        }
+
         public async Task<Result> EnsureSeedActivitiesAsync()
         {
             try

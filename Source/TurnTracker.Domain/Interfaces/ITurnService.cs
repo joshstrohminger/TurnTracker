@@ -31,5 +31,7 @@ namespace TurnTracker.Domain.Interfaces
         EditableActivity GetActivityForEdit(int id);
         Result<ActivityDetails, ValidityError> SaveActivity(EditableActivity activity, int ownerId);
         Result DeleteActivity(int activityId);
+
+        Result CreateMissingParticipants();
     }
 }

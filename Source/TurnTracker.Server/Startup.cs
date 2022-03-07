@@ -150,6 +150,13 @@ namespace TurnTracker.Server
                         throw new Exception($"Failed to seed activities: {seedActivitiesError}");
                     }
                 }
+
+                // Repair any activities that have no participants by creating a single participant from the activity owner
+                var (_, repairFailed, repairError) = serviceScope.ServiceProvider.GetRequiredService<ITurnService>().CreateMissingParticipants();
+                if (repairFailed)
+                {
+                    throw new Exception($"Failed to create missing participants: {repairError}");
+                }
             }
 
             if (_env.IsDevelopment())
