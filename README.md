@@ -28,3 +28,25 @@ The service worker that angular provides for its built-in PWA support does not h
 1. View a particular page when clicking the notification or a particular action on the notification.
 1. Post to a provided URL without opening the app using a provided bearer token for authentication. This is used for snoozing and dismissing push notifications. 
 1. Get rid of the notification without opening the app.
+
+### Deployment
+
+#### SQL Server DB
+
+1. Allow connections from Azure resources.
+1. Create a user (such as tim)
+```sql
+CREATE USER tim
+	FOR LOGIN tim
+	WITH DEFAULT_SCHEMA=[dbo]
+GO
+EXEC sp_addrolemember N'db_datareader', N'tim'
+EXEC sp_addrolemember N'db_datawriter', N'tim'
+EXEC sp_addrolemember N'db_ddladmin', N'tim'
+GO
+```
+
+#### App Service
+
+1. Update any necessary configuration values.
+1. Update the DB connection string.

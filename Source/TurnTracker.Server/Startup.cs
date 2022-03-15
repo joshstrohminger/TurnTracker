@@ -10,7 +10,6 @@ using Lib.Net.Http.WebPush;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +22,7 @@ using TurnTracker.Common;
 using TurnTracker.Data;
 using TurnTracker.Domain.Authorization;
 using TurnTracker.Domain.Configuration;
+using TurnTracker.Domain.HealthChecks;
 using TurnTracker.Domain.HostedServices;
 using TurnTracker.Domain.Interfaces;
 using TurnTracker.Domain.Services;
@@ -46,14 +46,13 @@ namespace TurnTracker.Server
         {
             services.AddCors();
             services.AddMvc(options =>
-            {
-                options.InputFormatters.Insert(0, new BoolBodyInputFormatter());
-                options.InputFormatters.Insert(0, new ByteBodyInputFormatter());
-                options.InputFormatters.Insert(0, new StringBodyInputFormatter());
-            })
+                {
+                    options.InputFormatters.Insert(0, new BoolBodyInputFormatter());
+                    options.InputFormatters.Insert(0, new ByteBodyInputFormatter());
+                    options.InputFormatters.Insert(0, new StringBodyInputFormatter());
+                })
                 // newtonsoft is necessary if we want to use the fido2 library since it relies heavily on it
-                .AddNewtonsoftJson()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+                .AddNewtonsoftJson();
             services.AddResponseCompression();
             services.AddMemoryCache();
 
@@ -105,6 +104,9 @@ namespace TurnTracker.Server
                     };
                 });
 
+            services.AddHealthChecks()
+                .AddCheck<DatabaseHealthCheck>("Database");
+
             services.AddSpaStaticFiles(config =>
             {
                 config.RootPath = "wwwroot";
@@ -148,6 +150,13 @@ namespace TurnTracker.Server
                         throw new Exception($"Failed to seed activities: {seedActivitiesError}");
                     }
                 }
+
+                // Repair any activities that have no participants by creating a single participant from the activity owner
+                var (_, repairFailed, repairError) = serviceScope.ServiceProvider.GetRequiredService<ITurnService>().CreateMissingParticipants();
+                if (repairFailed)
+                {
+                    throw new Exception($"Failed to create missing participants: {repairError}");
+                }
             }
 
             if (_env.IsDevelopment())
@@ -161,6 +170,8 @@ namespace TurnTracker.Server
             }
 
             app.UseResponseCompression();
+
+            app.UseHealthChecks("/health");
 
             // rewrite / to /index.html
             app.UseDefaultFiles();
