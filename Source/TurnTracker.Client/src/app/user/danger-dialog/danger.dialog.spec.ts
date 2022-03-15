@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { DeleteActivityDialog } from './delete-activity.dialog';
+import { DangerDialog } from './danger.dialog';
 
-describe('DeleteActivityComponent', () => {
-  let component: DeleteActivityDialog;
-  let fixture: ComponentFixture<DeleteActivityDialog>;
+describe('DangerDialog', () => {
+  let component: DangerDialog;
+  let fixture: ComponentFixture<DangerDialog>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ DeleteActivityDialog ]
+      declarations: [ DangerDialog ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DeleteActivityDialog);
+    fixture = TestBed.createComponent(DangerDialog);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

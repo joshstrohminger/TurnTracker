@@ -12,7 +12,8 @@ namespace TurnTracker.Domain
         {
             CreateMap<Participant, UserInfo>()
                 .ForMember(x => x.Id, x => x.MapFrom(y => y.User.Id))
-                .ForMember(x => x.Name, x => x.MapFrom(y => y.User.DisplayName));
+                .ForMember(x => x.Name, x => x.MapFrom(y => y.User.DisplayName))
+                .ForMember(x => x.Role, o => o.Ignore());
 
             CreateMap<User, UserInfo>()
                 .ForMember(x => x.Name, x => x.MapFrom(y => y.DisplayName));

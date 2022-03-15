@@ -123,11 +123,12 @@ namespace TurnTracker.Domain.Services
         {
             try
             {
-                var users = _db.Users
-                    .Where(x => x.DisplayName.Contains(filter))
-                    .ToList()
-                    .Select(x => _mapper.Map<UserInfo>(x));
-                return Result.Success(users);
+                IQueryable<User> users = _db.Users;
+                if (!string.IsNullOrWhiteSpace(filter))
+                {
+                    users = users.Where(x => x.DisplayName.Contains(filter));
+                }
+                return Result.Success(users.ToList().Select(x => _mapper.Map<UserInfo>(x)));
             }
             catch (Exception e)
             {
@@ -170,7 +171,7 @@ namespace TurnTracker.Domain.Services
             }
             catch (Exception e)
             {
-                _logger.LogError("Failed to delete web logins", e);
+                _logger.LogError(e, "Failed to delete web logins");
                 return Result.Failure("Failed to delete web session");
             }
         }
@@ -203,12 +204,31 @@ namespace TurnTracker.Domain.Services
             {
                 return Result.Failure("Invalid password");
             }
-
-            // authentication successful set the new password
+            
             AssignNewPassword(user, newPassword);
             _db.SaveChanges();
 
             return Result.Success();
+        }
+
+        public Result<int,ResetPasswordFailure> ResetPassword(int userId)
+        {
+            var user = _db.Users.SingleOrDefault(x => x.Id == userId);
+            if (user is null)
+            {
+                return Result.Failure<int, ResetPasswordFailure>(ResetPasswordFailure.InvalidUser);
+            }
+
+            var password = _appSettings.Value.DefaultPassword;
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                return Result.Failure<int, ResetPasswordFailure>(ResetPasswordFailure.NoDefaultPassword);
+            }
+            
+            AssignNewPassword(user, password);
+            _db.SaveChanges();
+
+            return Result.Success<int, ResetPasswordFailure>(userId);
         }
 
         public Result<string> RefreshUser(long loginId, string refreshKey)

@@ -1,0 +1,9 @@
+<h2 mat-dialog-title>{{options?.title || options?.action || 'Danger'}}</h2>
+<mat-dialog-content>
+  <p>{{options?.prompt || 'Are you sure?'}}</p>
+  <p class="warn">This cannot be undone!</p>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Close</button>
+  <button mat-button color="warn" [mat-dialog-close]="true">{{options?.action || 'Confirm'}}</button>
+</mat-dialog-actions>

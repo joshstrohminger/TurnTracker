@@ -18,7 +18,7 @@ import { TurnDetailsDialog } from '../turn-details/turn-details.dialog';
 import { TurnDetailsDialogConfig } from '../turn-details/TurnDetailsDialogConfig';
 import { VerificationStatus } from '../models/Participant';
 import { UserService } from 'src/app/services/user.service';
-import { DeleteActivityDialog } from '../delete-activity/delete-activity.dialog';
+import { DangerDialog, IDangerDialogOptions } from '../danger-dialog/danger.dialog';
 import { FormBuilder, Validators, FormControl } from '@angular/forms';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { TitleContentService } from 'src/app/services/title-content.service';
@@ -170,7 +170,11 @@ export class ActivityComponent implements OnInit, OnDestroy {
   }
 
   deleteActivity() {
-    const dialogRef = this._dialog.open(DeleteActivityDialog, {data: this.activity});
+    const options: IDangerDialogOptions = {
+      action: 'Delete Activity',
+      prompt: `Are you sure you want to delete activity ${this.activity.name}?`
+    };
+    const dialogRef = this._dialog.open(DangerDialog, {data: options});
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
         if (this.busy) {
