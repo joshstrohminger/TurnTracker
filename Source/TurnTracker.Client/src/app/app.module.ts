@@ -46,23 +46,32 @@ import { NotificationPipe } from './user/notification.pipe';
 import { TimerComponent } from './user/timer/timer.component';
 import { TurnDetailsDialog } from './user/turn-details/turn-details.dialog';
 import { EditActivityComponent } from './user/edit-activity/edit-activity.component';
-import { DeleteActivityDialog } from './user/delete-activity/delete-activity.dialog';
+import { DangerDialog } from './user/danger-dialog/danger.dialog';
 import { SettingsComponent } from './user/settings/settings.component';
 import { ActivityInterceptor } from './anonymous/activity.interceptor';
 import { NotificationsComponent } from './user/notifications/notifications.component';
 import { ReloadComponent } from './user/reload/reload.component';
+import { ManageUsersComponent } from './admin/manage-users/manage-users.component';
+import { AdminGuard } from './auth/admin.guard';
 
 const routes: Routes = [
   {
     path: 'activity',
     canActivate: [AuthGuard],
     children: [
-    { path: 'add', component: EditActivityComponent, data: {title: 'Add Activity'} },
-    { path: ':id/edit', component: EditActivityComponent, data: {title: 'Edit Activity'} },
-    { path: ':id', component: ActivityComponent, data: {title: 'Activity'} },
-    { path: ':id/taketurn', component: ActivityComponent, data: {title: 'Activity'} },
-    { path: ':id/turn/:turnId', component: ActivityComponent, data: {title: 'Activity'} },
-  ]},
+      { path: 'add', component: EditActivityComponent, data: {title: 'Add Activity'} },
+      { path: ':id/edit', component: EditActivityComponent, data: {title: 'Edit Activity'} },
+      { path: ':id', component: ActivityComponent, data: {title: 'Activity'} },
+      { path: ':id/taketurn', component: ActivityComponent, data: {title: 'Activity'} },
+      { path: ':id/turn/:turnId', component: ActivityComponent, data: {title: 'Activity'} },
+    ]
+  },
+  { path: 'admin',
+    canActivate: [AdminGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'users' },
+      { path: 'users', component: ManageUsersComponent, data: {title: 'Manage Users'}}
+    ]},
   { path: 'activities', component: ActivitiesComponent, canActivate: [AuthGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard], data: {title: 'Profile'} },
   { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard], data: {title: 'Settings'} },
@@ -87,10 +96,11 @@ const routes: Routes = [
     TimerComponent,
     TurnDetailsDialog,
     EditActivityComponent,
-    DeleteActivityDialog,
+    DangerDialog,
     SettingsComponent,
     NotificationsComponent,
-    ReloadComponent
+    ReloadComponent,
+    ManageUsersComponent
   ],
   imports: [
     BrowserAnimationsModule,

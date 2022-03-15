@@ -12,6 +12,7 @@ namespace TurnTracker.Domain.Interfaces
         Result<(User user, string accessToken, string refreshToken)> AuthenticateUser(string username, string password, string deviceName);
         (User user, string accessToken, string refreshToken) GenerateAndSaveLogin(User user, string deviceName, int? deviceAuthorizationId = null);
         Result ChangePassword(int userId, string oldPassword, string newPassword);
+        Result<int, ResetPasswordFailure> ResetPassword(int userId);
         Result<string> RefreshUser(long loginId, string refreshKey);
         Result<User> GetUser(int userId);
         Result Logout(long loginId);

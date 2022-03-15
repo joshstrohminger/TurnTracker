@@ -18,12 +18,7 @@ namespace TurnTracker.Server.Controllers
         [HttpGet]
         public IActionResult GetFilteredUsers([FromQuery] string filter)
         {
-            if (string.IsNullOrWhiteSpace(filter))
-            {
-                return BadRequest();
-            }
-
-            var result = _userService.FindUsers(filter.Trim());
+            var result = _userService.FindUsers(filter?.Trim());
             if (result.IsFailure)
             {
                 return StatusCode(500);

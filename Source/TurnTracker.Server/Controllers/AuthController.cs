@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Authorization;
@@ -156,10 +155,25 @@ namespace TurnTracker.Server.Controllers
         }
         
         [Authorize(Roles = nameof(Role.Admin))]
-        [HttpGet("[action]")]
-        public string AdminData()
+        [HttpPost("[action]/{userId}")]
+        public IActionResult Reset(int userId)
         {
-            throw new NotImplementedException();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            if (User.GetId() == userId)
+            {
+                _logger.LogWarning($"User {userId} tried to reset their own password");
+                return BadRequest();
+            }
+
+            var result = _userService.ResetPassword(userId);
+            if (result.IsSuccess)
+            {
+                return Ok();
+            }
+
+            _logger.LogError($"Failed to reset user id {userId}: {result.Error}");
+            return result.Error == ResetPasswordFailure.InvalidUser ? BadRequest() : StatusCode(500);
         }
     }
 }

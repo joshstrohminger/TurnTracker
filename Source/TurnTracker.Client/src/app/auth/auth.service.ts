@@ -10,6 +10,7 @@ import { Profile } from './models/Profile';
 import { TokenInfo } from './models/TokenInfo';
 import { UserService } from '../services/user.service';
 import { MessageService } from '../services/message.service';
+import { Role } from './models/Role';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +27,10 @@ export class AuthService {
 
   public get isLoggedIn() {
     return !!this._userService.currentUser;
+  }
+
+  public get isAdmin() {
+    return this._userService.currentUser?.role === Role.Admin;
   }
 
   public get shouldSaveUsername() {
