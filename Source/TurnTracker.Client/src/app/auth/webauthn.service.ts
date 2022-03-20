@@ -120,10 +120,10 @@ export class WebauthnService {
     }),
     tap(
       () => this._messageService.success('Registered credentials'),
-      error => this._messageService.error(`Failed to register credentials: ${error.ToString()}`, error)));
+      error => this._messageService.error(`Failed to register credentials: ${error.message}`, error)));
   }
 
-  public assertDevice$(username: string): Observable<AuthenticatedUser> {
+  public assertDevice$(username: string, redirectUrl?: string): Observable<AuthenticatedUser> {
     if (this.usernameRequired && !username) {
       const message = 'This device requires a username to login';
       this._messageService.error(message);
@@ -164,8 +164,7 @@ export class WebauthnService {
         return this._http.post<AuthenticatedUser>('auth/CompleteDeviceAssertion', r);
       }),
       tap(user => {
-        console.log('asserted device');
-        this._authService.saveAuthenticatedUser(user);
+        this._authService.saveAuthenticatedUser(user, redirectUrl);
       },
       error => {
         if (!allowCredentials.length && /empty.*allowCredentials.*not supported/i.test(error.message)) {
@@ -173,7 +172,7 @@ export class WebauthnService {
           this.usernameRequired = true;
           this._messageService.error('This device requires a username to login', error);
         } else {
-          this._messageService.error(`Device Assertion Failed: ${error.ToString()}`, error);
+          this._messageService.error(`Device Assertion Failed: ${error.message}`, error);
         }
       }));
   }

@@ -7,7 +7,8 @@ import { MatSpinner } from '@angular/material/progress-spinner';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { WebauthnService } from '../webauthn.service';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { first, takeUntil } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -26,14 +27,19 @@ export class LoginComponent implements OnInit, OnDestroy {
      .centerVertically()
     });
 
-  constructor(formBuilder: FormBuilder, public authService: AuthService, private overlay: Overlay, public webauthn: WebauthnService) {
+  constructor(
+    formBuilder: FormBuilder,
+    public authService: AuthService,
+    private overlay: Overlay,
+    public webauthn: WebauthnService,
+    private route: ActivatedRoute) {
     this.loginForm = formBuilder.group(this.getDefaultFormValues());
   }
 
   private getDefaultFormValues() {
     const save = this.authService.shouldSaveUsername;
     return {
-      username: save ? (this.authService.savedUsername || '') : '',
+      username: this.authService.savedUsername || '',
       password: '',
       save: save
     };
@@ -47,12 +53,18 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.loginForm.controls.save.valueChanges
       .pipe(takeUntil(this.destroyed))
       .subscribe(save => this.authService.shouldSaveUsername = save);
+
+    this.webauthn.isAvailable$.pipe(
+      first(available => available && (this.loginForm.controls.username.valid || !this.webauthn.usernameRequired)),
+      takeUntil(this.destroyed)
+    ).subscribe(() => this.deviceLogin());
   }
 
   showSpinner() {
     this.overlayRef.attach(new ComponentPortal(MatSpinner));
     this.loginForm.disable();
   }
+
   stopSpinner() {
     this.overlayRef.detach();
     this.loginForm.enable();
@@ -61,7 +73,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   onSubmit() {
     this.error = null;
     this.showSpinner();
-    this.authService.login(this.loginForm.value as Credentials)
+    this.authService.login(this.loginForm.value as Credentials, this.route.snapshot.queryParams.redirectUrl)
       .subscribe(errorMessage => {
         if (errorMessage) {
           this.error = errorMessage;
@@ -80,7 +92,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   deviceLogin() {
     this.error = null;
     this.showSpinner();
-    this.webauthn.assertDevice$(this.loginForm.value.username).subscribe(
+    this.webauthn.assertDevice$(this.loginForm.value.username, this.route.snapshot.queryParams.redirectUrl).subscribe(
       () => this.stopSpinner(),
       () => this.stopSpinner());
   }
