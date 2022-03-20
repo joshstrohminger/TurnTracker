@@ -83,15 +83,11 @@ export class AuthService {
     }
   }
 
-  loginRedirect(url?: string) {
-    this._router.navigate(['/login'], {queryParams: url ? { redirectUrl: url } : {}} )
-  }
-
-  login(credentials: Credentials): Observable<string> {
+  login(credentials: Credentials, redirectUrl?: string): Observable<string> {
 
     return this._http.post<AuthenticatedUser>('auth/login', credentials).pipe(
       map(user => {
-        this.saveAuthenticatedUser(user);
+        this.saveAuthenticatedUser(user, redirectUrl);
         return null as string;
       }), catchError((error: HttpErrorResponse) => {
         switch (error.status) {
@@ -104,15 +100,12 @@ export class AuthService {
       }));
   }
 
-  saveAuthenticatedUser(user: AuthenticatedUser) {
+  saveAuthenticatedUser(user: AuthenticatedUser, redirectUrl?: string) {
     this.saveUser(user);
     if (this.shouldSaveUsername) {
       this.savedUsername = user.username;
     }
-    this._route.queryParams.pipe(first()).subscribe(params => {
-      const url = params && params.redirectUrl || '/activities';
-      this._router.navigateByUrl(url, {replaceUrl: true});
-    });
+    this._router.navigateByUrl(redirectUrl ?? '/activities', {replaceUrl: true});
   }
 
   logout(): void {
