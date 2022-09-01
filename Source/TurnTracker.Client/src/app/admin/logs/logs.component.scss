@@ -1,0 +1,51 @@
+section {
+  margin-top: 1em;
+}
+
+mat-card {
+  margin-bottom: 1em;
+}
+
+mat-card-title {
+  font-size: medium;
+
+  &.unset {
+    color: darkgray;
+  }
+
+  &.debug {
+    color: blue;
+  }
+
+  &.warn {
+    color: orange;
+  }
+
+  &.info {
+    color: green;
+  }
+
+  &.error {
+    color: red;
+  }
+}
+
+mat-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  white-space: pre-wrap;
+}
+
+mat-card-footer {
+  display: flex;
+  align-items: center;
+
+  .separator {
+    flex: 1;
+  }
+
+  .text {
+    padding-inline: 0.5em;
+  }
+}

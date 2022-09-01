@@ -24,15 +24,21 @@
     height: 1.5em;
     object-fit: contain;
   }
+
   span {
     padding-left: 0.5em;
     @media only screen and (max-width: 200px) {
       display: none;
     }
   }
-  a:last-of-type {
-    position: absolute;
-    bottom: 0;
-    left: 0;
+
+  mat-nav-list {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 8px);
+  }
+
+  .spacer {
+    flex: 1;
   }
 }
