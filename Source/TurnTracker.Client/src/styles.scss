@@ -1,5 +1,5 @@
-@use '~@angular/material' as mat;
-@import '~@angular/material/theming';
+@use '@angular/material' as mat;
+@import '@angular/material/theming';
 @import 'app/app.component.shared-spacing.scss';
 @import 'app/user/timer/timer.component.theme.scss';
 @import 'app/user/reload/reload.component.theme.scss';
