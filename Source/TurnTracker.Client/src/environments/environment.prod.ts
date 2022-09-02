@@ -1,9 +1,9 @@
-import { version, description } from '../../package.json';
-import { buildDate } from './build.json';
+import packageInfo from '../../package.json';
+import buildInfo from './build.json';
 
 export const environment = {
   production: true,
-  version: String(version),
-  appName: String(description),
-  buildDate: String(buildDate)
+  version: String(packageInfo.version),
+  appName: String(packageInfo.description),
+  buildDate: String(buildInfo.buildDate)
 };
