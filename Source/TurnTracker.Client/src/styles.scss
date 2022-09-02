@@ -1,9 +1,10 @@
+@use '~@angular/material' as mat;
 @import '~@angular/material/theming';
 @import 'app/app.component.shared-spacing.scss';
 @import 'app/user/timer/timer.component.theme.scss';
 @import 'app/user/reload/reload.component.theme.scss';
 
-@include mat-core();
+@include mat.core();
 /*
 $mat-red
 $mat-pink
@@ -26,18 +27,18 @@ $mat-grey
 $mat-blue-grey
 */
 // Available color palettes: https://material.io/design/color/
-$dark-primary: mat-palette(
-  $mat-blue
+$dark-primary: mat.define-palette(
+  mat.$blue-palette
 );
-$dark-accent:  mat-palette(
-  $mat-green
+$dark-accent:  mat.define-palette(
+  mat.$green-palette
   , A200, A100, A400);
-$dark-warn:    mat-palette(
-  $mat-deep-orange
+$dark-warn:    mat.define-palette(
+  mat.$deep-orange-palette
   );
-$dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
+$dark-theme:   mat.define-dark-theme($dark-primary, $dark-accent, $dark-warn);
 
-@include angular-material-theme($dark-theme);
+@include mat.all-component-themes($dark-theme);
 @include timer-component-theme($dark-theme);
 @include reload-component-theme($dark-theme);
 
@@ -47,9 +48,9 @@ html, body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-$primary: mat-color($dark-primary);
-$accent: mat-color($dark-accent);
-$warn: mat-color($dark-warn);
+$primary: mat.get-color-from-palette($dark-primary);
+$accent: mat.get-color-from-palette($dark-accent);
+$warn: mat.get-color-from-palette($dark-warn);
 $foreground: map-get($dark-theme, foreground);
 
 .accent {
@@ -69,7 +70,7 @@ label {
 }
 
 .secondary {
-  color: mat-color($foreground, secondary-text);
+  color: mat.get-color-from-palette($foreground, secondary-text);
 }
 
 .dark-backdrop {

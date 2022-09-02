@@ -1,3 +1,4 @@
+@use '~@angular/material' as mat;
 @import '~@angular/material/theming';
 
 @mixin reload-component-theme($theme) {
@@ -5,7 +6,7 @@
   $warn: map-get($theme, warn);
 
   .cdk-overlay-backdrop.cdk-overlay-backdrop-showing.warn-backdrop {
-    background: mat-color($warn);
+    background: mat.get-color-from-palette($warn);
     opacity: 0.85 !important;
   }
 }

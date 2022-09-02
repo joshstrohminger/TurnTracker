@@ -1,3 +1,4 @@
+@use '~@angular/material' as mat;
 @import '~@angular/material/theming';
 
 @mixin timer-component-theme($theme) {
@@ -5,6 +6,6 @@
   $warn: map-get($theme, warn);
 
   .overdue {
-    color: mat-color($warn);
+    color: mat.get-color-from-palette($warn);
   }
 }
