@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, filter, takeUntil } from 'rxjs/operators';
 import { ISavedLog, LogLevel, LogService } from 'src/app/services/log.service';
@@ -13,7 +13,7 @@ import { DateTime } from 'luxon';
 export class LogsComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
-  configForm: FormGroup
+  configForm: UntypedFormGroup
 
   public get LogLevels() {
     return LogLevel;
@@ -35,7 +35,7 @@ export class LogsComponent implements OnInit, OnDestroy {
     return !!navigator.share;
   }
 
-  constructor(private _logService: LogService, private _builder: FormBuilder) { }
+  constructor(private _logService: LogService, private _builder: UntypedFormBuilder) { }
 
   ngOnInit(): void {
     console.log('josh');

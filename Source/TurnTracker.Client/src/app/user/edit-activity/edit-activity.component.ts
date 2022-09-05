@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'src/app/services/message.service';
 import { AuthError } from 'src/app/auth/models/AuthError';
 import { EditableActivity } from '../models/EditableActivity';
-import { FormGroup, FormBuilder, Validators, FormControl, FormArray } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators, FormControl, FormArray } from '@angular/forms';
 import { Unit } from '../models/Unit';
 import { User } from '../models/User';
 import { UserService } from 'src/app/services/user.service';
@@ -26,7 +26,7 @@ export class EditActivityComponent implements OnInit {
   private _activityId: number;
   public readonly myId: number;
   public readonly myName: string;
-  public editForm: FormGroup;
+  public editForm: UntypedFormGroup;
   public unitValues = Object.keys(Unit).map(x => parseInt(x, 10)).filter(x => !isNaN(<any>x));
   public notifications: NotificationSetting[] = Object.keys(NotificationType)
     .filter(key => !isNaN(Number(NotificationType[key])))
@@ -47,7 +47,7 @@ export class EditActivityComponent implements OnInit {
     private _http: HttpClient,
     private _route: ActivatedRoute,
     private _router: Router,
-    private _formBuilder: FormBuilder,
+    private _formBuilder: UntypedFormBuilder,
     private _messageService: MessageService,
     private titleContentService: TitleContentService,
     userService: UserService) {

@@ -1,4 +1,4 @@
-import { ValidationErrors, AbstractControl, ValidatorFn, FormGroup } from '@angular/forms';
+import { ValidationErrors, AbstractControl, ValidatorFn, UntypedFormGroup } from '@angular/forms';
 
 export class TurnTrackerValidators {
 
@@ -49,7 +49,7 @@ export class TurnTrackerValidators {
   }
 
   static different(...controlNames: string[]): ValidatorFn {
-    return (group: FormGroup): ValidationErrors => {
+    return (group: UntypedFormGroup): ValidationErrors => {
       if (group && controlNames.length >= 2) {
         let firstValue;
         let first = true;

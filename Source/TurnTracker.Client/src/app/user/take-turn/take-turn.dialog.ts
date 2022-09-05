@@ -3,7 +3,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Participant } from '../models/Participant';
 import { DateTime } from 'luxon';
 import { TakeTurnDialogConfig } from './TakeTurnDialogConfig';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { NewTurn } from '../models/NewTurn';
 
 @Component({
@@ -15,11 +15,11 @@ export class TakeTurnDialog implements OnInit {
 
   participants: Participant[];
   activityName: string;
-  turnForm: FormGroup;
+  turnForm: UntypedFormGroup;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) private _config: TakeTurnDialogConfig,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     private _dialog: MatDialogRef<TakeTurnDialogConfig>) {
 
     const now = DateTime.local();
