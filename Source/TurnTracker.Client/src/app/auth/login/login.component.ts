@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Credentials } from './Credentials';
 import { AuthService } from '../auth.service';
 import { Overlay } from '@angular/cdk/overlay';
@@ -17,7 +17,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class LoginComponent implements OnInit, OnDestroy {
 
-  public loginForm: UntypedFormGroup;
+  public loginForm: FormGroup<{username: FormControl<string>, password: FormControl<string>, save: FormControl<boolean>}>;
   public error: string = null;
   private destroyed = new Subject<void>();
   private overlayRef = this.overlay.create({
@@ -28,7 +28,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
 
   constructor(
-    formBuilder: UntypedFormBuilder,
+    formBuilder: FormBuilder,
     public authService: AuthService,
     private overlay: Overlay,
     public webauthn: WebauthnService,

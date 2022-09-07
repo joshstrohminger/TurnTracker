@@ -19,7 +19,7 @@ import { TurnDetailsDialogConfig } from '../turn-details/TurnDetailsDialogConfig
 import { VerificationStatus } from '../models/Participant';
 import { UserService } from 'src/app/services/user.service';
 import { DangerDialog, IDangerDialogOptions } from '../danger-dialog/danger.dialog';
-import { UntypedFormBuilder, Validators, UntypedFormControl } from '@angular/forms';
+import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { TitleContentService } from 'src/app/services/title-content.service';
 import { Overlay } from '@angular/cdk/overlay';
@@ -49,7 +49,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
   }
   private readonly _done = new Subject();
 
-  dismissTimeOfDayControl: UntypedFormControl;
+  dismissTimeOfDayControl: FormControl<string>;
   activity: ActivityDetails;
   busy = false;
   names = new Map<number, string>();
@@ -72,7 +72,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
     private _userService: UserService,
     private _messageService: MessageService,
     private _dialog: MatDialog,
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private titleContentService: TitleContentService,
     private overlay: Overlay,
     private location: Location) {

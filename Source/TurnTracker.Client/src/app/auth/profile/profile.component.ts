@@ -3,7 +3,7 @@ import { AuthService } from '../auth.service';
 import { Role } from '../models/Role';
 import { Profile } from '../models/Profile';
 import { MessageService } from 'src/app/services/message.service';
-import { UntypedFormBuilder, UntypedFormGroup, Validators, UntypedFormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { TurnTrackerValidators } from 'src/app/validators/TurnTrackerValidators';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ImmediateErrorStateMatcher } from 'src/app/validators/ImmediateErrorStateMatcher';
@@ -23,12 +23,12 @@ import { WebauthnService } from '../webauthn.service';
 })
 export class ProfileComponent implements OnInit {
 
-  registerForm: UntypedFormGroup;
+  registerForm: FormGroup<{deviceName: FormControl<string>}>;
   registering = false;
   deleting = false;
   user: Profile;
-  displayNameControl: UntypedFormControl;
-  passwordForm: UntypedFormGroup;
+  displayNameControl: FormControl<string>;
+  passwordForm: FormGroup<{oldPassword: FormControl<string>, newPassword: FormControl<string>, confirmationPassword: FormControl<string>}>;
   passwordStrengthColor = 'warn';
   passwordStrength = 0;
   readonly passwordDesiredLength = 30;
@@ -53,7 +53,7 @@ export class ProfileComponent implements OnInit {
   constructor(
     private _authService: AuthService,
     private _messageService: MessageService,
-    private _formBuilder: UntypedFormBuilder,
+    private _formBuilder: FormBuilder,
     private _http: HttpClient,
     private _userService: UserService,
     public webauthnService: WebauthnService) { }
