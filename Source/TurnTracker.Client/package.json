@@ -1,6 +1,6 @@
 {
   "name": "turntracker-client",
-  "version": "1.16.1",
+  "version": "1.16.2",
   "description": "Turn Tracker",
   "scripts": {
     "start": "ng serve --open",
