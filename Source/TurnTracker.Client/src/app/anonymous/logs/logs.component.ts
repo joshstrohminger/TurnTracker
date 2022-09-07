@@ -5,6 +5,7 @@ import { debounceTime, filter, takeUntil } from 'rxjs/operators';
 import { ISavedLog, LogLevel, LogService } from 'src/app/services/log.service';
 import { DateTime } from 'luxon';
 import { ImmediateErrorStateMatcher } from 'src/app/validators/ImmediateErrorStateMatcher';
+import { MessageService } from 'src/app/services/message.service';
 
 @Component({
   selector: 'app-logs',
@@ -16,6 +17,8 @@ export class LogsComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   configForm: FormGroup<{enabled: FormControl<boolean>, limit: FormControl<number>}>;
   readonly immediateErrors = new ImmediateErrorStateMatcher();
+
+  public busy = false;
 
   public get LogLevels() {
     return LogLevel;
@@ -34,13 +37,12 @@ export class LogsComponent implements OnInit, OnDestroy {
   }
 
   public get canShare(): boolean {
-    return !!navigator.share;
+    return !!navigator.canShare;
   }
 
-  constructor(private _logService: LogService, private _builder: FormBuilder) { }
+  constructor(private _logService: LogService, private _builder: FormBuilder, private _messageService: MessageService) { }
 
   ngOnInit(): void {
-    console.log('josh');
     this.configForm = this._builder.group({
       enabled: [this._logService.enabled],
       limit: [this._logService.limit, Validators.compose([Validators.required, Validators.min(1), Validators.max(1000)])]
@@ -68,19 +70,65 @@ export class LogsComponent implements OnInit, OnDestroy {
   }
 
   download(): void {
-    const logs = this.logs;
-    if (!logs.length) {
+    if (this.busy || !this.logs.length) {
       return;
     }
+    this.busy = true;
 
     const a = document.createElement("a");
-    const file = new Blob([JSON.stringify(logs, null, 2)], {type: "text/plain"});
+    const file = this.getLogBlob();
     a.href = URL.createObjectURL(file);
-    a.download = `turn-tracker-logs.${DateTime.now().toFormat('yyyy-LL-dd-HHmmss')}.json`;
+    a.download = this.getLogFilename();
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    this.busy = false;
+  }
+
+  share(): void {
+    if (this.busy || !this.logs.length || !this.canShare) {
+      return;
+    }
+    this.busy = true;
+
+    const file = new File([this.getLogBlob()], this.getLogFilename(), this.getFileOptions());
+    const content = {
+      title: 'TurnTracker Client Log File',
+      text: 'Please describe what you were doing when the error occurred...',
+      files: [file]
+    };
+
+    if (navigator.canShare(content)) {
+      navigator.share(content)
+        .then(() => {
+          this.busy = false;
+          this._messageService.success('Shared logs')
+        })
+        .catch(e => {
+          this.busy = false;
+          if (e instanceof DOMException || e instanceof TypeError) {
+            this._messageService.error(`Failed to share: ${e.message}`, e);
+          } else {
+            this._messageService.error('Failed to share', e);
+          }
+        });
+    } else {
+      this._messageService.error('Browser did not allow sharing');
+      this.busy = false;
+    }
+  }
+
+  private getFileOptions(): {type: string} {
+    return {type: "text/plain"};
+  }
+
+  private getLogBlob(): Blob {
+    return new Blob([JSON.stringify(this.logs, null, 2)], this.getFileOptions());
+  }
+
+  private getLogFilename(): string {
+    return `turn-tracker-logs.${DateTime.now().toFormat('yyyy-LL-dd-HHmmss')}.json`;
   }
 }

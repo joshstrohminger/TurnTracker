@@ -18,7 +18,7 @@
     <span class="text">{{logs.length}} logs</span>
     <span class="separator"></span>
     <button mat-button color="accent" [disabled]="!logs.length" (click)="download()">Download</button>
-    <button mat-button *ngIf="canShare" color="primary" [disabled]="!logs.length">Send</button>
+    <button mat-button *ngIf="canShare" color="primary" [disabled]="!logs.length" (click)="share()">Send</button>
   </mat-card-footer>
 </mat-card>
 
