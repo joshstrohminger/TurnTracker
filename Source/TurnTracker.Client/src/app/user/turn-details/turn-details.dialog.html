@@ -8,7 +8,7 @@
       </tr>
       <tr>
         <td><label>When</label></td>
-        <td><span>{{turn.occurred | date: 'short'}}</span></td>
+        <td><span>{{turn.occurred | luxon: 'short'}}</span></td>
       </tr>
       <tr *ngIf="turn.userId !== turn.creatorId">
         <td><label>Creator</label></td>
@@ -16,7 +16,7 @@
       </tr>
       <tr *ngIf="turn.occurred !== turn.created">
         <td><label>Created</label></td>
-        <td><span>{{turn.created | date: 'short'}}</span></td>
+        <td><span>{{turn.created | luxon: 'short'}}</span></td>
       </tr>
       <ng-container *ngIf="turn.modifierId">
         <tr>
@@ -25,7 +25,7 @@
         </tr>
         <tr>
           <td><label>Modified</label></td>
-          <td><span>{{turn.modified | date: 'short'}}</span></td>
+          <td><span>{{turn.modified | luxon: 'short'}}</span></td>
         </tr>
         <tr>
           <td><label>Modifier</label></td>

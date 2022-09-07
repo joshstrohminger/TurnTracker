@@ -26,7 +26,14 @@ export class EditActivityComponent implements OnInit {
   private _activityId: number;
   public readonly myId: number;
   public readonly myName: string;
-  public editForm: FormGroup;
+  public editForm: FormGroup<{
+    name: FormControl<string>,
+    description: FormControl<string>,
+    takeTurns: FormControl<boolean>,
+    periodCount: FormControl<number>,
+    periodUnit: FormControl<string | Unit>,
+    searchControl: FormControl<string | User>,
+  }>;
   public unitValues = Object.keys(Unit).map(x => parseInt(x, 10)).filter(x => !isNaN(<any>x));
   public notifications: NotificationSetting[] = Object.keys(NotificationType)
     .filter(key => !isNaN(Number(NotificationType[key])))
@@ -40,7 +47,7 @@ export class EditActivityComponent implements OnInit {
   public participants: User[] = [];
   readonly countMax = parseInt('9'.repeat(this.countDigits), 10);
   public get hasUnitDefined() {
-    return this.editForm && !isNaN(this.editForm.value.periodUnit);
+    return this.editForm && this.isUnit(this.editForm.value.periodUnit);
   }
 
   constructor(
@@ -94,7 +101,7 @@ export class EditActivityComponent implements OnInit {
         periodCount: [activity.periodCount,
           [Validators.required, Validators.pattern('[0-9]+'), Validators.min(this.countMin), Validators.max(this.countMax)]],
         periodUnit: [activity.periodUnit === null ? this.defaultUnit : activity.periodUnit],
-        searchControl: ['']
+        searchControl: ['' as string | User]
       });
       this.participants = activity.participants;
 
@@ -121,7 +128,7 @@ export class EditActivityComponent implements OnInit {
 
       this.editForm.controls.searchControl.valueChanges.pipe(
         map(x => {
-          if (x && x.id) {
+          if (this.isUser(x)) {
             console.log('selected a user', x);
             // don't add an existing user to the list of participants
             if (!this.participants.find(p => p.id === x.id)) {
@@ -133,7 +140,7 @@ export class EditActivityComponent implements OnInit {
           }
           return x;
         }),
-        filter(x => x && x.trim && x.trim()),
+        filter(x => x && !this.isUser(x) && !!x.trim()),
         debounceTime(500),
         tap(() => {
           this.availableUsers = [];
@@ -157,6 +164,14 @@ export class EditActivityComponent implements OnInit {
         this._messageService.error('Failed to get activity', error);
       }
     });
+  }
+
+  isUnit(x: string | Unit): x is Unit {
+    return !isNaN(x as Unit);
+  }
+
+  isUser(x: string | User): x is User {
+    return !!(x as User)?.id;
   }
 
   removeUser(user: User, index: number) {

@@ -23,12 +23,12 @@ import { WebauthnService } from '../webauthn.service';
 })
 export class ProfileComponent implements OnInit {
 
-  registerForm: FormGroup;
+  registerForm: FormGroup<{deviceName: FormControl<string>}>;
   registering = false;
   deleting = false;
   user: Profile;
-  displayNameControl: FormControl;
-  passwordForm: FormGroup;
+  displayNameControl: FormControl<string>;
+  passwordForm: FormGroup<{oldPassword: FormControl<string>, newPassword: FormControl<string>, confirmationPassword: FormControl<string>}>;
   passwordStrengthColor = 'warn';
   passwordStrength = 0;
   readonly passwordDesiredLength = 30;

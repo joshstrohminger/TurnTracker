@@ -35,12 +35,21 @@ export class SwUpdateService {
       return;
     }
 
-    this.updates.available.subscribe(_ => {
-      this.updateAvailable = true;
-      this.messageService.info("There is an update available!");
-    });
-
-    this.updates.activated.subscribe(_ => this.messageService.success('Application updated!'));
+    this.updates.versionUpdates.subscribe(e => {
+      switch(e.type) {
+        case 'VERSION_DETECTED':
+          console.log('SW version detected on server', e);
+          return;
+        case 'VERSION_READY':
+          console.log('SW version ready', e);
+          this.updateAvailable = true;
+          this.messageService.info('There is an update available!');
+          return;
+        case 'VERSION_INSTALLATION_FAILED':
+          console.log('Failed to install version', e);
+          return;
+      }
+    })
 
     // Allow the app to stabilize first, before starting to check periodically or when manually triggered
     const appIsStable$ = appRef.isStable.pipe(first(isStable => isStable === true));
@@ -72,7 +81,10 @@ export class SwUpdateService {
     }
 
     this.updating = true;
-    this.updates.activateUpdate().then(() => document.location.reload(), error => {
+    this.updates.activateUpdate().then(() => {
+      this.messageService.success('Application updated! Reloading...');
+      document.location.reload();
+    }, error => {
       this.updating = false;
       this.messageService.error('Failed to update', error);
     });
