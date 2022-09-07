@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using CSharpFunctionalExtensions;
 using Lib.Net.Http.WebPush;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TurnTracker.Data;
@@ -16,6 +17,8 @@ namespace TurnTracker.Domain.Services
     public class PushSubscriptionService : IPushSubscriptionService
     {
         #region Fields
+
+        private const int _duplicateKeySqlExceptionNumber = 2627;
 
         private readonly TurnContext _db;
         private readonly IMapper _mapper;
@@ -49,6 +52,11 @@ namespace TurnTracker.Domain.Services
                 }
 
                 return Result.Success();
+            }
+            catch (DbUpdateException e) when (e.InnerException is SqlException { Number: _duplicateKeySqlExceptionNumber })
+            {
+                _logger.LogError(e, $"Failed to save sub for user {userId}, push subscription device already exists");
+                return Result.Failure("Failed to save subscription: already exists");
             }
             catch (Exception e)
             {

@@ -43,6 +43,9 @@ export class ActivitiesComponent implements OnInit {
   }
 
   ngOnInit() {
+    // reload the page automatically after an hour
+    setTimeout(() => document.location.reload(), 60 * 60 * 1000);
+
     this.me = this._userService.currentUser;
 
     this._http.get<ActivitySummary[]>('activities/participating')

@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { SwPush } from '@angular/service-worker';
 import { IUser } from '../auth/models/IUser';
 import { combineLatest, from, EMPTY, of, Observable } from 'rxjs';
-import { filter, startWith, switchMap } from 'rxjs/operators';
+import { filter, startWith, switchMap, map } from 'rxjs/operators';
 import { UserPropertyChange } from '../auth/models/UserPropertyChange';
 import { Router } from '@angular/router';
 
@@ -66,7 +66,9 @@ export class PushService {
   private checkSubscription(serverPublicKey: string) {
     if (!this._user) {
       return;
-    } else if (this._user.enablePushNotifications && !this.blocked) {
+    }
+
+    if (this._user.enablePushNotifications && !this.blocked) {
       this.requestPermission(serverPublicKey);
     } else if (!this._user.enablePushNotifications && this._sub) {
       this.cancelPermission(this._sub);
@@ -86,24 +88,27 @@ export class PushService {
   }
 
   private requestPermission(serverPublicKey: string) {
-    let sub$: Observable<PushSubscription>;
-    let request = false;
+    let sub$: Observable<{request: boolean, sub: PushSubscription}>;
     if (this._sub) {
       console.log('saving push subscription');
-      sub$ = of(this._sub);
+      sub$ = of({request: false, sub: this._sub});
     } else {
       console.log('requesting push permission');
-      request = true;
-      sub$ = from(this._swPush.requestSubscription({ serverPublicKey }));
+      sub$ = from(this._swPush.requestSubscription({ serverPublicKey })).pipe(map(sub => {return {request: true, sub};}));
     }
 
     sub$.pipe(
-      switchMap(sub => {
-        console.log('sending subscription to server');
-        return this._http.post('notification/push/subscribe', sub.toJSON());
+      switchMap(x => {
+        if (x.request) {
+          console.log('successfully requested permission, let the SwPush.subscription trigger the server update');
+          return of(x.request);
+        } else {
+          console.log('sending subscription to server', x);
+          return this._http.post('notification/push/subscribe', x.sub.toJSON()).pipe(map(() => x.request));
+        }
     })
     ).subscribe(
-      () => {
+      (request) => {
         this.blocked = false;
         if (request) {
           this._messageService.success('Subscribed to push notifications on this device');
@@ -119,6 +124,8 @@ export class PushService {
           } else {
             errorMessage += `: ${error.message}`;
           }
+        } else if(error.error) {
+          errorMessage += `: ${error.error}`;
         }
         this._messageService.error(errorMessage, error);
       });

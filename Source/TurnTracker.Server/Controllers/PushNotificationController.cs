@@ -52,8 +52,8 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public IActionResult Subscribe([FromBody] PushSubscription sub)
         {
-            var (isSuccess, _) = _pushSubscriptionService.SaveSubscription(User.GetId(), sub);
-            return isSuccess ? Ok() : StatusCode(500);
+            var (isSuccess, _, error) = _pushSubscriptionService.SaveSubscription(User.GetId(), sub);
+            return isSuccess ? Ok() : StatusCode(500, error);
         }
 
         [HttpPost("test/one")]
