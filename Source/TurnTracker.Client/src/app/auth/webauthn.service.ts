@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
-import { from, Observable, EMPTY, of, throwError } from 'rxjs';
-import { share, map, flatMap, tap } from 'rxjs/operators';
+import { from, Observable, throwError } from 'rxjs';
+import { share, map, mergeMap, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from '../services/message.service';
 import { AnonymousPublicKeyCredentialRequestOptions } from './anonymousPublicKeyCredentialRequestOptions';
 import { AuthService } from './auth.service';
 import { AuthenticatedUser } from './models/AuthenticatedUser';
-import { AuthenticatorAttestationRawResponse } from './models/AuthenticatorAttestationRawResponse';
 import { AuthenticatorAttestationNamedRawResponse } from './models/AuthenticatorAttestationNamedRawResponse';
 
 @Injectable({
@@ -100,7 +99,7 @@ export class WebauthnService {
   }
 
   public registerDevice$(deviceName: string) {
-    return this.createCredentials$().pipe(flatMap(creds => {
+    return this.createCredentials$().pipe(mergeMap(creds => {
         console.log('created raw creds', creds);
         const response = creds.response as AuthenticatorAttestationResponse;
         const p: AuthenticatorAttestationNamedRawResponse = {
@@ -136,7 +135,7 @@ export class WebauthnService {
     let allowCredentials: PublicKeyCredentialDescriptor[];
 
     return this._http.post('auth/StartDeviceAssertion', username).pipe(
-      flatMap((options: AnonymousPublicKeyCredentialRequestOptions) => {
+      mergeMap((options: AnonymousPublicKeyCredentialRequestOptions) => {
         console.log('assertion options before mod', options);
         options.challenge = this.coerceToArrayBuffer(options.challenge);
         options.allowCredentials.forEach(listItem => listItem.id = this.coerceToArrayBuffer(listItem.id));
@@ -146,7 +145,7 @@ export class WebauthnService {
         return from(navigator.credentials.get({publicKey: options}));
       }),
       map(credential => this.convertCredential(credential, 'get')),
-      flatMap(credential => {
+      mergeMap(credential => {
         const response = credential.response as AuthenticatorAssertionResponse;
         console.log('assertion result before modding', credential);
         const r = {
@@ -190,7 +189,7 @@ export class WebauthnService {
 
   private createCredentials$(): Observable<PublicKeyCredential> {
     return this._http.post('auth/StartDeviceRegistration', null).pipe(
-      flatMap((options: PublicKeyCredentialCreationOptions) => {
+      mergeMap((options: PublicKeyCredentialCreationOptions) => {
         console.log('creating creds before coercion', options);
         // Turn the challenge back into the accepted format of padded base64
         options.challenge = this.coerceToArrayBuffer(options.challenge, 'challenge');
