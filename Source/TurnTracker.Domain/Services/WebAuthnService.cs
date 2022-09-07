@@ -100,7 +100,7 @@ namespace TurnTracker.Domain.Services
 
                 // 2. Verify and make the credentials
                 var cmr = await _fido2.MakeNewCredentialAsync(attestationResponse, options,
-                    x => Task.FromResult(true));
+                    (_, _) => Task.FromResult(true));
 
                 // 3. Store the credentials in db
                 _db.DeviceAuthorizations.Add(new DeviceAuthorization
@@ -213,7 +213,8 @@ namespace TurnTracker.Domain.Services
                 }
 
                 // 3. Make the assertion
-                var avr = await _fido2.MakeAssertionAsync(clientResponse, options, authorization.PublicKey, authorization.SignatureCounter, x => Task.FromResult(true));
+                var avr = await _fido2.MakeAssertionAsync(clientResponse, options, authorization.PublicKey,
+                    authorization.SignatureCounter, (_, _) => Task.FromResult(true));
 
                 // 4. Store the updated counter
                 authorization.SignatureCounter = avr.Counter;

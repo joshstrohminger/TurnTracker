@@ -6,6 +6,8 @@ import { MessageService } from '../services/message.service';
 import { AnonymousPublicKeyCredentialRequestOptions } from './anonymousPublicKeyCredentialRequestOptions';
 import { AuthService } from './auth.service';
 import { AuthenticatedUser } from './models/AuthenticatedUser';
+import { AuthenticatorAttestationRawResponse } from './models/AuthenticatorAttestationRawResponse';
+import { AuthenticatorAttestationNamedRawResponse } from './models/AuthenticatorAttestationNamedRawResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -67,7 +69,7 @@ export class WebauthnService {
     return thing;
 }
 
-  private coerceToBase64Url(thing) {
+  private coerceToBase64Url(thing): string {
     // Array or ArrayBuffer to Uint8Array
     if (Array.isArray(thing)) {
         thing = Uint8Array.from(thing);
@@ -94,23 +96,23 @@ export class WebauthnService {
 
     // base64 to base64url
     // NOTE: "=" at the end of challenge is optional, strip it off here
-    thing = thing.replace(/\+/g, '-').replace(/\//g, '_').replace(/=*$/g, '');
-
-    return thing;
+    return thing.replace(/\+/g, '-').replace(/\//g, '_').replace(/=*$/g, '');
   }
 
   public registerDevice$(deviceName: string) {
     return this.createCredentials$().pipe(flatMap(creds => {
         console.log('created raw creds', creds);
         const response = creds.response as AuthenticatorAttestationResponse;
-        const p = {
-          id: creds.id,
-          rawId: this.coerceToBase64Url(creds.rawId),
-          type: creds.type,
-          extensions: creds.getClientExtensionResults(),
-          response: {
-              clientDataJSON: this.coerceToBase64Url(response.clientDataJSON),
-              attestationObject: this.coerceToBase64Url(response.attestationObject)
+        const p: AuthenticatorAttestationNamedRawResponse = {
+          rawResponse: {
+            id: creds.id,
+            rawId: this.coerceToBase64Url(creds.rawId),
+            type: creds.type,
+            extensions: creds.getClientExtensionResults(),
+            response: {
+                clientDataJSON: this.coerceToBase64Url(response.clientDataJSON),
+                attestationObject: this.coerceToBase64Url(response.attestationObject)
+            }
           },
           deviceName: deviceName
         };

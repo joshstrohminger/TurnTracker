@@ -52,7 +52,7 @@ namespace TurnTracker.Server.Controllers
                 return BadRequest();
             }
 
-            var (_, isFailure, credential, error) = await _webAuthnService.MakeCredentialAsync(response, User.GetId(), User.GetLoginId(), response.DeviceName);
+            var (_, isFailure, credential, error) = await _webAuthnService.MakeCredentialAsync(response.RawResponse, User.GetId(), User.GetLoginId(), response.DeviceName);
 
             if (isFailure) return BadRequest(error);
 
