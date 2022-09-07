@@ -1,0 +1,30 @@
+<mat-card *ngIf="configForm" [formGroup]="configForm">
+  <mat-card-header>
+    <mat-card-title>Client Logs</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <section>
+      <mat-slide-toggle formControlName="enabled">Enable</mat-slide-toggle>
+    </section>
+    <section>
+      <mat-form-field>
+        <mat-label>Log Limit</mat-label>
+        <input matInput type="number" [min]="min" [max]="max" step="1" required formControlName="limit" [errorStateMatcher]="immediateErrors">
+        <mat-error>Must be between {{min}} and {{max}}</mat-error>
+      </mat-form-field>
+    </section>
+  </mat-card-content>
+  <mat-card-footer>
+    <span class="text">{{logs.length}} logs</span>
+    <span class="separator"></span>
+    <button mat-button color="accent" [disabled]="!logs.length" (click)="download()">Download</button>
+    <button mat-button *ngIf="canShare" color="primary" [disabled]="!logs.length" (click)="share()">Send</button>
+  </mat-card-footer>
+</mat-card>
+
+<mat-card *ngFor="let log of logs">
+  <mat-card-title [class]="LogLevels[log.level]">{{log.time | luxon}}</mat-card-title>
+  <mat-card-content>
+    <div *ngFor="let param of log.params">{{param}}</div>
+  </mat-card-content>
+</mat-card>

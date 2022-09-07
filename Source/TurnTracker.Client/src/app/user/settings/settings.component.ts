@@ -4,7 +4,7 @@ import { IUser } from 'src/app/auth/models/IUser';
 import { PushService } from 'src/app/services/push.service';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from 'src/app/services/message.service';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { takeUntil, debounceTime, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { ImmediateErrorStateMatcher } from 'src/app/validators/ImmediateErrorStateMatcher';
@@ -17,7 +17,7 @@ import { WebauthnService } from 'src/app/auth/webauthn.service';
 })
 export class SettingsComponent implements OnInit, OnDestroy {
   me: IUser;
-  settingsForm: FormGroup;
+  settingsForm: FormGroup<{push: FormControl<boolean>, snoozeHours: FormControl<number>}>;
   private unsubscribe$ = new Subject<void>();
   readonly immediateErrors = new ImmediateErrorStateMatcher();
 

@@ -53,6 +53,8 @@ import { NotificationsComponent } from './user/notifications/notifications.compo
 import { ReloadComponent } from './user/reload/reload.component';
 import { ManageUsersComponent } from './admin/manage-users/manage-users.component';
 import { AdminGuard } from './auth/admin.guard';
+import { LogsComponent } from './anonymous/logs/logs.component';
+import { LuxonPipe } from './pipes/luxon.pipe';
 
 const routes: Routes = [
   {
@@ -70,12 +72,13 @@ const routes: Routes = [
     canActivate: [AdminGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'users' },
-      { path: 'users', component: ManageUsersComponent, data: {title: 'Manage Users'}}
+      { path: 'users', component: ManageUsersComponent, data: {title: 'Manage Users'}},
     ]},
   { path: 'activities', component: ActivitiesComponent, canActivate: [AuthGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard], data: {title: 'Profile'} },
   { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard], data: {title: 'Settings'} },
   { path: 'login', component: LoginComponent, canActivate: [LoginGuard], data: {title: 'Login'} },
+  { path: 'logs', component: LogsComponent, data: {title: 'Client Logs'}},
   { path: 'about', component: AboutComponent, data: {title: 'About'} },
   { path: '', redirectTo: '/activities', pathMatch: 'full' },
   { path: '**', component: NotFoundComponent, data: {title: 'Not Found'} }
@@ -100,7 +103,9 @@ const routes: Routes = [
     SettingsComponent,
     NotificationsComponent,
     ReloadComponent,
-    ManageUsersComponent
+    ManageUsersComponent,
+    LogsComponent,
+    LuxonPipe
   ],
   imports: [
     BrowserAnimationsModule,

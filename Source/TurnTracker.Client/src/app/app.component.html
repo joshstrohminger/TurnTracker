@@ -7,6 +7,8 @@
       <a mat-list-item routerLink="/profile" *ngIf="authService.isLoggedIn"><mat-icon>account_circle</mat-icon><span>Profile</span></a>
       <a mat-list-item routerLink="/settings" *ngIf="authService.isLoggedIn"><mat-icon>settings</mat-icon><span>Settings</span></a>
       <a mat-list-item (click)="authService.logout()" *ngIf="authService.isLoggedIn"><mat-icon color="warn">logout</mat-icon><span class="warn">Logout</span></a>
+      <div class="spacer"></div>
+      <a mat-list-item routerLink="/logs"><mat-icon>bug_report</mat-icon><span>Logs</span></a>
       <a mat-list-item routerLink="/about"><mat-icon>info</mat-icon><span>About</span></a>
     </mat-nav-list>
   </mat-sidenav>

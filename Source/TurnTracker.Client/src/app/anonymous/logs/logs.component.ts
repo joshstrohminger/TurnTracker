@@ -1,0 +1,134 @@
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, filter, takeUntil } from 'rxjs/operators';
+import { ISavedLog, LogLevel, LogService } from 'src/app/services/log.service';
+import { DateTime } from 'luxon';
+import { ImmediateErrorStateMatcher } from 'src/app/validators/ImmediateErrorStateMatcher';
+import { MessageService } from 'src/app/services/message.service';
+
+@Component({
+  selector: 'app-logs',
+  templateUrl: './logs.component.html',
+  styleUrls: ['./logs.component.scss']
+})
+export class LogsComponent implements OnInit, OnDestroy {
+
+  private readonly unsubscribe$ = new Subject<void>();
+  configForm: FormGroup<{enabled: FormControl<boolean>, limit: FormControl<number>}>;
+  readonly immediateErrors = new ImmediateErrorStateMatcher();
+
+  public busy = false;
+
+  public get LogLevels() {
+    return LogLevel;
+  }
+
+  public get logs(): ISavedLog[] {
+    return this._logService.logs;
+  }
+
+  public get min(): number {
+    return this._logService.MinLimit;
+  }
+
+  public get max(): number {
+    return this._logService.MaxLimit;
+  }
+
+  public get canShare(): boolean {
+    return !!navigator.canShare;
+  }
+
+  constructor(private _logService: LogService, private _builder: FormBuilder, private _messageService: MessageService) { }
+
+  ngOnInit(): void {
+    this.configForm = this._builder.group({
+      enabled: [this._logService.enabled],
+      limit: [this._logService.limit, Validators.compose([Validators.required, Validators.min(1), Validators.max(1000)])]
+    });
+
+    if (!this._logService.enabled) {
+      this.configForm.controls.limit.disable();
+    }
+
+    this.configForm.controls.enabled.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(enabled => {
+        this._logService.enabled = enabled;
+        this.configForm.controls.limit[enabled ? 'enable' : 'disable']();
+      });
+
+    this.configForm.controls.limit.valueChanges
+      .pipe(takeUntil(this.unsubscribe$), filter(() => this.configForm.controls.limit.valid), debounceTime(100))
+      .subscribe(limit => this._logService.limit = limit);
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+  }
+
+  download(): void {
+    if (this.busy || !this.logs.length) {
+      return;
+    }
+    this.busy = true;
+
+    const a = document.createElement("a");
+    const file = this.getLogBlob();
+    a.href = URL.createObjectURL(file);
+    a.download = this.getLogFilename();
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    this.busy = false;
+  }
+
+  share(): void {
+    if (this.busy || !this.logs.length || !this.canShare) {
+      return;
+    }
+    this.busy = true;
+
+    const file = new File([this.getLogBlob()], this.getLogFilename(), this.getFileOptions());
+    const content = {
+      title: 'TurnTracker Client Log File',
+      text: 'Please describe what you were doing when the error occurred...',
+      files: [file]
+    };
+
+    if (navigator.canShare(content)) {
+      navigator.share(content)
+        .then(() => {
+          this.busy = false;
+          this._messageService.success('Shared logs')
+        })
+        .catch(e => {
+          this.busy = false;
+          if (e instanceof DOMException || e instanceof TypeError) {
+            this._messageService.error(`Failed to share: ${e.message}`, e);
+          } else {
+            this._messageService.error('Failed to share', e);
+          }
+        });
+    } else {
+      this._messageService.error('Browser did not allow sharing');
+      this.busy = false;
+    }
+  }
+
+  private getFileOptions(): {type: string} {
+    return {type: "text/plain"};
+  }
+
+  private getLogBlob(): Blob {
+    return new Blob([JSON.stringify(this.logs, null, 2)], this.getFileOptions());
+  }
+
+  private getLogFilename(): string {
+    return `turn-tracker-logs.${DateTime.now().toFormat('yyyy-LL-dd-HHmmss')}.json`;
+  }
+}
