@@ -78,7 +78,7 @@ export class LogsComponent implements OnInit, OnDestroy {
     const a = document.createElement("a");
     const file = this.getLogBlob();
     a.href = URL.createObjectURL(file);
-    a.download = this.getLogFilename();
+    a.download = this.getLogFilename(false);
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
@@ -94,10 +94,10 @@ export class LogsComponent implements OnInit, OnDestroy {
     this.busy = true;
 
     const blob = this.getLogBlob();
-    const file = new File([blob], this.getLogFilename(), {type: blob.type});
+    const file = new File([blob], this.getLogFilename(true), {type: blob.type});
     const content = {
       title: 'TurnTracker Client Log File',
-      text: 'Please describe what you were doing when the error occurred...',
+      text: `${this.logs.length} log entries from ${DateTime.now().toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)}.`,
       files: [file]
     };
 
@@ -122,10 +122,15 @@ export class LogsComponent implements OnInit, OnDestroy {
   }
 
   private getLogBlob(): Blob {
-    return new Blob([JSON.stringify(this.logs, null, 2)], {type: "text/plain"});
+    const shareableLogs = this.logs.map(log => {
+      const share = {...log};
+      share.params = log.params.map(param => JSON.parse(param));
+      return share;
+    });
+    return new Blob([JSON.stringify(shareableLogs, null, 2)], {type: "text/plain"});
   }
 
-  private getLogFilename(): string {
-    return `turn-tracker-logs.${DateTime.now().toFormat('yyyy-LL-dd-HHmmss')}.txt`;
+  private getLogFilename(sharing: boolean): string {
+    return `turn-tracker-logs.${DateTime.now().toFormat('yyyy-LL-dd-HHmmss')}.${sharing ? 'txt' : 'json'}`;
   }
 }
