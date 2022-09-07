@@ -5,13 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSharpFunctionalExtensions" Version="2.33.2" />
+    <PackageReference Include="CSharpFunctionalExtensions" Version="2.33.3" />
     <PackageReference Include="Fido2" Version="1.1.0" />
     <PackageReference Include="Lib.Net.Http.WebPush" Version="3.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="6.0.8" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="6.0.8" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.22.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.23.0" />
   </ItemGroup>
 
   <ItemGroup>
