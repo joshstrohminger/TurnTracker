@@ -76,7 +76,8 @@ namespace TurnTracker.Domain.Services
             //    }
             //};
 
-            var options = _fido2.RequestNewCredential(user, null, authenticatorSelection, AttestationConveyancePreference.Direct);
+            var options = _fido2.RequestNewCredential(user, new List<PublicKeyCredentialDescriptor>(0),
+                authenticatorSelection, AttestationConveyancePreference.Direct);
 
             _cache.Set($"CredentialOptions:{loginId}", options, _options.Value.ChallengeExpiration);
 
@@ -100,13 +101,13 @@ namespace TurnTracker.Domain.Services
 
                 // 2. Verify and make the credentials
                 var cmr = await _fido2.MakeNewCredentialAsync(attestationResponse, options,
-                    x => Task.FromResult(true));
+                    (_, _) => Task.FromResult(true));
 
                 // 3. Store the credentials in db
                 _db.DeviceAuthorizations.Add(new DeviceAuthorization
                 {
                     UserId = userId,
-                    PublicKey = cmr.Result.PublicKey,
+                    PublicKey = cmr.Result!.PublicKey,
                     CredentialId = cmr.Result.CredentialId,
                     SignatureCounter = cmr.Result.Counter,
                     DeviceName = deviceName
@@ -213,7 +214,8 @@ namespace TurnTracker.Domain.Services
                 }
 
                 // 3. Make the assertion
-                var avr = await _fido2.MakeAssertionAsync(clientResponse, options, authorization.PublicKey, authorization.SignatureCounter, x => Task.FromResult(true));
+                var avr = await _fido2.MakeAssertionAsync(clientResponse, options, authorization.PublicKey,
+                    authorization.SignatureCounter, (_, _) => Task.FromResult(true));
 
                 // 4. Store the updated counter
                 authorization.SignatureCounter = avr.Counter;

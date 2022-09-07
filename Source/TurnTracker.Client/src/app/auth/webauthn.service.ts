@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { from, Observable, EMPTY, of, throwError } from 'rxjs';
-import { share, map, flatMap, tap } from 'rxjs/operators';
+import { from, Observable, throwError } from 'rxjs';
+import { share, map, mergeMap, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from '../services/message.service';
 import { AnonymousPublicKeyCredentialRequestOptions } from './anonymousPublicKeyCredentialRequestOptions';
 import { AuthService } from './auth.service';
 import { AuthenticatedUser } from './models/AuthenticatedUser';
+import { AuthenticatorAttestationNamedRawResponse } from './models/AuthenticatorAttestationNamedRawResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -67,7 +68,7 @@ export class WebauthnService {
     return thing;
 }
 
-  private coerceToBase64Url(thing) {
+  private coerceToBase64Url(thing): string {
     // Array or ArrayBuffer to Uint8Array
     if (Array.isArray(thing)) {
         thing = Uint8Array.from(thing);
@@ -94,23 +95,23 @@ export class WebauthnService {
 
     // base64 to base64url
     // NOTE: "=" at the end of challenge is optional, strip it off here
-    thing = thing.replace(/\+/g, '-').replace(/\//g, '_').replace(/=*$/g, '');
-
-    return thing;
+    return thing.replace(/\+/g, '-').replace(/\//g, '_').replace(/=*$/g, '');
   }
 
   public registerDevice$(deviceName: string) {
-    return this.createCredentials$().pipe(flatMap(creds => {
+    return this.createCredentials$().pipe(mergeMap(creds => {
         console.log('created raw creds', creds);
         const response = creds.response as AuthenticatorAttestationResponse;
-        const p = {
-          id: creds.id,
-          rawId: this.coerceToBase64Url(creds.rawId),
-          type: creds.type,
-          extensions: creds.getClientExtensionResults(),
-          response: {
-              clientDataJSON: this.coerceToBase64Url(response.clientDataJSON),
-              attestationObject: this.coerceToBase64Url(response.attestationObject)
+        const p: AuthenticatorAttestationNamedRawResponse = {
+          rawResponse: {
+            id: creds.id,
+            rawId: this.coerceToBase64Url(creds.rawId),
+            type: creds.type,
+            extensions: creds.getClientExtensionResults(),
+            response: {
+                clientDataJSON: this.coerceToBase64Url(response.clientDataJSON),
+                attestationObject: this.coerceToBase64Url(response.attestationObject)
+            }
           },
           deviceName: deviceName
         };
@@ -134,7 +135,7 @@ export class WebauthnService {
     let allowCredentials: PublicKeyCredentialDescriptor[];
 
     return this._http.post('auth/StartDeviceAssertion', username).pipe(
-      flatMap((options: AnonymousPublicKeyCredentialRequestOptions) => {
+      mergeMap((options: AnonymousPublicKeyCredentialRequestOptions) => {
         console.log('assertion options before mod', options);
         options.challenge = this.coerceToArrayBuffer(options.challenge);
         options.allowCredentials.forEach(listItem => listItem.id = this.coerceToArrayBuffer(listItem.id));
@@ -144,7 +145,7 @@ export class WebauthnService {
         return from(navigator.credentials.get({publicKey: options}));
       }),
       map(credential => this.convertCredential(credential, 'get')),
-      flatMap(credential => {
+      mergeMap(credential => {
         const response = credential.response as AuthenticatorAssertionResponse;
         console.log('assertion result before modding', credential);
         const r = {
@@ -188,7 +189,7 @@ export class WebauthnService {
 
   private createCredentials$(): Observable<PublicKeyCredential> {
     return this._http.post('auth/StartDeviceRegistration', null).pipe(
-      flatMap((options: PublicKeyCredentialCreationOptions) => {
+      mergeMap((options: PublicKeyCredentialCreationOptions) => {
         console.log('creating creds before coercion', options);
         // Turn the challenge back into the accepted format of padded base64
         options.challenge = this.coerceToArrayBuffer(options.challenge, 'challenge');
