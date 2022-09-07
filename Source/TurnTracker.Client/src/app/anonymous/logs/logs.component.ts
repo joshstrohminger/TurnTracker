@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 import { debounceTime, filter, takeUntil } from 'rxjs/operators';
 import { ISavedLog, LogLevel, LogService } from 'src/app/services/log.service';
 import { DateTime } from 'luxon';
+import { ImmediateErrorStateMatcher } from 'src/app/validators/ImmediateErrorStateMatcher';
 
 @Component({
   selector: 'app-logs',
@@ -14,6 +15,7 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   private readonly unsubscribe$ = new Subject<void>();
   configForm: FormGroup<{enabled: FormControl<boolean>, limit: FormControl<number>}>;
+  readonly immediateErrors = new ImmediateErrorStateMatcher();
 
   public get LogLevels() {
     return LogLevel;
