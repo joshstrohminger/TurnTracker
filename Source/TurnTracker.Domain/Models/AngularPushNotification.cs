@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
 using Lib.Net.Http.WebPush;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace TurnTracker.Domain.Models
 {
@@ -20,9 +19,9 @@ namespace TurnTracker.Domain.Models
             }
         }
 
-        private static readonly JsonSerializerSettings JsonSerializerSettings = new()
+        private static readonly JsonSerializerOptions JsonOptions = new()
         {
-            ContractResolver = new CamelCasePropertyNamesContractResolver()
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
         public string Title { get; set; }
@@ -45,7 +44,7 @@ namespace TurnTracker.Domain.Models
 
         public PushMessage ToPushMessage(string topic = null, int? timeToLive = null, PushMessageUrgency urgency = PushMessageUrgency.Normal)
         {
-            return new PushMessage(JsonConvert.SerializeObject(new { notification = this }, JsonSerializerSettings))
+            return new PushMessage(JsonSerializer.Serialize(new { notification = this }, JsonOptions))
             {
                 Topic = topic,
                 TimeToLive = timeToLive,

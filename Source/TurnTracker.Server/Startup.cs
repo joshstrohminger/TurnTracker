@@ -46,13 +46,11 @@ namespace TurnTracker.Server
         {
             services.AddCors();
             services.AddMvc(options =>
-                {
-                    options.InputFormatters.Insert(0, new BoolBodyInputFormatter());
-                    options.InputFormatters.Insert(0, new ByteBodyInputFormatter());
-                    options.InputFormatters.Insert(0, new StringBodyInputFormatter());
-                })
-                // newtonsoft is necessary if we want to use the fido2 library since it relies heavily on it
-                .AddNewtonsoftJson();
+            {
+                options.InputFormatters.Insert(0, new BoolBodyInputFormatter());
+                options.InputFormatters.Insert(0, new ByteBodyInputFormatter());
+                options.InputFormatters.Insert(0, new StringBodyInputFormatter());
+            });
             services.AddResponseCompression();
             services.AddMemoryCache();
 

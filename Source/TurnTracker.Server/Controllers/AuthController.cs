@@ -47,9 +47,14 @@ namespace TurnTracker.Server.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> CompleteDeviceRegistration([FromBody] AuthenticatorAttestationNamedRawResponse response)
         {
+            if (response?.RawResponse == null)
+            {
+                return BadRequest($"Missing {nameof(response.RawResponse)}");
+            }
+            
             if (string.IsNullOrWhiteSpace(response.DeviceName))
             {
-                return BadRequest();
+                return BadRequest($"Missing {nameof(response.DeviceName)}");
             }
 
             var (_, isFailure, credential, error) = await _webAuthnService.MakeCredentialAsync(response.RawResponse, User.GetId(), User.GetLoginId(), response.DeviceName);
@@ -135,7 +140,7 @@ namespace TurnTracker.Server.Controllers
             var loginId = User.GetLoginId();
             if (_userService.Logout(loginId).IsFailure)
             {
-                _logger.LogWarning($"Failed to logout username: {User.Identity.Name}, id: {User.GetId()}, login: {loginId}");
+                _logger.LogWarning($"Failed to logout username: {User.Identity?.Name}, id: {User.GetId()}, login: {loginId}");
             }
 
             return Ok();

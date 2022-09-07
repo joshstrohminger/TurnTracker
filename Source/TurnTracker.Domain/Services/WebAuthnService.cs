@@ -76,7 +76,8 @@ namespace TurnTracker.Domain.Services
             //    }
             //};
 
-            var options = _fido2.RequestNewCredential(user, null, authenticatorSelection, AttestationConveyancePreference.Direct);
+            var options = _fido2.RequestNewCredential(user, new List<PublicKeyCredentialDescriptor>(0),
+                authenticatorSelection, AttestationConveyancePreference.Direct);
 
             _cache.Set($"CredentialOptions:{loginId}", options, _options.Value.ChallengeExpiration);
 
@@ -106,7 +107,7 @@ namespace TurnTracker.Domain.Services
                 _db.DeviceAuthorizations.Add(new DeviceAuthorization
                 {
                     UserId = userId,
-                    PublicKey = cmr.Result.PublicKey,
+                    PublicKey = cmr.Result!.PublicKey,
                     CredentialId = cmr.Result.CredentialId,
                     SignatureCounter = cmr.Result.Counter,
                     DeviceName = deviceName
