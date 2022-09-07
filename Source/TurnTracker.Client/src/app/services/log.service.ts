@@ -71,11 +71,11 @@ export class LogService {
       level: level,
       time: DateTime.now(),
       params: params.map(param => {
-        const json = JSON.stringify(param, param instanceof Error ? Object.getOwnPropertyNames(param) : null, 2);
+        let json = JSON.stringify(param, param instanceof Error ? Object.getOwnPropertyNames(param) : null, 2);
         if (json === '{}') {
           const s = param.toString();
           if (s !== '[object Object]') {
-            return s;
+            json = JSON.stringify(s);
           }
         }
         return json;
