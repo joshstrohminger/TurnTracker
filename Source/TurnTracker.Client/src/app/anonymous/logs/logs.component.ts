@@ -93,7 +93,8 @@ export class LogsComponent implements OnInit, OnDestroy {
     }
     this.busy = true;
 
-    const file = new File([this.getLogBlob()], this.getLogFilename(), this.getFileOptions());
+    const blob = this.getLogBlob();
+    const file = new File([blob], this.getLogFilename(), {type: blob.type});
     const content = {
       title: 'TurnTracker Client Log File',
       text: 'Please describe what you were doing when the error occurred...',
@@ -120,15 +121,11 @@ export class LogsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getFileOptions(): {type: string} {
-    return {type: "text/plain"};
-  }
-
   private getLogBlob(): Blob {
-    return new Blob([JSON.stringify(this.logs, null, 2)], this.getFileOptions());
+    return new Blob([JSON.stringify(this.logs, null, 2)], {type: "text/plain"});
   }
 
   private getLogFilename(): string {
-    return `turn-tracker-logs.${DateTime.now().toFormat('yyyy-LL-dd-HHmmss')}.json`;
+    return `turn-tracker-logs.${DateTime.now().toFormat('yyyy-LL-dd-HHmmss')}.txt`;
   }
 }
