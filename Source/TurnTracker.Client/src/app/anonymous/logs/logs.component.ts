@@ -97,7 +97,7 @@ export class LogsComponent implements OnInit, OnDestroy {
     const file = new File([blob], this.getLogFilename(), {type: blob.type});
     const content = {
       title: 'TurnTracker Client Log File',
-      text: 'Please describe what you were doing when the error occurred...',
+      text: `${this.logs.length} log entries from ${DateTime.now().toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)}.`,
       files: [file]
     };
 
