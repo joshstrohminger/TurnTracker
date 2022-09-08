@@ -1,6 +1,6 @@
 notification.close();
 
-yield;
+console.log('received notification', notification);
 
 var postUrl = notification.data['post-' + action];
 if (postUrl) {
@@ -18,33 +18,6 @@ if (postUrl) {
     this.debugger.log(err, 'NotificationIntercept.postError');
   }
   return;
-}
-
-var url = notification.data['view-' + action] || notification.data.url;
-if (url) {
-  console.log(`NotificationIntercept found view url: ${url}`);
-  var found = false;
-  var allClients = this.scope.clients;
-  this.scope.clients.matchAll().then(function(clientsArr) {
-    for (var i = 0; i < clientsArr.length; i++) {
-      if (clientsArr[i].url === url) {
-        // We already have a window to use, focus it.
-        found = true;
-        clientsArr[i].focus();
-        console.log('NotificationIntercept focusing');
-        break;
-      }
-    }
-    if (!found) {
-      // Create a new window.
-      console.log('NotificationIntercept opening');
-      allClients.openWindow(url).then(function(windowClient) {
-        // do something with the windowClient.
-      });
-    }
-  });
-} else {
-  console.log(`NotificationIntercept ignoring action: ${action}`);
 }
 
 const options = {};

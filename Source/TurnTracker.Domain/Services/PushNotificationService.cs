@@ -40,7 +40,6 @@ namespace TurnTracker.Domain.Services
 
         private readonly PushServiceClient _client;
         private readonly IPushSubscriptionService _pushService;
-        private readonly string _serverUrl;
         private readonly ILogger<PushNotificationService> _logger;
 
         #endregion Fields
@@ -57,14 +56,13 @@ namespace TurnTracker.Domain.Services
             {
                 Subject = config.ServerUrl
             };
-            _serverUrl = config.ServerUrl;
         }
 
         #endregion Ctor
 
         #region Public
 
-        public async Task<Result> SendToOneDeviceAsync(int userId, string title, string message, string endpoint, string groupKey)
+        public async Task<Result> SendToOneDeviceAsync(int userId, string title, string message, string url, string endpoint, string groupKey)
         {
             var sub = _pushService.Get(userId, endpoint);
             if (sub is null)
@@ -72,7 +70,7 @@ namespace TurnTracker.Domain.Services
                 return Result.Failure("Couldn't find device subscription");
             }
 
-            var notification = BuildMessage(title, message, _serverUrl, groupKey);
+            var notification = BuildMessage(title, message, url, groupKey);
 
             await _client.RequestPushMessageDeliveryAsync(sub, notification.ToPushMessage());
 
@@ -162,9 +160,10 @@ namespace TurnTracker.Domain.Services
             }
         }
 
-        private static AngularPushNotification BuildMessage(string title, string message, string url, string groupKey, params AngularPushNotification.NotificationAction[] actions)
+        private static AngularPushNotification BuildMessage(string title, string message, string url, string groupKey)
         {
-            return new AngularPushNotification
+            
+            var notification = new AngularPushNotification
             {
                 Title = title,
                 Body = message,
@@ -173,12 +172,19 @@ namespace TurnTracker.Domain.Services
                 Renotify = true,
                 RequireInteraction = true,
                 Tag = groupKey,
-                Actions = actions.ToList(),
-                Data = new Dictionary<string, object>
-                {
-                    ["url"] = url
-                }
+                Actions = new List<AngularPushNotification.NotificationAction>(),
+                Data = new Dictionary<string, object>()
             };
+
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                notification.Data["onActionClick"] = new
+                {
+                    @default = new { operation = "navigateLastFocusedOrOpen", url }
+                };
+            }
+
+            return notification;
         }
 
         private static AngularPushNotification BuildCloseMessage(string groupKey)

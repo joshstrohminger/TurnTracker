@@ -77,7 +77,7 @@ namespace TurnTracker.Domain.HostedServices
                         }
                         notMyTurnBuilder.AppendFormattable($"Overdue by {overdueTime}.");
                         var notMyTurnMessage = notMyTurnBuilder.ToString();
-                        var viewUrl = $"{serverUrl}/activity/{activity.Id}";
+                        var viewUrl = $"/activity/{activity.Id}";
                         foreach (var participant in activity.Participants)
                         {
                             var myTurn = activity.CurrentTurnUserId == participant.UserId;

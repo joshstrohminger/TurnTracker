@@ -10,6 +10,9 @@ const angular = JSON.parse(contents);
 const outputPath = angular["projects"]["turntracker-client"]["architect"]["build"]["options"]["outputPath"];
 const worker = path.join(__dirname, '..', outputPath, 'ngsw-worker.js');
 
+const green = '\x1b[32m%s\x1b[0m';
+const red = '\x1b[31m%s\x1b[0m';
+
 function escapeRegExp(string) {
   return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
@@ -18,7 +21,7 @@ var data = fs.readFileSync(worker, {encoding: 'utf8'});
 
 const names = ['serviceWorkerReplacementHandleClick.js', 'serviceWorkerReplacementHandlePush.js'];
 
-for(let name of names) {
+for (const name of names) {
   console.log(`input: ${name}`);
 
   const codePath = path.join(__dirname, name)
@@ -35,11 +38,12 @@ for(let name of names) {
   const result = data.replace(match, code);
 
   if (data.length === result.length) {
-    return console.error(`Failed to replace lines for ${name}`);
+    console.log(red, `Failed to replace lines for ${name}`);
+    process.exit(1);
   }
-  console.log(`inserted: ${codeLines.length - 2} lines`);
+  console.log(`inserted: ${codeLines.length - 2} lines\n`);
   data = result;
 }
 
 fs.writeFileSync(worker, data, {encoding: 'utf8'});
-console.log('updated service worker');
+console.log(green, 'updated service worker');
