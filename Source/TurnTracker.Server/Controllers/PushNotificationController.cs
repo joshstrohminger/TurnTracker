@@ -60,7 +60,7 @@ namespace TurnTracker.Server.Controllers
         public async Task<IActionResult> TestOne([FromBody] PushSubscription sub)
         {
             var (isSuccess, _) = await _pushNotificationService.SendToOneDeviceAsync(User.GetId(), "Test Notification",
-                "This is a test notification to just this device", sub.Endpoint, "test one");
+                "This is a test notification to just this device", "/settings", sub.Endpoint, "test one");
             return isSuccess ? Ok() : StatusCode(500);
         }
 
@@ -75,7 +75,7 @@ namespace TurnTracker.Server.Controllers
         public async Task<IActionResult> TestAll()
         {
             var failure = await _pushNotificationService.SendToAllDevicesAsync("test", User.GetId(), "Test Notification",
-                "This is a test notification to all your devices", _options.Value.PushNotifications.ServerUrl, "test all");
+                "This is a test notification to all your devices", null, "test all");
             return failure is null ? StatusCode(500) : Ok();
         }
 

@@ -8,7 +8,7 @@
     "update-build-date": "node src/environments/setBuildDate.js",
     "build-prod": "ng build --configuration production",
     "update-service-worker": "node src/updateServiceWorker.js",
-    "build": "npm run-script update-build-date && npm run-script build-prod && npm run-script update-service-worker",
+    "build": "npm run update-build-date && npm run build-prod && npm run update-service-worker",
     "test": "ng test",
     "lint": "ng lint"
   },

@@ -7,7 +7,6 @@ namespace TurnTracker.Domain.Models
     {
         public enum ActionType
         {
-            View,
             Post
         }
 
@@ -16,8 +15,6 @@ namespace TurnTracker.Domain.Models
         public string Url { get; }
         public ActionType Type { get; }
         public string AdditionalData { get; }
-
-        public PushAction(string action, string title, string url) : this(action, title, ActionType.View, url) { }
 
         public PushAction(string action, string title, string url, string token) : this(action, title, ActionType.Post,
             url)
@@ -39,9 +36,6 @@ namespace TurnTracker.Domain.Models
 
             switch (Type)
             {
-                case ActionType.View:
-                    notification.Data[$"view-{Action}"] = Url;
-                    break;
                 case ActionType.Post:
                     notification.Data[$"post-{Action}"] = Url;
                     notification.Data[$"token-{Action}"] = AdditionalData;

@@ -478,7 +478,7 @@ namespace TurnTracker.Domain.Services
 
                 var myTurnMessage = myTurnBuilder.ToString();
                 var otherTurnMessage = otherTurnBuilder.ToString();
-                var url = $"{_appSettings.Value.PushNotifications.ServerUrl}/activity/{activityId}";
+                var url = $"/activity/{activityId}";
 
                 var failures = new List<PushFailure>();
 
