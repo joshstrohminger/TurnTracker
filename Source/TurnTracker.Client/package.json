@@ -28,7 +28,7 @@
     "@angular/service-worker": "^14.2.0",
     "core-js": "^3.6.4",
     "encodr": "^1.2.2",
-    "luxon": "^1.22.0",
+    "luxon": "^2.5.2",
     "rxjs": "^6.6.7",
     "tslib": "^2.0.0",
     "websocket-extensions": "^0.1.4",
