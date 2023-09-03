@@ -36,6 +36,10 @@
     display: flex;
     flex-direction: column;
     height: calc(100vh - 8px);
+
+    .mdc-list-item--with-leading-icon .mdc-list-item__start {
+      margin-right: 0;
+    }
   }
 
   .spacer {

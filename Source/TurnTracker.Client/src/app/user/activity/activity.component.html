@@ -22,7 +22,7 @@
         <span id="activity-owner"><label class="secondary">Owner:</label>{{activity.ownerName}}</span>
       </ng-template>
     </mat-card-header>
-    <mat-card-content>
+    <mat-card-content class="activity-content">
       <app-timer *ngIf="activity.dueDate" [due]="activity.dueDate" [enabled]="true" [appendLabel]="true"></app-timer>
       <table mat-table [dataSource]="activity.participants" class="padded">
         <ng-container matColumnDef="name">

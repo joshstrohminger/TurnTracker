@@ -1,5 +1,8 @@
 table {
   margin: 0 auto;
+  &.mdc-data-table__table {
+    min-width: unset;
+  }
 }
 
 th {
