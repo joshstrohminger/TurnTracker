@@ -16,7 +16,7 @@ import { User } from 'src/app/user/models/User';
 })
 export class ManageUsersComponent implements OnInit, OnDestroy {
 
-  private readonly destroyed$ = new Subject();
+  private readonly destroyed$ = new Subject<void>();
   private _isLoading = false;
   private _users: User[] = [];
 

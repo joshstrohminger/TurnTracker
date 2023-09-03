@@ -9,7 +9,7 @@ import { MessageService } from './message.service';
   providedIn: 'root'
 })
 export class SwUpdateService {
-  private manualUpdateCheckSubject = new Subject();
+  private manualUpdateCheckSubject = new Subject<void>();
 
   public get isEnabled(): boolean {
     return this.updates.isEnabled;

@@ -16,7 +16,7 @@ The typical way of developing angular applications, using `ng serve --open` (als
 To test out the PWA features you can simply access the app from https://localhost:5001 or http://localhost:5000. This will be a locally hosted PWA and will serve the app that is in wwwroot, which is the output directory of the angular build.
 
 ### Building
-`npm run-script build` will:
+`npm run build` will:
 
 1. Update the build date by writing it to a file called _build.json_ to be used by the application's about page.
 1. Run the angular production build.
