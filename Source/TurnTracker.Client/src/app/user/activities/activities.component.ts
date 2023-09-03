@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { ActivitySummary } from '../models/ActivitySummary';
 import { DateTime } from 'luxon';
 import { MatSort } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { MessageService } from 'src/app/services/message.service';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user.service';
