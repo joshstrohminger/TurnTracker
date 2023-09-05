@@ -36,7 +36,9 @@ jobs:
         dotnet-version: '6.0.x'
 
     - name: Build with dotnet
+      working-directory: Source/TurnTracker.Server
       run: dotnet build --configuration Release
       
     - name: Publish
-      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+      working-directory: Source/TurnTracker.Server
+      run: dotnet publish -c Release -o turntracker
