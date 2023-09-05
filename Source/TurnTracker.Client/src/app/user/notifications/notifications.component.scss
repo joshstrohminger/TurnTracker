@@ -10,3 +10,7 @@ th.center {
 td.disabled {
   opacity: 0.4;
 }
+
+table.mdc-data-table__table {
+  min-width: unset;
+}

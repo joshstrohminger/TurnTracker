@@ -116,6 +116,9 @@
         </div>
       </mat-card-content>
     </mat-card>
+    <button mat-icon-button matTooltip="Delete all web sessions">
+      <mat-icon>delete_sweep</mat-icon>
+    </button>
     <mat-card>
       <mat-card-header class="padded">
         <mat-card-title>Sessions</mat-card-title>
@@ -126,26 +129,30 @@
             <mat-divider *ngIf="!first"></mat-divider>
             <mat-list-item class="device accent">
               <mat-icon matListItemIcon>devices</mat-icon>
-              <div mat-line>{{device.name}}<mat-chip class="current" *ngIf="device.current" selected color="primary">Current</mat-chip></div>
-              <div mat-line><span *ngIf="device.createdDate">Created {{device.createdDate | luxon: 'short'}},</span> Active {{device.updatedDate | luxon: 'short'}}</div>
+              <div matListItemTitle>{{device.name}}<mat-chip class="current" *ngIf="device.current" selected color="primary">Current</mat-chip></div>
+              <div matListItemLine><span *ngIf="device.createdDate">Created {{device.createdDate | luxon: 'short'}},</span> Active {{device.updatedDate | luxon: 'short'}}</div>
               <button mat-icon-button (click)="deleteDevice(device)" [disabled]="deleting" *ngIf="!device.current && device.id" matTooltip="Delete device and associated sessions">
                 <mat-icon>delete</mat-icon>
               </button>
-              <button mat-icon-button (click)="deleteAllWebSessions()" [disabled]="deleting" *ngIf="!device.id && anySessionsToDelete(device)" matTooltip="Delete all web sessions">
-                <mat-icon>delete_sweep</mat-icon>
-              </button>
+              <div matListItemMeta>
+                <button mat-icon-button (click)="deleteAllWebSessions()" [disabled]="deleting" *ngIf="!device.id && anySessionsToDelete(device)" matTooltip="Delete all web sessions">
+                  <mat-icon>delete_sweep</mat-icon>
+                </button>
+              </div>
             </mat-list-item>
             <mat-list-item class="session" *ngFor="let session of device.sessions">
-              <div mat-line>{{session.name}}<mat-chip class="current" *ngIf="session.current" selected color="primary">Current</mat-chip></div>
-              <div mat-line>Created {{session.createdDate | luxon: 'short'}}, Active {{session.updatedDate | luxon: 'short'}}</div>
-              <button mat-icon-button (click)="deleteSession(device, session)" [disabled]="deleting" *ngIf="!session.current" matTooltip="Delete session">
-                <mat-icon>delete</mat-icon>
-              </button>
+              <div matListItemTitle>{{session.name}}<mat-chip class="current" *ngIf="session.current" selected color="primary">Current</mat-chip></div>
+              <div matListItemLine>Created {{session.createdDate | luxon: 'short'}}, Active {{session.updatedDate | luxon: 'short'}}</div>
+              <div matListItemMeta>
+                <button mat-icon-button (click)="deleteSession(device, session)" [disabled]="deleting" *ngIf="!session.current" matTooltip="Delete session">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
             </mat-list-item>
           </ng-container>
         </mat-list>
       </mat-card-content>
     </mat-card>
-    <mat-chip-listbox style="display: none;"><!-- empty list to ensure chip styles are imported --></mat-chip-listbox>
+    <mat-chip-set style="display: none;"><!-- empty list to ensure chip styles are imported --></mat-chip-set>
   </ng-container>
 </div>

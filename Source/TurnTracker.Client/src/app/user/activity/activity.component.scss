@@ -16,6 +16,10 @@ table.padded td:not(:last-child) {
   padding-right: 1em;
 }
 
+table.mdc-data-table__table {
+  min-width: unset;
+}
+
 #activity-wrapper > *:not(:first-child) {
   margin-top: 1em;
 }

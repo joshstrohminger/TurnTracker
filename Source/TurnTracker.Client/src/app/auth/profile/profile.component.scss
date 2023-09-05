@@ -57,7 +57,3 @@ mat-card-header.padded {
 mat-list-item.accent.device * {
   color: inherit;
 }
-
-mat-list-item:not(:first-of-type) {
-  margin-top:  1em;
-}
