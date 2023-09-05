@@ -1,9 +1,19 @@
+@use 'sass:map';
 @use '@angular/material' as mat;
 @import '@angular/material/theming';
 @import 'app/app.component.shared-spacing.scss';
 @import 'app/user/timer/timer.component.theme.scss';
 @import 'app/user/reload/reload.component.theme.scss';
 
+// TODO(v15): As of v15 mat.legacy-core no longer includes default typography styles.
+//  The following line adds:
+//    1. Default typography styles for all components
+//    2. Styles for typography hierarchy classes (e.g. .mat-headline-1)
+//  If you specify typography styles for the components you use elsewhere, you should delete this line.
+//  If you don't need the default component typographies but still want the hierarchy styles,
+//  you can delete this line and instead use:
+//    `@include mat.legacy-typography-hierarchy(mat.define-legacy-typography-config());`
+//@include mat.all-legacy-component-typographies();
 @include mat.core();
 /*
 $mat-red
@@ -27,16 +37,19 @@ $mat-grey
 $mat-blue-grey
 */
 // Available color palettes: https://material.io/design/color/
-$dark-primary: mat.define-palette(
-  mat.$blue-palette
-);
-$dark-accent:  mat.define-palette(
-  mat.$green-palette
-  , A200, A100, A400);
-$dark-warn:    mat.define-palette(
-  mat.$deep-orange-palette
-  );
-$dark-theme:   mat.define-dark-theme($dark-primary, $dark-accent, $dark-warn);
+$dark-primary: mat.define-palette(mat.$blue-palette);
+$dark-accent: mat.define-palette(mat.$green-palette, A200, A100, A400);
+$dark-warn: mat.define-palette(mat.$deep-orange-palette);
+$typography: mat.define-typography-config();
+$dark-theme: mat.define-dark-theme((
+ color: (
+   primary: $dark-primary,
+   accent: $dark-accent,
+   warn: $dark-warn
+ ),
+ typography: $typography,
+ density: 0,
+));
 
 @include mat.all-component-themes($dark-theme);
 @include timer-component-theme($dark-theme);
@@ -45,7 +58,7 @@ $dark-theme:   mat.define-dark-theme($dark-primary, $dark-accent, $dark-warn);
 html, body {
   margin: 0;
   height: 100%;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: map.get($typography, 'font-family');
 }
 
 $primary: mat.get-color-from-palette($dark-primary);

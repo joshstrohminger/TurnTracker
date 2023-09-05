@@ -47,7 +47,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
   public get hasTurns() {
     return this._hasTurns;
   }
-  private readonly _done = new Subject();
+  private readonly _done = new Subject<void>();
 
   dismissTimeOfDayControl: FormControl<string>;
   activity: ActivityDetails;

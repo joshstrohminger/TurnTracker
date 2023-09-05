@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
       - name: Setup node and npm
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
+          node-version: '18.x'
 
       - name: Install npm Dependencies
         working-directory: Source/TurnTracker.Client
@@ -30,25 +30,27 @@ jobs:
         
       - name: Build with npm
         working-directory: Source/TurnTracker.Client
-        run: npm run-script build
+        run: npm run build
 
       - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
 
       - name: Build with dotnet
+        working-directory: Source/TurnTracker.Server
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        working-directory: Source/TurnTracker.Server
+        run: dotnet publish -c Release -o turntracker
 
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: Source/TurnTracker.Server/turntracker
 
   deploy:
     runs-on: ubuntu-latest
@@ -59,7 +61,7 @@ jobs:
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: .net-app
 

@@ -35,7 +35,11 @@
   mat-nav-list {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 8px);
+    height: calc(100vh - 16px);
+
+    .mdc-list-item--with-leading-icon .mdc-list-item__start {
+      margin-right: 0;
+    }
   }
 
   .spacer {

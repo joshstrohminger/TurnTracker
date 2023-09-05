@@ -49,3 +49,11 @@ button.action {
 mat-chip.current {
   margin-left: 1em;
 }
+
+mat-card-header.padded {
+  padding-bottom: 1em;
+}
+
+mat-list-item.accent.device * {
+  color: inherit;
+}
