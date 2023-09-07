@@ -22,7 +22,7 @@
   </mat-card-footer>
 </mat-card>
 
-<div class="controls" [hidden]="logs.length <= 1">
+<div class="controls" [hidden]="logs.length == 0">
   <button mat-button (click)="accordion.openAll()">Expand All</button>
   <button mat-button (click)="accordion.closeAll()">Collapse All</button>
 </div>
