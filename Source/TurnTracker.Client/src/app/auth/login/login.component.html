@@ -16,7 +16,7 @@
       </div>
       <div class="error-message">{{error}}</div>
     </mat-card-content>
-    <mat-card-actions>
+    <mat-card-actions align="end">
       <button mat-flat-button type="submit" color="primary" [disabled]="!loginForm.valid">Login</button>
       <button mat-flat-button type="button" color="accent" *ngIf="webauthn.isAvailable$ | async" (click)="deviceLogin()"
         [disabled]="loginForm.disabled || (loginForm.controls.username.invalid && webauthn.usernameRequired)">Device Login</button>

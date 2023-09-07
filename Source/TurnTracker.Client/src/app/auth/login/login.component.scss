@@ -10,14 +10,11 @@ mat-form-field {
 }
 
 mat-card-actions {
+  gap: 0.5em;
   button {
     width: 100%;
-    &:not(:first-of-type) {
-      margin-top: 0.5em;
-    }
   }
   mat-checkbox {
     display: block;
-    margin-top: 0.5em;
   }
 }
