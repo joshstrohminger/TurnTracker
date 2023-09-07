@@ -57,11 +57,11 @@ namespace TurnTracker.Server.Controllers
                 return BadRequest($"Missing {nameof(response.DeviceName)}");
             }
 
-            var (_, isFailure, credential, error) = await _webAuthnService.MakeCredentialAsync(response.RawResponse, User.GetId(), User.GetLoginId(), response.DeviceName);
+            var (_, isFailure, _, error) = await _webAuthnService.MakeCredentialAsync(response.RawResponse, User.GetId(), User.GetLoginId(), response.DeviceName);
 
             if (isFailure) return BadRequest(error);
 
-            return Json(credential);
+            return Ok();
         }
 
         [AllowAnonymous]
