@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, filter, takeUntil } from 'rxjs/operators';
@@ -6,6 +6,7 @@ import { ISavedLog, LogLevel, LogService } from 'src/app/services/log.service';
 import { DateTime } from 'luxon';
 import { ImmediateErrorStateMatcher } from 'src/app/validators/ImmediateErrorStateMatcher';
 import { MessageService } from 'src/app/services/message.service';
+import { MatAccordion } from '@angular/material/expansion';
 
 @Component({
   selector: 'app-logs',
@@ -13,6 +14,8 @@ import { MessageService } from 'src/app/services/message.service';
   styleUrls: ['./logs.component.scss']
 })
 export class LogsComponent implements OnInit, OnDestroy {
+
+  @ViewChild(MatAccordion) accordion: MatAccordion;
 
   private readonly unsubscribe$ = new Subject<void>();
   configForm: FormGroup<{enabled: FormControl<boolean>, limit: FormControl<number>}>;

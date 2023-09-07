@@ -22,9 +22,18 @@
   </mat-card-footer>
 </mat-card>
 
-<mat-card *ngFor="let log of logs">
-  <mat-card-title [class]="LogLevels[log.level]">{{log.time | luxon}}</mat-card-title>
-  <mat-card-content>
-    <div *ngFor="let param of log.params">{{param}}</div>
-  </mat-card-content>
-</mat-card>
+<div class="controls" [hidden]="logs.length <= 1">
+  <button mat-button (click)="accordion.openAll()">Expand All</button>
+  <button mat-button (click)="accordion.closeAll()">Collapse All</button>
+</div>
+
+<mat-accordion multi>
+  <mat-expansion-panel [expanded]="true" *ngFor="let log of logs">
+    <mat-expansion-panel-header>
+      <mat-panel-title [class]="LogLevels[log.level]">{{log.time | luxon}}</mat-panel-title>
+    </mat-expansion-panel-header>
+    <div class="params">
+      <div *ngFor="let param of log.params">{{param}}</div>
+    </div>
+  </mat-expansion-panel>
+</mat-accordion>
