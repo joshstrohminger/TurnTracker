@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DateTime } from 'luxon';
+import { Subject } from 'rxjs';
 
 export interface ISavedLog {
   time: DateTime;
@@ -22,10 +23,15 @@ interface ILogServiceConfig {
 
 function getCircularReplacer() {
   const ancestors = [];
-  return function (key, value) {
+  return function (key: string, value: any) {
     if (typeof value !== "object" || value === null) {
       return value;
     }
+
+    if (value instanceof Subject) {
+      return '[Skipping Subject]'
+    }
+
     // `this` is the object that value is contained in, i.e., its direct parent.
     while (ancestors.length > 0 && ancestors.at(-1) !== this) {
       ancestors.pop();

@@ -2,10 +2,6 @@ section {
   margin-top: 1em;
 }
 
-mat-card {
-  margin-bottom: 1em;
-}
-
 mat-card-title {
   font-size: medium;
 
@@ -30,11 +26,16 @@ mat-card-title {
   }
 }
 
-mat-card-content {
+.params {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
   white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.controls {
+  margin-block: 1em;
 }
 
 mat-card-footer {

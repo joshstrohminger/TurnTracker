@@ -32,8 +32,7 @@ export class PushService {
     private _swPush: SwPush,
     private _http: HttpClient,
     private _userService: UserService,
-    private _messageService: MessageService,
-    private _router: Router
+    private _messageService: MessageService
   ) {
     this.start();
   }
